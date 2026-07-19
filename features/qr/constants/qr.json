@@ -1,0 +1,97 @@
+{
+  "estadisticas": [
+    {
+      "clave": "escaneos",
+      "titulo": "Escaneos hoy",
+      "valor": "14",
+      "icono": "QrCode",
+      "acento": true
+    },
+    { "clave": "registros", "titulo": "Registros hoy", "valor": "8", "icono": "Users" },
+    { "clave": "citas-qr", "titulo": "Citas desde QR", "valor": "5", "icono": "Link" }
+  ],
+  "enlace": {
+    "url": "https://trimly.mx/b/el-rey-barber",
+    "nombreBarberia": "Barbería El Rey"
+  },
+  "capacidades": [
+    "Registrarse con nombre y teléfono",
+    "Elegir su barbero favorito",
+    "Ver horarios disponibles en tiempo real",
+    "Reservar una cita en segundos",
+    "Confirmar su asistencia con 1 clic",
+    "Ver promociones activas"
+  ],
+  "escaneos": [
+    {
+      "id": 1,
+      "nombre": "Samuel López",
+      "iniciales": "SL",
+      "accion": "Reservó cita",
+      "hace": "Hace 5 min"
+    },
+    {
+      "id": 2,
+      "nombre": "Diego Martínez",
+      "iniciales": "DM",
+      "accion": "Se registró",
+      "hace": "Hace 22 min"
+    },
+    {
+      "id": 3,
+      "nombre": "Mario Vega",
+      "iniciales": "MV",
+      "accion": "Consultó horarios",
+      "hace": "Hace 1 hora"
+    },
+    {
+      "id": 4,
+      "nombre": "Oscar Torres",
+      "iniciales": "OT",
+      "accion": "Reservó cita",
+      "hace": "Hace 2 horas"
+    },
+    {
+      "id": 5,
+      "nombre": "Pablo Núñez",
+      "iniciales": "PN",
+      "accion": "Se registró",
+      "hace": "Ayer"
+    },
+    {
+      "id": 6,
+      "nombre": "Ricardo Ávila",
+      "iniciales": "RA",
+      "accion": "Reservó cita",
+      "hace": "Ayer"
+    },
+    {
+      "id": 7,
+      "nombre": "Julián Prieto",
+      "iniciales": "JP",
+      "accion": "Consultó horarios",
+      "hace": "Ayer"
+    },
+    {
+      "id": 8,
+      "nombre": "Héctor Molina",
+      "iniciales": "HM",
+      "accion": "Se registró",
+      "hace": "Hace 2 días"
+    },
+    {
+      "id": 9,
+      "nombre": "Tomás Barrera",
+      "iniciales": "TB",
+      "accion": "Reservó cita",
+      "hace": "Hace 2 días"
+    },
+    {
+      "id": 10,
+      "nombre": "Nicolás Franco",
+      "iniciales": "NF",
+      "accion": "Vio promociones",
+      "hace": "Hace 3 días"
+    }
+  ]
+}

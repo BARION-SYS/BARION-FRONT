@@ -1,79 +1,85 @@
-import { DollarSign, CalendarCheck, Users, Scissors, TrendingUp, Clock } from "lucide-react"
-import { KpiCard } from "@/components/trimly/kpi-card"
-import { RevenueAreaChart, MonthlyBarChart } from "@/components/trimly/revenue-chart"
-import { AppointmentsToday } from "@/components/trimly/appointments-today"
-import { BarberPerformance, ServiceDistribution } from "@/components/trimly/barber-performance"
+"use client"
 
+import { useEffect } from "react"
+import { DashboardMetaChart } from "@features/dashboard/components/DashboardMetaChart"
+import { DashboardIngresosChart } from "@features/dashboard/components/DashboardIngresosChart"
+import { DashboardCitasCard } from "@features/dashboard/components/DashboardCitasCard"
+import { DashboardBarberosCard } from "@features/dashboard/components/DashboardBarberosCard"
+import { DashboardServiciosCard } from "@features/dashboard/components/DashboardServiciosCard"
+import { useDashboard } from "@features/dashboard/hooks/useDashboard"
+import { StatCard } from "@shared/components/stats/StatCard"
+import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+
+// Contenedor: instancia el hook UNA vez y reparte datos por props.
 export default function DashboardPage() {
+  const {
+    kpis,
+    ingresosSemana,
+    ingresosMensuales,
+    citasHoy,
+    resumenBarberos,
+    serviciosPopulares,
+    loadingResumen,
+    fetchResumen,
+  } = useDashboard()
+
+  useEffect(() => {
+    void fetchResumen()
+  }, [fetchResumen])
+
+  if (loadingResumen) {
+    return (
+      <main className="flex-1 space-y-6 overflow-y-auto p-4 md:p-6">
+        <DataSkeleton
+          variant="stats"
+          count={6}
+          className="grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+        />
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+          <DataSkeleton variant="chart" className="xl:col-span-2" />
+          <DataSkeleton variant="chart" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+          <DataSkeleton variant="list" count={5} className="lg:col-span-3" />
+          <DataSkeleton variant="card" count={2} className="flex flex-col gap-4 lg:col-span-2" />
+        </div>
+      </main>
+    )
+  }
+
   return (
-    <main className="flex-1 overflow-y-auto p-6 space-y-6">
-      {/* KPI Grid */}
-      <section>
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-          <KpiCard
-            title="Ingresos hoy"
-            value="$2,480"
-            change="+18% vs ayer"
-            changeType="up"
-            icon={DollarSign}
-            accent
-          />
-          <KpiCard
-            title="Citas hoy"
-            value="24"
-            change="+3 vs ayer"
-            changeType="up"
-            icon={CalendarCheck}
-            subtitle="3 canceladas"
-          />
-          <KpiCard
-            title="Clientes nuevos"
-            value="8"
-            change="+2 esta semana"
-            changeType="up"
-            icon={Users}
-            subtitle="Registros QR"
-          />
-          <KpiCard
-            title="Barberos activos"
-            value="3/3"
-            icon={Scissors}
-            subtitle="Todos disponibles"
-          />
-          <KpiCard
-            title="Ticket promedio"
-            value="$103"
-            change="+$8 vs sem. ant."
-            changeType="up"
-            icon={TrendingUp}
-          />
-          <KpiCard
-            title="Próxima cita"
-            value="11:00"
-            icon={Clock}
-            subtitle="Roberto Silva"
-          />
+    <main className="flex-1 space-y-6 overflow-y-auto p-4 md:p-6">
+      <section aria-label="Indicadores clave">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
+          {kpis.map((kpi) => (
+            <StatCard
+              key={kpi.clave}
+              titulo={kpi.titulo}
+              valor={kpi.valor}
+              cambio={kpi.cambio}
+              tendencia={kpi.tendencia}
+              icono={kpi.icono}
+              acento={kpi.acento}
+              subtitulo={kpi.subtitulo}
+            />
+          ))}
         </div>
       </section>
 
-      {/* Charts row */}
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-3" aria-label="Ingresos">
         <div className="xl:col-span-2">
-          <RevenueAreaChart />
+          <DashboardIngresosChart datos={ingresosSemana} />
         </div>
-        <div>
-          <MonthlyBarChart />
-        </div>
+        <DashboardMetaChart datos={ingresosMensuales} />
       </section>
 
-      {/* Bottom row */}
-      <section className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-5" aria-label="Actividad">
         <div className="lg:col-span-3">
-          <AppointmentsToday />
+          <DashboardCitasCard citas={citasHoy} />
         </div>
-        <div className="lg:col-span-2 flex flex-col gap-4">
-          <BarberPerformance />
-          <ServiceDistribution />
+        <div className="flex flex-col gap-4 lg:col-span-2">
+          <DashboardBarberosCard barberos={resumenBarberos} />
+          <DashboardServiciosCard servicios={serviciosPopulares} />
         </div>
       </section>
     </main>

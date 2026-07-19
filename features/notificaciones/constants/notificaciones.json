@@ -1,0 +1,44 @@
+{
+  "notificaciones": [
+    {
+      "id": 1,
+      "titulo": "Nueva cita reservada",
+      "detalle": "Samuel López reservó Corte + Barba para hoy 14:00",
+      "hace": "Hace 5 min",
+      "leida": false,
+      "tipo": "cita"
+    },
+    {
+      "id": 2,
+      "titulo": "Cliente nuevo por QR",
+      "detalle": "Sergio Valdés se registró escaneando el código",
+      "hace": "Hace 22 min",
+      "leida": false,
+      "tipo": "cliente"
+    },
+    {
+      "id": 3,
+      "titulo": "Cita cancelada",
+      "detalle": "Damián K. canceló Barba Completa del viernes",
+      "hace": "Hace 1 hora",
+      "leida": false,
+      "tipo": "cita"
+    },
+    {
+      "id": 4,
+      "titulo": "Recordatorio de nómina",
+      "detalle": "La nómina semanal se cierra mañana",
+      "hace": "Hace 3 horas",
+      "leida": true,
+      "tipo": "sistema"
+    },
+    {
+      "id": 5,
+      "titulo": "Cita confirmada",
+      "detalle": "Roberto Silva confirmó su cita de las 11:00",
+      "hace": "Ayer",
+      "leida": true,
+      "tipo": "cita"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "periodos": [
+    { "valor": "semana", "etiqueta": "Esta semana" },
+    { "valor": "mes", "etiqueta": "Este mes" },
+    { "valor": "anio", "etiqueta": "Este año" }
+  ],
+  "nominaBarberos": [
+    {
+      "id": 1,
+      "nombre": "Miguel Ángel Reyes",
+      "iniciales": "MA",
+      "color": "var(--chart-1)",
+      "citas": 28,
+      "porcentajeComision": 30,
+      "produccion": 1840,
+      "comision": 552,
+      "propinas": 180,
+      "total": 732,
+      "produccionDiaria": [
+        { "dia": "Lun", "produccion": 180 },
+        { "dia": "Mar", "produccion": 320 },
+        { "dia": "Mié", "produccion": 240 },
+        { "dia": "Jue", "produccion": 410 },
+        { "dia": "Vie", "produccion": 290 },
+        { "dia": "Sáb", "produccion": 400 }
+      ]
+    },
+    {
+      "id": 2,
+      "nombre": "Pedro Gómez Sánchez",
+      "iniciales": "PG",
+      "color": "var(--chart-3)",
+      "citas": 22,
+      "porcentajeComision": 30,
+      "produccion": 1320,
+      "comision": 396,
+      "propinas": 110,
+      "total": 506,
+      "produccionDiaria": [
+        { "dia": "Lun", "produccion": 140 },
+        { "dia": "Mar", "produccion": 220 },
+        { "dia": "Mié", "produccion": 180 },
+        { "dia": "Jue", "produccion": 290 },
+        { "dia": "Vie", "produccion": 210 },
+        { "dia": "Sáb", "produccion": 280 }
+      ]
+    },
+    {
+      "id": 3,
+      "nombre": "Juan Carlos Vega",
+      "iniciales": "JC",
+      "color": "var(--chart-2)",
+      "citas": 19,
+      "porcentajeComision": 30,
+      "produccion": 1140,
+      "comision": 342,
+      "propinas": 85,
+      "total": 427,
+      "produccionDiaria": [
+        { "dia": "Lun", "produccion": 120 },
+        { "dia": "Mar", "produccion": 190 },
+        { "dia": "Mié", "produccion": 160 },
+        { "dia": "Jue", "produccion": 250 },
+        { "dia": "Vie", "produccion": 180 },
+        { "dia": "Sáb", "produccion": 240 }
+      ]
+    }
+  ]
+}

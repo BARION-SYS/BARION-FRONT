@@ -1,0 +1,65 @@
+{
+  "secciones": [
+    { "id": "general", "etiqueta": "General", "icono": "Store" },
+    { "id": "apariencia", "etiqueta": "Apariencia", "icono": "Palette" },
+    { "id": "horarios", "etiqueta": "Horarios", "icono": "Clock" },
+    { "id": "notificaciones", "etiqueta": "Notificaciones", "icono": "Bell" },
+    { "id": "precios", "etiqueta": "Precios y servicios", "icono": "DollarSign" },
+    { "id": "seguridad", "etiqueta": "Seguridad", "icono": "Shield" }
+  ],
+  "barberia": {
+    "nombre": "Barbería El Rey",
+    "telefono": "+52 55 1234 5678",
+    "correo": "elrey@trimly.mx",
+    "direccion": "Av. Reforma 123, CDMX",
+    "descripcion": "Barbería premium especializada en cortes modernos"
+  },
+  "coloresPreset": ["#d4a843", "#3b82f6", "#22c55e", "#ef4444", "#a855f7", "#f97316"],
+  "horarios": [
+    { "dia": "Lunes", "abierto": true, "apertura": "09:00", "cierre": "20:00" },
+    { "dia": "Martes", "abierto": true, "apertura": "09:00", "cierre": "20:00" },
+    { "dia": "Miércoles", "abierto": true, "apertura": "09:00", "cierre": "20:00" },
+    { "dia": "Jueves", "abierto": true, "apertura": "09:00", "cierre": "20:00" },
+    { "dia": "Viernes", "abierto": true, "apertura": "09:00", "cierre": "20:00" },
+    { "dia": "Sábado", "abierto": true, "apertura": "09:00", "cierre": "18:00" },
+    { "dia": "Domingo", "abierto": false, "apertura": "09:00", "cierre": "20:00" }
+  ],
+  "canales": [
+    {
+      "canal": "whatsapp",
+      "etiqueta": "WhatsApp",
+      "descripcion": "Recordatorios y confirmaciones vía WhatsApp",
+      "color": "var(--chart-2)",
+      "activo": true
+    },
+    {
+      "canal": "sms",
+      "etiqueta": "SMS",
+      "descripcion": "Mensajes de texto al número registrado",
+      "color": "var(--chart-3)",
+      "activo": false
+    },
+    {
+      "canal": "correo",
+      "etiqueta": "Correo electrónico",
+      "descripcion": "Confirmaciones y recordatorios por email",
+      "color": "var(--chart-1)",
+      "activo": true
+    },
+    {
+      "canal": "interno",
+      "etiqueta": "Notificaciones internas",
+      "descripcion": "Dentro del sistema para el equipo",
+      "color": "var(--chart-4)",
+      "activo": true
+    }
+  ],
+  "servicios": [
+    { "id": 1, "nombre": "Corte Clásico", "precio": 110, "duracionMin": 30 },
+    { "id": 2, "nombre": "Fade + Diseño", "precio": 150, "duracionMin": 50 },
+    { "id": 3, "nombre": "Corte + Barba", "precio": 130, "duracionMin": 45 },
+    { "id": 4, "nombre": "Barba Completa", "precio": 80, "duracionMin": 25 },
+    { "id": 5, "nombre": "Fade Skin", "precio": 160, "duracionMin": 55 },
+    { "id": 6, "nombre": "Corte Niño", "precio": 90, "duracionMin": 25 }
+  ]
+}

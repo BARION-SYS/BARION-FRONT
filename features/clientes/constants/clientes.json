@@ -1,0 +1,185 @@
+{
+  "clientes": [
+    {
+      "id": 1,
+      "nombre": "Carlos Mendoza",
+      "iniciales": "CM",
+      "telefono": "+52 55 1111 2222",
+      "correo": "carlos@mail.com",
+      "barberoFavorito": "Miguel",
+      "visitas": 24,
+      "ultimaVisita": "Hoy",
+      "gastadoTotal": 2760,
+      "etiqueta": "VIP"
+    },
+    {
+      "id": 2,
+      "nombre": "Luis García",
+      "iniciales": "LG",
+      "telefono": "+52 55 3333 4444",
+      "correo": "luis@mail.com",
+      "barberoFavorito": "Pedro",
+      "visitas": 18,
+      "ultimaVisita": "Hace 3 días",
+      "gastadoTotal": 1980,
+      "etiqueta": "Frecuente"
+    },
+    {
+      "id": 3,
+      "nombre": "Andrés Torres",
+      "iniciales": "AT",
+      "telefono": "+52 55 5555 6666",
+      "correo": "andres@mail.com",
+      "barberoFavorito": "Miguel",
+      "visitas": 12,
+      "ultimaVisita": "Hace 1 semana",
+      "gastadoTotal": 1440,
+      "etiqueta": "Regular"
+    },
+    {
+      "id": 4,
+      "nombre": "Roberto Silva",
+      "iniciales": "RS",
+      "telefono": "+52 55 7777 8888",
+      "correo": "roberto@mail.com",
+      "barberoFavorito": "Juan",
+      "visitas": 8,
+      "ultimaVisita": "Hace 2 semanas",
+      "gastadoTotal": 920,
+      "etiqueta": "Regular"
+    },
+    {
+      "id": 5,
+      "nombre": "Diego Martínez",
+      "iniciales": "DM",
+      "telefono": "+52 55 9999 0000",
+      "correo": "diego@mail.com",
+      "barberoFavorito": "Pedro",
+      "visitas": 5,
+      "ultimaVisita": "Hace 3 semanas",
+      "gastadoTotal": 550,
+      "etiqueta": "Nuevo"
+    },
+    {
+      "id": 6,
+      "nombre": "Felipe Ruiz",
+      "iniciales": "FR",
+      "telefono": "+52 55 2222 3333",
+      "correo": "felipe@mail.com",
+      "barberoFavorito": "Miguel",
+      "visitas": 3,
+      "ultimaVisita": "Hace 1 mes",
+      "gastadoTotal": 330,
+      "etiqueta": "Nuevo"
+    },
+    {
+      "id": 7,
+      "nombre": "Samuel López",
+      "iniciales": "SL",
+      "telefono": "+52 55 4444 5555",
+      "correo": "samuel@mail.com",
+      "barberoFavorito": "Juan",
+      "visitas": 1,
+      "ultimaVisita": "Hoy",
+      "gastadoTotal": 120,
+      "etiqueta": "Nuevo"
+    },
+    {
+      "id": 8,
+      "nombre": "Mario Vega",
+      "iniciales": "MV",
+      "telefono": "+52 55 6666 7777",
+      "correo": "mario@mail.com",
+      "barberoFavorito": "Pedro",
+      "visitas": 31,
+      "ultimaVisita": "Ayer",
+      "gastadoTotal": 3720,
+      "etiqueta": "VIP"
+    },
+    {
+      "id": 9,
+      "nombre": "Héctor Molina",
+      "iniciales": "HM",
+      "telefono": "+52 55 1212 3434",
+      "correo": "hector@mail.com",
+      "barberoFavorito": "Juan",
+      "visitas": 15,
+      "ultimaVisita": "Hace 5 días",
+      "gastadoTotal": 1650,
+      "etiqueta": "Frecuente"
+    },
+    {
+      "id": 10,
+      "nombre": "Julián Prieto",
+      "iniciales": "JP",
+      "telefono": "+52 55 5656 7878",
+      "correo": "julian@mail.com",
+      "barberoFavorito": "Pedro",
+      "visitas": 22,
+      "ultimaVisita": "Hace 2 días",
+      "gastadoTotal": 2420,
+      "etiqueta": "Frecuente"
+    },
+    {
+      "id": 11,
+      "nombre": "Ricardo Ávila",
+      "iniciales": "RA",
+      "telefono": "+52 55 9090 1212",
+      "correo": "ricardo@mail.com",
+      "barberoFavorito": "Miguel",
+      "visitas": 27,
+      "ultimaVisita": "Hoy",
+      "gastadoTotal": 3140,
+      "etiqueta": "VIP"
+    },
+    {
+      "id": 12,
+      "nombre": "Tomás Barrera",
+      "iniciales": "TB",
+      "telefono": "+52 55 3434 5656",
+      "correo": "tomas@mail.com",
+      "barberoFavorito": "Juan",
+      "visitas": 9,
+      "ultimaVisita": "Hace 1 semana",
+      "gastadoTotal": 1020,
+      "etiqueta": "Regular"
+    },
+    {
+      "id": 13,
+      "nombre": "Nicolás Franco",
+      "iniciales": "NF",
+      "telefono": "+52 55 7878 9090",
+      "correo": "nicolas@mail.com",
+      "barberoFavorito": "Pedro",
+      "visitas": 6,
+      "ultimaVisita": "Hace 2 semanas",
+      "gastadoTotal": 690,
+      "etiqueta": "Regular"
+    },
+    {
+      "id": 14,
+      "nombre": "Sergio Valdés",
+      "iniciales": "SV",
+      "telefono": "+52 55 2323 4545",
+      "correo": "sergio@mail.com",
+      "barberoFavorito": "Miguel",
+      "visitas": 2,
+      "ultimaVisita": "Hace 4 días",
+      "gastadoTotal": 260,
+      "etiqueta": "Nuevo"
+    }
+  ],
+  "historial": [
+    { "fecha": "14 Jul", "servicio": "Corte + Barba", "barbero": "Miguel", "precio": "$130" },
+    { "fecha": "30 Jun", "servicio": "Fade + Diseño", "barbero": "Miguel", "precio": "$150" },
+    { "fecha": "16 Jun", "servicio": "Corte Clásico", "barbero": "Miguel", "precio": "$110" },
+    { "fecha": "2 Jun", "servicio": "Corte + Barba", "barbero": "Miguel", "precio": "$130" },
+    { "fecha": "19 May", "servicio": "Barba Completa", "barbero": "Miguel", "precio": "$80" },
+    { "fecha": "5 May", "servicio": "Fade Skin", "barbero": "Juan", "precio": "$160" },
+    { "fecha": "21 Abr", "servicio": "Corte + Barba", "barbero": "Miguel", "precio": "$130" },
+    { "fecha": "7 Abr", "servicio": "Corte Clásico", "barbero": "Pedro", "precio": "$110" }
+  ],
+  "resumen": {
+    "nuevosHoy": 2
+  }
+}

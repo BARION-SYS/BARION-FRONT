@@ -47,8 +47,8 @@ pnpm lint       # eslint
 
 Definidas en `.env` (ver [`.env.example`](./.env.example)). Este repo no lee variables del padre.
 
-| Variable | Descripción |
-|---|---|
+| Variable              | Descripción                                                                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_API_URL` | URL de la API vista desde el **navegador**. Se hornea en el build de producción (build ARG en Docker) |
 
 ## Docker

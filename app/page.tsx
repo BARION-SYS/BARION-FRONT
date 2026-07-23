@@ -1,8 +1,8 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Scissors } from "lucide-react"
+import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import { Login } from "@features/auth/components/Login"
 import { PanelMarca } from "@features/auth/components/PanelMarca"
 import { useAuth } from "@features/auth/hooks/useAuth"
@@ -13,35 +13,55 @@ import type { DatosLogin } from "@features/auth/schemas/auth.schema"
 export default function LoginPage() {
   const router = useRouter()
   const { loadingLogin, error, handleLoginAuth } = useAuth()
+  // Salida coordinada: al autenticar, la tarjeta anima su despedida y recién ahí navegamos.
+  const [saliendo, setSaliendo] = useState(false)
 
   const onSubmitLogin = useCallback(
     async (datos: DatosLogin) => {
       try {
         await handleLoginAuth(datos)
-        router.push("/dashboard")
+        setSaliendo(true)
       } catch {
         // El error ya queda en `error` del hook y se muestra en el form.
       }
     },
-    [handleLoginAuth, router]
+    [handleLoginAuth]
   )
 
   return (
-    <div className="relative flex min-h-dvh bg-background">
-      <div className="absolute top-4 right-4 z-10">
-        <ThemeToggle />
-      </div>
-      <PanelMarca />
-
-      <div className="flex flex-1 flex-col items-center justify-center p-8">
-        <div className="mb-8 flex w-full max-w-sm items-center gap-2 self-start lg:hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Scissors className="h-4 w-4 text-primary-foreground" aria-hidden />
-          </div>
-          <span className="text-base font-bold text-foreground">BARION</span>
+    <MotionConfig reducedMotion="user">
+      <div className="relative flex min-h-dvh bg-background">
+        <div className="absolute top-4 right-4 z-10">
+          <ThemeToggle />
         </div>
-        <Login onSubmit={onSubmitLogin} cargando={loadingLogin} error={error} />
+        <PanelMarca />
+
+        <main className="relative flex flex-1 items-center justify-center overflow-hidden p-6 sm:p-8">
+          {/* Empapelado diagonal sutil, eco del panel de marca */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(135deg, var(--foreground) 0 2px, transparent 2px 26px)",
+            }}
+            aria-hidden
+          />
+
+          {/* Resplandor dorado con flotación lenta */}
+          <motion.div
+            className="pointer-events-none absolute -top-24 right-0 h-80 w-80 rounded-full bg-primary/10 blur-3xl"
+            animate={{ y: [0, 28, 0] }}
+            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden
+          />
+
+          <AnimatePresence onExitComplete={() => router.push("/dashboard")}>
+            {!saliendo && (
+              <Login key="login" onSubmit={onSubmitLogin} cargando={loadingLogin} error={error} />
+            )}
+          </AnimatePresence>
+        </main>
       </div>
-    </div>
+    </MotionConfig>
   )
 }

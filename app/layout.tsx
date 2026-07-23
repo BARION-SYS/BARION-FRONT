@@ -14,10 +14,13 @@ export const metadata: Metadata = {
   description:
     "The complete digital ecosystem for modern barbershops. Manage appointments, staff, payroll and clients in one place.",
   icons: {
-    // SVG ceñido a la marca: se ve grande y nítido en la pestaña; PNG de respaldo
-    icon: [{ url: "/barion-icono.svg", type: "image/svg+xml" }, { url: "/barion-icono-claro.png" }],
-    shortcut: "/barion-icono.svg",
-    apple: "/barion-icono-claro.png",
+    // Favicon según el tema del navegador; apple-touch-icon en PNG (iOS no soporta webp)
+    icon: [
+      { url: "/barion-icon-light.webp", media: "(prefers-color-scheme: light)" },
+      { url: "/barion-icon-dark.webp", media: "(prefers-color-scheme: dark)" },
+    ],
+    shortcut: "/barion-icon-light.webp",
+    apple: "/apple-icon.png",
   },
 }
 

@@ -19,6 +19,7 @@ Este archivo define arquitectura y convenciones. NO lista los features a propós
 | axios (`ApiClient`)     | HTTP (`lib/http/`)                                 |
 | react-hook-form         | Formularios (+ `standardSchemaResolver`)           |
 | next-themes             | Tema claro/oscuro                                  |
+| motion                  | Animaciones (importar de `motion/react`)           |
 | Recharts                | Gráficas                                           |
 
 ## Principio: feature-first
@@ -105,8 +106,11 @@ Fuente única (`rutasDashboard.ts` + `types/routes.types.ts`): la barra lateral 
 - En componentes SOLO tokens semánticos: `bg-card`, `text-muted-foreground`, `text-(--exito)`, `var(--chart-1)`.
 - **Color dinámico (que llega por dato/prop): SIEMPRE como variable CSS + clase** — `style={{ "--tono": color }}` y `className="text-(--tono) bg-[color-mix(in_srgb,var(--tono)_12%,transparent)]"`. PROHIBIDO `style={{ backgroundColor, color }}` directo (ver `StatusBadge`, `InitialsAvatar`, `BrandStudio`).
 - **Colores del tenant (primario + fondo), editables SOLO por el admin y ADAPTATIVOS**: se eligen en el `BrandStudio` (botón de paleta del navbar → Modal con preview del diseño) (presets en `config/marca.ts` + libre), con preview y botón Aplicar — nada cambia hasta aplicar. Viven en `store/marca.store.ts`; `TenantProvider` inyecta un `<style>` con `cssDeMarca` (`shared/utils/color`): un bloque `:root` y otro `.dark` usando **variantes adaptativas** del color elegido (`variantesPrimario`/`variantesFondo` ajustan luminosidad por tema, foreground por contraste) — la estética se conserva en claro y oscuro, panel Y portal. Los clientes del portal SOLO los ven, jamás los modifican. Sin elección mandan los defaults de globals.css. Configuración → Apariencia NO configura colores: es logotipo + vista previa del portal.
+- **El color de fondo del tenant tiñe TODA la escala de superficies, en ambos temas** (`varsFondo` en `shared/utils/color.ts`): fondo, card, secondary/muted y bordes salen del matiz elegido con pasos de luminosidad que conservan jerarquía (claro: fondo l:87 → card l:96; oscuro: fondo l:10 → card l:14 → secondary l:19 → borde l:25). La card NUNCA es blanco/negro puro con color elegido — **Sidebar y Navbar se adaptan solos porque pintan con `bg-card`**, no llevan color propio. Cualquier ajuste de la escala se hace SOLO en `shared/utils/color.ts` (la preview del BrandStudio usa las mismas funciones vía `tokensDeTema`).
 - **PROHIBIDO**: color hardcodeado (`#fff`, `text-gray-700`, `text-emerald-400`) y el variant **`dark:`** — cada token ya define claro y oscuro.
 - Tema vía **next-themes**: `shared/providers/ThemeProvider` (attribute="class", default dark) + `shared/layout/ThemeToggle` (único control, no duplicar). Lógica de tema solo con `useTheme()`; guard de `mounted`.
+- **Logo de marca = SIEMPRE `LogoBarion`** (`shared/components/brand/LogoBarion.tsx`): variantes `completo`/`icono`, resuelve el asset webp según tema (`public/barion-{logo,icon}-{light,dark}.webp`) con dimensiones intrínsecas correctas. PROHIBIDO `<Image>` directo a esos assets o duplicar la lógica de tema del logo. Favicon/apple-icon se declaran en `app/layout.tsx` (`apple-icon.png` es PNG porque iOS no soporta webp).
+- **Animaciones con `motion`** (`motion/react`): todo árbol animado va bajo un `MotionConfig reducedMotion="user"` (ya existe en el login y en `LayoutDashboard` — no anidar otro). Lenguaje de movimiento: entradas con springs suaves (stiffness ~140, damping ~22) y cascadas (`staggerChildren`), micro-interacciones 150-300ms, salidas más cortas que entradas vía `AnimatePresence`. El colapso del sidebar NO usa motion en el `<aside>` (su transform es del drawer móvil): ancho por transición CSS y contenido con transiciones CSS coordinadas (misma duración/curva). `.cinta-barberia` (globals.css) es la franja diagonal animada de marca — usarla como acento, no decorar cada vista.
 - **Primitivos UI → shadcn** (`shared/components/ui/`, instalados con `pnpm dlx shadcn@latest add x`). Nunca construir botones/inputs/dialogs desde cero. Nativos solo sin pieza shadcn (grilla de calendario, svg del QR).
 - **Los primitivos están AFINADOS para Barion** (única edición permitida sobre ellos — solo clases, nunca lógica/API): alturas de formulario h-9, padding px-3, jerarquía tipográfica (labels `text-sm font-medium`, CardTitle `text-base font-semibold`, DialogTitle `text-lg`), tabla con `TableHead` uppercase muted y celdas `py-3`, sombras por escala (popover `shadow-md`, dialog `shadow-lg`). Al instalar una pieza nueva con el CLI, re-afinarla con estos mismos criterios.
 
@@ -123,6 +127,7 @@ Fuente única (`rutasDashboard.ts` + `types/routes.types.ts`): la barra lateral 
 shared/
 ├── components/
 │   ├── ui/          # Primitivos shadcn — SOLO shadcn, nunca editar a mano
+│   ├── brand/       # LogoBarion — logo adaptativo al tema, única fuente de marca
 │   ├── modals/      # Modal — shell agnóstico sobre Dialog (open, titulo, children, footer, size)
 │   ├── feedback/    # DataSkeleton, Loadable
 │   ├── charts/      # ChartTooltip
@@ -231,6 +236,8 @@ Para trabajo de UI/UX apoyarse en las skills, no improvisar: `frontend-design` (
 6. Hijos presentacionales por props. 8. Entrada en `routes/rutasDashboard.ts`.
 
 ## Comandos
+
+Las dependencias se instalan SIEMPRE desde el host (`pnpm add` en este repo): el contenedor de dev del repo padre monta el proyecto completo (incluido `node_modules`) y las ve al instante — jamás instalar dentro del contenedor ni rebuildear la imagen por una dependencia.
 
 ```bash
 pnpm dev        # desarrollo (API local: docker compose del repo padre)

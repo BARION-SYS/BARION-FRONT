@@ -151,6 +151,8 @@
   .scroll-fino {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
+    /* Sin encadenamiento: al llegar al fondo del área NO sigue scrolleando el padre */
+    overscroll-behavior: contain;
   }
   .scroll-fino::-webkit-scrollbar {
     width: 6px;

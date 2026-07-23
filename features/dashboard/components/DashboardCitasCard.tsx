@@ -32,7 +32,7 @@ export function DashboardCitasCard({ citas }: Props) {
         </Link>
       }
     >
-      <ul className="max-h-80 flex-1 space-y-1.5 overflow-y-auto pr-1">
+      <ul className="scroll-fino max-h-80 flex-1 space-y-1.5 overflow-y-auto pr-1">
         {citas.map((cita, i) => {
           const estado = configEstadoCita[cita.estado]
           return (

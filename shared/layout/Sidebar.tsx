@@ -161,7 +161,7 @@ export function Sidebar({
 
         {/* Navegación agrupada por sección — desde routes/rutasDashboard.ts */}
         <motion.nav
-          className="flex-1 space-y-1 overflow-x-hidden overflow-y-auto px-2 pb-4"
+          className="scroll-fino flex-1 space-y-1 overflow-x-hidden overflow-y-auto px-2 pb-4"
           aria-label="Secciones"
           variants={contenedorNav}
           initial="oculto"

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { motion } from "motion/react"
 import {
   Bell,
   CalendarDays,
@@ -84,8 +85,18 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   const rolUsuario = montado && sesion ? sesion.usuario.rol : "Propietario"
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border bg-card/50 px-4 backdrop-blur-sm md:px-6">
-      <div className="flex min-w-0 items-center gap-3">
+    <motion.header
+      initial={{ opacity: 0, y: -24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.05 }}
+      className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border bg-card/50 px-4 backdrop-blur-sm md:px-6"
+    >
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.25 }}
+        className="flex min-w-0 items-center gap-3"
+      >
         <Button
           variant="outline"
           size="icon"
@@ -103,24 +114,37 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
             <p className="truncate text-xs text-muted-foreground">{ruta.subtitulo}</p>
           )}
         </div>
-      </div>
+      </motion.div>
 
-      <div className="flex shrink-0 items-center gap-3">
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.35 }}
+        className="flex shrink-0 items-center gap-2"
+      >
         <div className="relative hidden items-center md:flex">
           <Search
-            className="pointer-events-none absolute left-3 h-3.5 w-3.5 text-muted-foreground"
+            className="pointer-events-none absolute left-3.5 h-3.5 w-3.5 text-muted-foreground"
             aria-hidden
           />
           <Input
             type="search"
             placeholder="Buscar..."
             aria-label="Buscar"
-            className="w-52 pl-9 text-xs"
+            className="w-56 rounded-full border-transparent bg-secondary/60 pl-9 text-xs transition-colors focus-visible:border-border focus-visible:bg-card"
           />
+          <kbd
+            className="pointer-events-none absolute right-3 hidden rounded border border-border bg-card px-1.5 py-0.5 font-sans text-[10px] text-muted-foreground lg:block"
+            aria-hidden
+          >
+            ⌘K
+          </kbd>
         </div>
 
         <BrandStudio />
         <ThemeToggle />
+
+        <div className="mx-1 hidden h-6 w-px bg-border md:block" aria-hidden />
 
         {/* Notificaciones */}
         <DropdownMenu>
@@ -198,29 +222,45 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
               <Button
                 variant="outline"
                 aria-label={`Menú de usuario: ${nombreUsuario}, ${rolUsuario}`}
-                className="gap-2 pl-2"
+                className="h-11 gap-2.5 rounded-full py-0 pr-3 pl-1.5"
               >
-                <Avatar className="size-6" aria-hidden>
-                  <AvatarFallback className="bg-primary text-[10px] font-bold text-primary-foreground">
-                    {nombreUsuario.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <span className="relative shrink-0" aria-hidden>
+                  <Avatar className="size-8 ring-2 ring-primary/25">
+                    <AvatarFallback className="bg-primary text-xs font-bold text-primary-foreground">
+                      {nombreUsuario.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Estado en línea */}
+                  <span className="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full border-2 border-card bg-(--exito)" />
+                </span>
                 <span className="hidden text-left md:block">
-                  <span className="block text-xs leading-none font-medium text-foreground">
+                  <span className="block max-w-32 truncate text-sm leading-tight font-semibold text-foreground">
                     {nombreUsuario}
                   </span>
-                  <span className="mt-0.5 block text-[10px] text-muted-foreground">
+                  <span className="block text-[11px] leading-tight text-muted-foreground">
                     {rolUsuario}
                   </span>
                 </span>
-                <ChevronDown className="text-muted-foreground" aria-hidden />
+                <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
               </Button>
             }
           />
-          <DropdownMenuContent align="end" className="w-52">
-            <div className="px-2 py-1.5">
-              <span className="block text-sm font-medium text-foreground">{nombreUsuario}</span>
-              <span className="block text-xs text-muted-foreground">{rolUsuario}</span>
+          <DropdownMenuContent align="end" className="w-60">
+            <div className="flex items-center gap-3 px-2 py-2.5">
+              <Avatar className="size-9 ring-2 ring-primary/25" aria-hidden>
+                <AvatarFallback className="bg-primary text-sm font-bold text-primary-foreground">
+                  {nombreUsuario.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-foreground">
+                  {nombreUsuario}
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-(--exito)" aria-hidden />
+                  {rolUsuario}
+                </span>
+              </div>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/dashboard/configuracion")}>
@@ -238,7 +278,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-    </header>
+      </motion.div>
+    </motion.header>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { MotionConfig } from "motion/react"
 import { Sidebar } from "@shared/layout/Sidebar"
 import { Navbar } from "@shared/layout/Navbar"
 
@@ -10,17 +11,19 @@ export function LayoutDashboard({ children }: { children: React.ReactNode }) {
   const [abiertaEnMovil, setAbiertaEnMovil] = useState(false)
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background">
-      <Sidebar
-        colapsada={colapsada}
-        alAlternarColapso={() => setColapsada((c) => !c)}
-        abiertaEnMovil={abiertaEnMovil}
-        alCerrarMovil={() => setAbiertaEnMovil(false)}
-      />
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <Navbar alAbrirMenuMovil={() => setAbiertaEnMovil(true)} />
-        {children}
+    <MotionConfig reducedMotion="user">
+      <div className="flex h-dvh overflow-hidden bg-background">
+        <Sidebar
+          colapsada={colapsada}
+          alAlternarColapso={() => setColapsada((c) => !c)}
+          abiertaEnMovil={abiertaEnMovil}
+          alCerrarMovil={() => setAbiertaEnMovil(false)}
+        />
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <Navbar alAbrirMenuMovil={() => setAbiertaEnMovil(true)} />
+          {children}
+        </div>
       </div>
-    </div>
+    </MotionConfig>
   )
 }

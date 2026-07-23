@@ -20,6 +20,7 @@ export const rutasDashboard: RutaApp[] = [
     titulo: "Dashboard",
     subtitulo: "Resumen general de tu barbería",
     icono: LayoutDashboard,
+    entrada: "zoom",
   },
   {
     clave: "citas",
@@ -29,6 +30,7 @@ export const rutasDashboard: RutaApp[] = [
     titulo: "Citas",
     subtitulo: "Gestión de citas y calendario",
     icono: CalendarDays,
+    entrada: "subir",
   },
   {
     clave: "barberos",
@@ -38,6 +40,7 @@ export const rutasDashboard: RutaApp[] = [
     titulo: "Barberos",
     subtitulo: "Equipo de trabajo y rendimiento",
     icono: Scissors,
+    entrada: "izquierda",
   },
   {
     clave: "clientes",
@@ -47,6 +50,7 @@ export const rutasDashboard: RutaApp[] = [
     titulo: "Clientes",
     subtitulo: "Base de clientes y fidelización",
     icono: Users,
+    entrada: "derecha",
   },
   {
     clave: "nomina",
@@ -56,6 +60,7 @@ export const rutasDashboard: RutaApp[] = [
     titulo: "Nómina",
     subtitulo: "Comisiones, propinas y producción",
     icono: DollarSign,
+    entrada: "bajar",
   },
   {
     clave: "estadisticas",
@@ -65,6 +70,7 @@ export const rutasDashboard: RutaApp[] = [
     titulo: "Estadísticas",
     subtitulo: "Análisis y métricas de negocio",
     icono: BarChart3,
+    entrada: "zoom",
   },
   {
     clave: "qr",
@@ -74,6 +80,7 @@ export const rutasDashboard: RutaApp[] = [
     titulo: "Código QR",
     subtitulo: "Registro y acceso de clientes",
     icono: QrCode,
+    entrada: "fundido",
   },
   {
     clave: "configuracion",
@@ -83,6 +90,7 @@ export const rutasDashboard: RutaApp[] = [
     titulo: "Configuración",
     subtitulo: "Personalización de tu barbería",
     icono: Settings,
+    entrada: "izquierda",
   },
 ]
 

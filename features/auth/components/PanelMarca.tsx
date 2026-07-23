@@ -39,7 +39,7 @@ export function PanelMarca() {
           <Scissors className="h-5 w-5 text-primary-foreground" aria-hidden />
         </div>
         <div>
-          <p className="text-lg font-bold tracking-wide text-foreground">TRIMLY</p>
+          <p className="text-lg font-bold tracking-wide text-foreground">BARION</p>
           <p className="text-[10px] tracking-widest text-muted-foreground uppercase">
             Barbershop OS
           </p>

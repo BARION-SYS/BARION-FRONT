@@ -165,7 +165,7 @@ export function BarberosForm({
           <Input
             id="correo"
             type="email"
-            placeholder="barbero@trimly.mx"
+            placeholder="barbero@barion.mx"
             aria-invalid={!!errors.correo}
             {...register("correo")}
           />

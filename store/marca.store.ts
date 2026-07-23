@@ -20,6 +20,6 @@ export const useMarcaStore = create<MarcaState>()(
       setColorMarca: (colorMarca) => set({ colorMarca }),
       setColorFondo: (colorFondo) => set({ colorFondo }),
     }),
-    { name: "trimly-marca" }
+    { name: "barion-marca" }
   )
 )

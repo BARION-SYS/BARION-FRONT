@@ -97,7 +97,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
         </Button>
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">
-            {ruta?.titulo ?? "Trimly"}
+            {ruta?.titulo ?? "Barion"}
           </h1>
           {ruta?.subtitulo && (
             <p className="truncate text-xs text-muted-foreground">{ruta.subtitulo}</p>

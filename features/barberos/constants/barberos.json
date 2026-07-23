@@ -21,7 +21,7 @@
       },
       "citasSemana": [18, 22, 19, 28, 25, 30, 28],
       "telefono": "+52 55 1234 5678",
-      "correo": "miguel@trimly.mx"
+      "correo": "miguel@barion.mx"
     },
     {
       "id": 2,
@@ -44,7 +44,7 @@
       },
       "citasSemana": [14, 18, 15, 22, 20, 25, 22],
       "telefono": "+52 55 8765 4321",
-      "correo": "pedro@trimly.mx"
+      "correo": "pedro@barion.mx"
     },
     {
       "id": 3,
@@ -67,7 +67,7 @@
       },
       "citasSemana": [12, 15, 13, 19, 17, 20, 19],
       "telefono": "+52 55 5555 0000",
-      "correo": "juan@trimly.mx"
+      "correo": "juan@barion.mx"
     }
   ]
 }

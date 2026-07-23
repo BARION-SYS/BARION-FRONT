@@ -16,6 +16,6 @@ export const useAuthStore = create<AuthState>()(
       setSesion: (sesion) => set({ sesion }),
       cerrarSesion: () => set({ sesion: null }),
     }),
-    { name: "trimly-auth" }
+    { name: "barion-auth" }
   )
 )

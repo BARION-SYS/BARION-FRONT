@@ -1,6 +1,6 @@
-# CLAUDE.md — trimly (front)
+# CLAUDE.md — barion (front)
 
-Frontend de Trimly — SaaS multi-tenant para barberías (Colombia base; opera también en EE. UU. y España). Next.js App Router. **PWA — no existe app nativa.** Consume la API de `trimly-api` (`/v1`); los tipos de las respuestas son **propios de este repo**. Arquitectura diseñada para conectar la API real sin refactorizar estructura.
+Frontend de Barion — SaaS multi-tenant para barberías (Colombia base; opera también en EE. UU. y España). Next.js App Router. **PWA — no existe app nativa.** Consume la API de `barion-api` (`/v1`); los tipos de las respuestas son **propios de este repo**. Arquitectura diseñada para conectar la API real sin refactorizar estructura.
 
 **Estado actual: mock de UI.** La data mock de cada feat vive en `constants/[feat].json`; el service es el ÚNICO que la importa y la sirve con la MISMA forma `ApiResult<T>` — al integrar solo cambia el cuerpo del service (JSON → `api.get/post/...`). Los íconos van en el JSON como nombre (string) y el service los mapea a componentes Lucide.
 
@@ -108,14 +108,14 @@ Fuente única (`rutasDashboard.ts` + `types/routes.types.ts`): la barra lateral 
 - **PROHIBIDO**: color hardcodeado (`#fff`, `text-gray-700`, `text-emerald-400`) y el variant **`dark:`** — cada token ya define claro y oscuro.
 - Tema vía **next-themes**: `shared/providers/ThemeProvider` (attribute="class", default dark) + `shared/layout/ThemeToggle` (único control, no duplicar). Lógica de tema solo con `useTheme()`; guard de `mounted`.
 - **Primitivos UI → shadcn** (`shared/components/ui/`, instalados con `pnpm dlx shadcn@latest add x`). Nunca construir botones/inputs/dialogs desde cero. Nativos solo sin pieza shadcn (grilla de calendario, svg del QR).
-- **Los primitivos están AFINADOS para Trimly** (única edición permitida sobre ellos — solo clases, nunca lógica/API): alturas de formulario h-9, padding px-3, jerarquía tipográfica (labels `text-sm font-medium`, CardTitle `text-base font-semibold`, DialogTitle `text-lg`), tabla con `TableHead` uppercase muted y celdas `py-3`, sombras por escala (popover `shadow-md`, dialog `shadow-lg`). Al instalar una pieza nueva con el CLI, re-afinarla con estos mismos criterios.
+- **Los primitivos están AFINADOS para Barion** (única edición permitida sobre ellos — solo clases, nunca lógica/API): alturas de formulario h-9, padding px-3, jerarquía tipográfica (labels `text-sm font-medium`, CardTitle `text-base font-semibold`, DialogTitle `text-lg`), tabla con `TableHead` uppercase muted y celdas `py-3`, sombras por escala (popover `shadow-md`, dialog `shadow-lg`). Al instalar una pieza nueva con el CLI, re-afinarla con estos mismos criterios.
 
 ## Datos, formato y regiones
 
 - La API entrega crudo: **centavos + ISO 4217, timestamps UTC, códigos**. **TODO formateo vive en `shared/utils`** — prohibido `Intl.*`/`toLocaleString`/`toFixed` en componentes:
   - `datetime.ts` (timezone de la SEDE por parámetro), `currency.ts` (`formatMoney`), `numbers.ts`, `i18n.ts` (formateadores Intl memoizados).
 - Multi-región: `config/regiones.ts` (CO/COP, US/USD, ES/EUR — agregar país = una entrada) → `TenantProvider` carga la config del tenant UNA vez → componentes usan `useFormato()` (`@shared/hooks`) que inyecta moneda/locale/timezone.
-- Trimly no procesa pagos de clientes finales ni asume costos de mensajería (BYO por barbería).
+- Barion no procesa pagos de clientes finales ni asume costos de mensajería (BYO por barbería).
 
 ## Reutilización (`shared/`)
 

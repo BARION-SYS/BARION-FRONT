@@ -38,7 +38,7 @@ export default function LoginPage() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <Scissors className="h-4 w-4 text-primary-foreground" aria-hidden />
           </div>
-          <span className="text-base font-bold text-foreground">TRIMLY</span>
+          <span className="text-base font-bold text-foreground">BARION</span>
         </div>
         <Login onSubmit={onSubmitLogin} cargando={loadingLogin} error={error} />
       </div>

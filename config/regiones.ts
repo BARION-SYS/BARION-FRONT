@@ -1,4 +1,4 @@
-// Regiones donde opera Trimly. Agregar un país = agregar una entrada aquí.
+// Regiones donde opera Barion. Agregar un país = agregar una entrada aquí.
 // La config real de cada tenant llega de la API; esto define los valores por región.
 
 export type CodigoRegion = "CO" | "US" | "ES"

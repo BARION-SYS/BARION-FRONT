@@ -1,4 +1,4 @@
-# trimly (front) — DESARROLLO
+# barion (front) — DESARROLLO
 # El código se monta por volumen desde el compose del repo padre (hot reload de next dev).
 # node_modules vive en un volumen anónimo del contenedor.
 

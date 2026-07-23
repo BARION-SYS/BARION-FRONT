@@ -1,6 +1,6 @@
-# trimly (front)
+# barion (front)
 
-Frontend de Trimly — SaaS multi-tenant para barberías. Next.js (App Router) + TypeScript + Tailwind 4 + shadcn. **PWA instalable — no hay app nativa.**
+Frontend de Barion — SaaS multi-tenant para barberías. Next.js (App Router) + TypeScript + Tailwind 4 + shadcn. **PWA instalable — no hay app nativa.**
 
 > **Estado: mock de UI.** Pantallas generadas con v0, sin integración con la API todavía. La arquitectura objetivo (features, hooks, singletons) está en [`CLAUDE.md`](./CLAUDE.md); el código migrará a ella al conectar la API.
 

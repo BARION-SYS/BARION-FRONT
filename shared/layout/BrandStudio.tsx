@@ -85,7 +85,7 @@ function PreviewPanel({ tokens }: { tokens: Record<string, string> }) {
             <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary">
               <Scissors className="size-3 text-primary-foreground" />
             </span>
-            <span className="text-[9px] font-bold">TRIMLY</span>
+            <span className="text-[9px] font-bold">BARION</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-1.5 text-[9px] font-medium text-primary">
             <LayoutDashboard className="size-3" /> Dashboard

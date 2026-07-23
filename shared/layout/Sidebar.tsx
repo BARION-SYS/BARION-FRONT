@@ -35,7 +35,7 @@ export function Sidebar({
   const [montado, setMontado] = useState(false)
   useEffect(() => setMontado(true), [])
   const logoSrc =
-    montado && resolvedTheme === "light" ? "/trimly-logo-claro.webp" : "/trimly-logo-oscuro.webp"
+    montado && resolvedTheme === "light" ? "/barion-logo-claro.webp" : "/barion-logo-oscuro.webp"
 
   const alCerrarSesion = () => {
     cerrarSesion()
@@ -78,14 +78,14 @@ export function Sidebar({
           {/* Logo completo (ícono + nombre); colapsado queda solo el ícono */}
           <Image
             src={logoSrc}
-            alt="Trimly"
+            alt="Barion"
             width={200}
             height={56}
             className={cn("h-14 w-auto shrink-0 object-contain", colapsada && "lg:hidden")}
           />
           <Image
-            src="/trimly-icono-claro.webp"
-            alt="Trimly"
+            src="/barion-icono-claro.webp"
+            alt="Barion"
             width={48}
             height={48}
             className={cn("hidden h-12 w-12 shrink-0 object-contain", colapsada && "lg:block")}

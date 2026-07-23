@@ -1,4 +1,4 @@
-# trimly (front) — PRODUCCIÓN (multi-stage, Next.js standalone)
+# barion (front) — PRODUCCIÓN (multi-stage, Next.js standalone)
 # Requiere `output: 'standalone'` en next.config.mjs — activarlo al pasar del mock a producción.
 
 # ---------- Stage 1: dependencias ----------
@@ -27,13 +27,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup -S trimly && adduser -S trimly -G trimly
+RUN addgroup -S barion && adduser -S barion -G barion
 
-COPY --from=build --chown=trimly:trimly /app/.next/standalone ./
-COPY --from=build --chown=trimly:trimly /app/.next/static ./.next/static
-COPY --from=build --chown=trimly:trimly /app/public ./public
+COPY --from=build --chown=barion:barion /app/.next/standalone ./
+COPY --from=build --chown=barion:barion /app/.next/static ./.next/static
+COPY --from=build --chown=barion:barion /app/public ./public
 
-USER trimly
+USER barion
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
 

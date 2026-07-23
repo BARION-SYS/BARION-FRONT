@@ -11,7 +11,7 @@
     { "clave": "citas-qr", "titulo": "Citas desde QR", "valor": "5", "icono": "Link" }
   ],
   "enlace": {
-    "url": "https://trimly.mx/b/el-rey-barber",
+    "url": "https://barion.mx/b/el-rey-barber",
     "nombreBarberia": "Barbería El Rey"
   },
   "capacidades": [

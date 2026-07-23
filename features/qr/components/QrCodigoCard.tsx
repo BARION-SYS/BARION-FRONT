@@ -1,4 +1,9 @@
+"use client"
+
+import { useEffect, useRef } from "react"
+import { useTheme } from "next-themes"
 import { Check, Copy, Download, Share2 } from "lucide-react"
+import QRCodeStyling from "qr-code-styling"
 import { Card } from "@shared/components/ui/card"
 import { Button } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
@@ -10,109 +15,82 @@ interface PropsCodigoQr {
   onCopiar: () => void
 }
 
+// QR REAL (qr-code-styling): codifica la URL de reservas, escaneable.
+// Siempre sobre placa blanca — el contraste de escaneo no depende del tema.
+// Módulos redondeados oscuros + esquinas con el color de marca + logo al centro.
+function crearQr(url: string, colorMarca: string): QRCodeStyling {
+  return new QRCodeStyling({
+    width: 232,
+    height: 232,
+    type: "svg",
+    data: url,
+    image: "/barion-icon-light.webp",
+    margin: 0,
+    qrOptions: { errorCorrectionLevel: "H" },
+    imageOptions: { margin: 4, imageSize: 0.32 },
+    dotsOptions: { type: "rounded", color: "#18181b" },
+    cornersSquareOptions: { type: "extra-rounded", color: colorMarca },
+    cornersDotOptions: { type: "dot", color: "#18181b" },
+    backgroundOptions: { color: "#ffffff" },
+  })
+}
+
+// Marca legible sobre blanco: si el primario del tenant es muy claro, cae a oscuro.
+function colorMarcaEscaneable(): string {
+  const primario = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim()
+  if (!/^#[0-9a-f]{6}$/i.test(primario)) return "#8f6b21"
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(primario.slice(i, i + 2), 16) / 255)
+  const luminancia = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  return luminancia > 0.6 ? "#18181b" : primario
+}
+
 export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: PropsCodigoQr) {
+  const contenedorRef = useRef<HTMLDivElement>(null)
+  const qrRef = useRef<QRCodeStyling | null>(null)
+  const { resolvedTheme } = useTheme()
+
+  // Pinta/actualiza el QR; se re-tiñe al cambiar el tema (el token --primary cambia).
+  useEffect(() => {
+    if (!contenedorRef.current) return
+    const color = colorMarcaEscaneable()
+    if (!qrRef.current) {
+      qrRef.current = crearQr(url, color)
+      qrRef.current.append(contenedorRef.current)
+    } else {
+      qrRef.current.update({ data: url, cornersSquareOptions: { color } })
+    }
+  }, [url, resolvedTheme])
+
+  const descargar = () => {
+    void qrRef.current?.download({ name: "barion-qr-reservas", extension: "png" })
+  }
+
+  const compartir = () => {
+    if (navigator.share) {
+      void navigator.share({ title: nombreBarberia, url }).catch(() => {})
+    } else {
+      onCopiar()
+    }
+  }
+
   return (
-    <Card className="items-center p-6">
+    <Card className="w-full items-center self-start p-6">
       <div className="text-center">
-        <p className="text-sm font-semibold text-foreground">Código QR de la Barbería</p>
+        <p className="text-sm font-semibold text-foreground">Código QR de la barbería</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           Muéstralo en tu local o compártelo digitalmente
         </p>
       </div>
 
-      {/* QR simulado — fondo claro sobre foreground para contraste de escaneo */}
-      <div className="mt-1 mb-2 rounded-2xl bg-foreground p-5 shadow-lg">
-        <svg
-          width="160"
-          height="160"
-          viewBox="0 0 160 160"
-          className="block"
+      {/* Placa blanca con marco — contraste de escaneo garantizado en ambos temas */}
+      <div className="relative mt-1 mb-2 overflow-hidden rounded-2xl bg-white p-5 shadow-lg ring-1 ring-border">
+        <div className="cinta-barberia absolute inset-x-0 top-0 h-1" aria-hidden />
+        <div
+          ref={contenedorRef}
+          className="block [&_svg]:block"
           role="img"
           aria-label={`Código QR del enlace de reservas de ${nombreBarberia}`}
-        >
-          {[0, 1, 2, 3, 4, 5, 6].map((fila) =>
-            [0, 1, 2, 3, 4, 5, 6].map((col) => {
-              const esEsquina =
-                (fila < 3 && col < 3) || (fila < 3 && col > 3) || (fila > 3 && col < 3)
-              const semilla = (fila * 7 + col * 3 + fila + col) % 2
-              return esEsquina || semilla === 0 ? (
-                <rect
-                  key={`${fila}-${col}`}
-                  x={col * 20 + 20}
-                  y={fila * 20 + 20}
-                  width="16"
-                  height="16"
-                  rx="2"
-                  fill="var(--background)"
-                />
-              ) : null
-            })
-          )}
-          {/* Cuadros de esquina */}
-          <rect
-            x="20"
-            y="20"
-            width="56"
-            height="56"
-            rx="6"
-            fill="none"
-            stroke="var(--background)"
-            strokeWidth="5"
-          />
-          <rect
-            x="84"
-            y="20"
-            width="56"
-            height="56"
-            rx="6"
-            fill="none"
-            stroke="var(--background)"
-            strokeWidth="5"
-          />
-          <rect
-            x="20"
-            y="84"
-            width="56"
-            height="56"
-            rx="6"
-            fill="none"
-            stroke="var(--background)"
-            strokeWidth="5"
-          />
-          <rect x="36" y="36" width="24" height="24" rx="3" fill="var(--background)" />
-          <rect x="100" y="36" width="24" height="24" rx="3" fill="var(--background)" />
-          <rect x="36" y="100" width="24" height="24" rx="3" fill="var(--background)" />
-          {/* Módulos de datos */}
-          {Array.from({ length: 36 }, (_, i) => {
-            const fila = Math.floor(i / 6)
-            const col = i % 6
-            if ((fila + col) % 2 === 0)
-              return (
-                <rect
-                  key={`dato-${i}`}
-                  x={84 + col * 10 + 2}
-                  y={84 + fila * 10 + 2}
-                  width="8"
-                  height="8"
-                  rx="1"
-                  fill="var(--background)"
-                />
-              )
-            return null
-          })}
-          {/* Logo central */}
-          <rect x="65" y="65" width="30" height="30" rx="6" fill="var(--primary)" />
-          <text
-            x="80"
-            y="85"
-            textAnchor="middle"
-            fontSize="14"
-            fill="var(--primary-foreground)"
-            fontWeight="bold"
-          >
-            T
-          </text>
-        </svg>
+        />
       </div>
 
       <div className="max-w-full min-w-0 text-center">
@@ -123,14 +101,16 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: PropsCo
       <div className="mt-auto grid w-full grid-cols-3 gap-2">
         <Button
           variant="secondary"
-          className="h-auto min-h-9 cursor-pointer flex-col gap-1.5 py-3 text-muted-foreground hover:text-foreground motion-reduce:transition-none"
+          onClick={descargar}
+          className="h-auto min-h-11 cursor-pointer flex-col gap-1.5 py-3 text-muted-foreground hover:text-foreground motion-reduce:transition-none"
         >
           <Download aria-hidden />
           <span className="text-[10px]">Descargar</span>
         </Button>
         <Button
           variant="secondary"
-          className="h-auto min-h-9 cursor-pointer flex-col gap-1.5 py-3 text-muted-foreground hover:text-foreground motion-reduce:transition-none"
+          onClick={compartir}
+          className="h-auto min-h-11 cursor-pointer flex-col gap-1.5 py-3 text-muted-foreground hover:text-foreground motion-reduce:transition-none"
         >
           <Share2 aria-hidden />
           <span className="text-[10px]">Compartir</span>
@@ -139,7 +119,7 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: PropsCo
           variant="secondary"
           onClick={onCopiar}
           className={cn(
-            "h-auto min-h-9 cursor-pointer flex-col gap-1.5 py-3 motion-reduce:transition-none",
+            "h-auto min-h-11 cursor-pointer flex-col gap-1.5 py-3 motion-reduce:transition-none",
             copiado
               ? "border-(--exito)/40 bg-(--exito)/10 text-(--exito)"
               : "text-muted-foreground hover:text-foreground"

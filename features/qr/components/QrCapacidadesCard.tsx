@@ -7,11 +7,11 @@ interface PropsCapacidadesQr {
 export function QrCapacidadesCard({ capacidades }: PropsCapacidadesQr) {
   return (
     <SectionCard titulo="Al escanear el QR el cliente puede">
-      <ol className="space-y-2">
+      <ol className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">
         {capacidades.map((capacidad, i) => (
           <li key={capacidad} className="flex items-center gap-2.5 text-xs text-muted-foreground">
             <span
-              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[8px] font-bold text-primary"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[9px] font-bold text-primary tabular-nums"
               aria-hidden
             >
               {i + 1}

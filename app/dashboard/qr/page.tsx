@@ -37,49 +37,48 @@ export default function QrPage() {
 
   if (loadingQr) {
     return (
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">
-        <div className="mx-auto max-w-4xl space-y-5">
-          <DataSkeleton variant="stats" count={3} className="grid-cols-1 sm:grid-cols-3" />
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <DataSkeleton variant="card" />
-            <DataSkeleton variant="list" count={4} />
-          </div>
+      <main className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 md:p-6">
+        <DataSkeleton variant="stats" count={3} className="grid-cols-1 sm:grid-cols-3" />
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <DataSkeleton variant="card" />
+          <DataSkeleton variant="list" count={4} />
         </div>
       </main>
     )
   }
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6">
-      <div className="mx-auto max-w-4xl space-y-5">
-        <section aria-label="Estadísticas del código QR">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {estadisticas.map((estadistica) => (
-              <StatCard
-                key={estadistica.clave}
-                titulo={estadistica.titulo}
-                valor={estadistica.valor}
-                icono={estadistica.icono}
-                acento={estadistica.acento}
-              />
-            ))}
-          </div>
-        </section>
+    // Móvil: scroll de página. lg+: app-like — alto completo, columnas con scroll propio.
+    <main className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 md:p-6 lg:overflow-hidden">
+      <section aria-label="Estadísticas del código QR" className="shrink-0">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {estadisticas.map((estadistica) => (
+            <StatCard
+              key={estadistica.clave}
+              titulo={estadistica.titulo}
+              valor={estadistica.valor}
+              icono={estadistica.icono}
+              acento={estadistica.acento}
+            />
+          ))}
+        </div>
+      </section>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {enlace && (
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:min-h-0 lg:flex-1 lg:grid-cols-[380px_minmax(0,1fr)]">
+        {enlace && (
+          <div className="scroll-fino flex lg:min-h-0 lg:overflow-y-auto">
             <QrCodigoCard
               nombreBarberia={enlace.nombreBarberia}
               url={enlace.url}
               copiado={copiado}
               onCopiar={copiarEnlace}
             />
-          )}
-          <div className="space-y-4">
-            {enlace && <QrEnlaceCard url={enlace.url} copiado={copiado} onCopiar={copiarEnlace} />}
-            <QrCapacidadesCard capacidades={capacidades} />
-            <QrEscaneosList escaneos={escaneos} />
           </div>
+        )}
+        <div className="scroll-fino space-y-4 lg:min-h-0 lg:overflow-y-auto lg:pr-0.5">
+          {enlace && <QrEnlaceCard url={enlace.url} copiado={copiado} onCopiar={copiarEnlace} />}
+          <QrCapacidadesCard capacidades={capacidades} />
+          <QrEscaneosList escaneos={escaneos} />
         </div>
       </div>
 

@@ -140,3 +140,50 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+  Cinta de barbería — franja diagonal animada de la marca (login, acentos).
+  Usa tokens, funciona en ambos temas. El desplazamiento equivale a un periodo
+  del patrón (40px / sin 45° ≈ 56.57px) para que el bucle sea continuo.
+*/
+@layer utilities {
+  /* Scrollbar fino y tematizado para áreas con scroll interno (calendario, paneles) */
+  .scroll-fino {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .scroll-fino::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scroll-fino::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 9999px;
+  }
+  .scroll-fino::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .cinta-barberia {
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--primary) 0 10px,
+      transparent 10px 20px,
+      var(--destructive) 20px 30px,
+      transparent 30px 40px
+    );
+    animation: cinta-desplazamiento 2.4s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cinta-barberia {
+      animation: none;
+    }
+  }
+}
+
+@keyframes cinta-desplazamiento {
+  to {
+    background-position: 56.57px 0;
+  }
+}

@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react"
+import { Plus, Users } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
@@ -17,7 +17,17 @@ interface Props {
 export function ClientesList({ clientes, seleccionadoId, onSeleccionar, onNuevo }: Props) {
   return (
     <>
-      <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto" aria-label="Clientes">
+      <p
+        className="px-1 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground/80 uppercase"
+        aria-live="polite"
+      >
+        {clientes.length} {clientes.length === 1 ? "cliente" : "clientes"}
+      </p>
+
+      <ul
+        className="scroll-fino space-y-1.5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
+        aria-label="Clientes"
+      >
         {clientes.map((c) => {
           const config = configEtiquetaCliente[c.etiqueta]
           const seleccionado = c.id === seleccionadoId
@@ -28,21 +38,33 @@ export function ClientesList({ clientes, seleccionadoId, onSeleccionar, onNuevo 
                 onClick={() => onSeleccionar(c.id)}
                 aria-pressed={seleccionado}
                 className={cn(
-                  "min-h-9 w-full cursor-pointer rounded-xl border p-3 text-left transition-colors motion-reduce:transition-none",
+                  "relative min-h-11 w-full cursor-pointer overflow-hidden rounded-xl border p-3 text-left transition-colors motion-reduce:transition-none",
                   "focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none",
                   seleccionado
                     ? "border-primary/40 bg-primary/5"
                     : "border-border bg-card hover:bg-secondary"
                 )}
               >
+                {/* Indicador de selección */}
+                <span
+                  className={cn(
+                    "absolute inset-y-2 left-0 w-0.5 rounded-full bg-primary transition-opacity",
+                    seleccionado ? "opacity-100" : "opacity-0"
+                  )}
+                  aria-hidden
+                />
                 <div className="flex items-center gap-3">
-                  <InitialsAvatar iniciales={c.iniciales} color={config.color} className="size-9" />
+                  <InitialsAvatar
+                    iniciales={c.iniciales}
+                    color={config.color}
+                    className="size-10"
+                  />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="truncate text-xs font-semibold text-foreground">{c.nombre}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-semibold text-foreground">{c.nombre}</p>
                       <StatusBadge etiqueta={c.etiqueta} tono={config.tono} />
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
                       <span className="tabular-nums">{c.visitas}</span> visitas · {c.ultimaVisita}
                     </p>
                   </div>
@@ -52,13 +74,15 @@ export function ClientesList({ clientes, seleccionadoId, onSeleccionar, onNuevo 
           )
         })}
         {clientes.length === 0 && (
-          <li className="py-6 text-center text-xs text-muted-foreground">
-            Sin resultados para la búsqueda
+          <li className="flex flex-col items-center py-8 text-muted-foreground">
+            <Users className="size-8 opacity-30" aria-hidden />
+            <p className="mt-2 text-xs font-medium">Sin resultados</p>
+            <p className="mt-0.5 text-[11px] opacity-80">Prueba con otro nombre o filtro</p>
           </li>
         )}
       </ul>
 
-      <Button size="lg" onClick={onNuevo} className="w-full cursor-pointer">
+      <Button size="lg" onClick={onNuevo} className="w-full cursor-pointer font-semibold">
         <Plus aria-hidden /> Nuevo cliente
       </Button>
     </>

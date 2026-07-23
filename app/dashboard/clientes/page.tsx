@@ -94,9 +94,10 @@ export default function ClientesPage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6 lg:flex-row">
+    // Móvil: scroll de página. lg+: app-like — alto fijo, lista y detalle scrollean por dentro.
+    <main className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6 lg:flex-row lg:overflow-hidden">
       <section
-        className="flex shrink-0 flex-col gap-3 lg:max-h-full lg:w-80"
+        className="flex shrink-0 flex-col gap-3 lg:min-h-0 lg:w-80"
         aria-label="Directorio de clientes"
       >
         <ClientesToolbar
@@ -116,7 +117,10 @@ export default function ClientesPage() {
         </Loadable>
       </section>
 
-      <section className="min-w-0 flex-1" aria-label="Detalle del cliente">
+      <section
+        className="scroll-fino min-w-0 flex-1 lg:min-h-0 lg:overflow-y-auto"
+        aria-label="Detalle del cliente"
+      >
         {error ? (
           <p className="text-sm text-destructive" role="alert">
             {error}
@@ -124,7 +128,8 @@ export default function ClientesPage() {
         ) : seleccionado ? (
           <ClientesDetail
             cliente={seleccionado}
-            historial={loadingHistorial ? [] : historial}
+            historial={historial}
+            cargandoHistorial={loadingHistorial}
             onEditar={abrirEditar}
             onEliminar={setClienteAEliminar}
           />

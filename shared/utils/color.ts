@@ -70,8 +70,10 @@ export function variantesFondo(hex: string): { claro: string; oscuro: string } {
   const c = hexAHsl(hex)
   const sat = Math.min(c.s, 35)
   return {
-    claro: hslAHex({ h: c.h, s: Math.min(sat, 22), l: 97 }),
-    oscuro: hslAHex({ h: c.h, s: sat, l: 7 }),
+    // claro con l:87: el matiz elegido se PERCIBE con cuerpo — con l alto todo quedaba blanco
+    claro: hslAHex({ h: c.h, s: Math.min(sat, 32), l: 87 }),
+    // oscuro con l:10 (no 7): teñido pero legible — a 7 las superficies se empastaban
+    oscuro: hslAHex({ h: c.h, s: sat, l: 10 }),
   }
 }
 
@@ -97,9 +99,11 @@ function varsFondo(hex: string, esOscuro: boolean): Record<string, string> {
   const c = hexAHsl(hex)
   const tono = (l: number, sMax = c.s) => hslAHex({ h: c.h, s: Math.min(c.s, sMax), l })
   // Toda la escala de superficies sale del matiz del fondo: cards, hovers, bordes.
-  const card = esOscuro ? tono(10) : "#ffffff"
-  const superficie = esOscuro ? tono(13) : tono(94, 20)
-  const borde = esOscuro ? tono(17) : tono(89, 20)
+  // La card también se tiñe (no blanco puro): sidebar y navbar usan bg-card y
+  // deben acompañar el color global; sigue más clara que el fondo para resaltar.
+  const card = esOscuro ? tono(14) : tono(96, 18)
+  const superficie = esOscuro ? tono(19) : tono(82, 28)
+  const borde = esOscuro ? tono(25) : tono(76, 28)
   return {
     "--background": hex,
     "--foreground": foregroundPara(hex),

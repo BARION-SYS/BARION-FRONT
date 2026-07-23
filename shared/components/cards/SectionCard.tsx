@@ -25,7 +25,7 @@ export function SectionCard({ titulo, subtitulo, accion, className, children }: 
         {subtitulo && <CardDescription className="text-xs">{subtitulo}</CardDescription>}
         {accion && <CardAction>{accion}</CardAction>}
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col px-5">{children}</CardContent>
+      <CardContent className="flex min-h-0 flex-1 flex-col px-5">{children}</CardContent>
     </Card>
   )
 }

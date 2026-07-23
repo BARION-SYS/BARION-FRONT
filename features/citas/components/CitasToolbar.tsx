@@ -29,35 +29,39 @@ export function CitasToolbar({
 }: Props) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="icon-lg"
-          className="cursor-pointer"
-          aria-label="Semana anterior"
-        >
-          <ChevronLeft aria-hidden />
-        </Button>
-        <span className="text-sm font-semibold text-foreground tabular-nums">{rotulo}</span>
-        <Button
-          variant="outline"
-          size="icon-lg"
-          className="cursor-pointer"
-          aria-label="Semana siguiente"
-        >
-          <ChevronRight aria-hidden />
-        </Button>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="cursor-pointer"
+            aria-label="Semana anterior"
+          >
+            <ChevronLeft aria-hidden />
+          </Button>
+          <span className="min-w-32 px-1 text-center text-sm font-bold text-foreground capitalize tabular-nums">
+            {rotulo}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="cursor-pointer"
+            aria-label="Semana siguiente"
+          >
+            <ChevronRight aria-hidden />
+          </Button>
+        </div>
         <Button
           variant="outline"
           size="lg"
-          className="cursor-pointer text-xs text-muted-foreground"
+          className="cursor-pointer text-xs font-medium text-muted-foreground"
         >
           Hoy
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative">
+      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+        <div className="relative w-full sm:w-auto">
           <Search
             className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
             aria-hidden
@@ -66,7 +70,7 @@ export function CitasToolbar({
             type="search"
             placeholder="Buscar cita..."
             aria-label="Buscar cita"
-            className="h-9 w-44 pl-8 text-xs"
+            className="h-9 w-full rounded-full border-transparent bg-secondary/60 pl-8 text-xs transition-colors focus-visible:border-border focus-visible:bg-card sm:w-48"
             value={busqueda}
             onChange={(e) => alCambiarBusqueda(e.target.value)}
           />

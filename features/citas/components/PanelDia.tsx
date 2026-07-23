@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, Plus } from "lucide-react"
+import { CalendarDays, Clock } from "lucide-react"
 import { cn } from "@shared/utils/cn"
 import { Button } from "@shared/components/ui/button"
 import { SectionCard } from "@shared/components/cards/SectionCard"
@@ -19,33 +19,42 @@ export function PanelDia({ dia, mes, horas, citas, citaSeleccionada, alSeleccion
   return (
     <SectionCard
       titulo={`${dia.etiqueta} ${dia.fecha} de ${mes}`}
-      subtitulo={`${citas.length} citas programadas`}
-      className="shrink-0 xl:w-72"
+      subtitulo={`${citas.length} ${citas.length === 1 ? "cita programada" : "citas programadas"}`}
+      className="h-full min-h-0 w-full"
     >
       {citas.length === 0 ? (
-        <div className="flex h-32 flex-col items-center justify-center text-muted-foreground">
-          <CalendarDays className="size-8 opacity-30" aria-hidden />
-          <p className="mt-2 text-xs">Sin citas este día</p>
+        <div className="flex flex-1 flex-col items-center justify-center py-8 text-muted-foreground">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/60">
+            <CalendarDays className="size-5 opacity-50" aria-hidden />
+          </span>
+          <p className="mt-3 text-xs font-medium">Sin citas este día</p>
+          <p className="mt-0.5 text-[11px] opacity-80">El día está libre para agendar</p>
         </div>
       ) : (
-        <ul className="flex-1 space-y-2 overflow-y-auto">
+        <ul className="scroll-fino min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5">
           {citas.map((cita) => {
             const estado = configEstadoCita[cita.estado]
+            const seleccionada = citaSeleccionada?.id === cita.id
             return (
               <li key={cita.id}>
                 <Button
                   variant="ghost"
                   onClick={() => alSeleccionarCita(cita)}
+                  style={{ "--tono": cita.color } as React.CSSProperties}
                   className={cn(
-                    "h-auto w-full cursor-pointer flex-col items-stretch gap-1 rounded-lg border p-3 text-left whitespace-normal motion-reduce:transition-none",
-                    citaSeleccionada?.id === cita.id
-                      ? "border-primary/50 bg-primary/5 hover:bg-primary/10"
-                      : "border-border bg-secondary/50 hover:bg-secondary"
+                    "relative h-auto w-full cursor-pointer flex-col items-stretch gap-1.5 overflow-hidden rounded-lg border p-3 pl-4 text-left whitespace-normal transition-all motion-reduce:transition-none",
+                    seleccionada
+                      ? "border-(--tono)/60 bg-[color-mix(in_srgb,var(--tono)_10%,transparent)] shadow-sm hover:bg-[color-mix(in_srgb,var(--tono)_14%,transparent)]"
+                      : "border-border bg-secondary/40 hover:bg-secondary"
                   )}
                 >
+                  {/* Barra del color del barbero */}
+                  <span className="absolute inset-y-0 left-0 w-1 bg-(--tono)" aria-hidden />
+
                   <span className="flex items-center justify-between gap-2">
-                    <span className="truncate text-xs font-semibold text-foreground">
-                      {cita.cliente}
+                    <span className="flex items-center gap-1 rounded-md bg-[color-mix(in_srgb,var(--tono)_12%,transparent)] px-1.5 py-0.5 text-[10px] font-semibold text-(--tono) tabular-nums">
+                      <Clock className="size-2.5" aria-hidden />
+                      {horas[cita.horaInicio]}
                     </span>
                     <StatusBadge
                       etiqueta={estado.etiqueta}
@@ -53,17 +62,16 @@ export function PanelDia({ dia, mes, horas, citas, citaSeleccionada, alSeleccion
                       icono={estado.icono}
                     />
                   </span>
-                  <span className="text-[11px] font-normal text-muted-foreground">
+
+                  <span className="truncate text-sm font-semibold text-foreground">
+                    {cita.cliente}
+                  </span>
+                  <span className="truncate text-[11px] leading-tight font-normal text-muted-foreground">
                     {cita.servicio}
                   </span>
-                  <span className="flex items-center gap-3">
-                    <span className="flex items-center gap-1 text-[10px] font-normal text-muted-foreground tabular-nums">
-                      <Clock className="size-2.5" aria-hidden /> {horas[cita.horaInicio]}
-                    </span>
-                    <span
-                      className="text-[10px] font-normal text-(--tono)"
-                      style={{ "--tono": cita.color } as React.CSSProperties}
-                    >
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-(--tono)" aria-hidden />
+                    <span className="truncate text-[10px] font-normal text-muted-foreground">
                       {cita.barbero}
                     </span>
                   </span>
@@ -73,16 +81,6 @@ export function PanelDia({ dia, mes, horas, citas, citaSeleccionada, alSeleccion
           })}
         </ul>
       )}
-
-      <div className="mt-4 border-t border-border pt-4">
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full cursor-pointer border-primary/30 bg-primary/10 text-xs font-semibold text-primary hover:bg-primary/20 hover:text-primary"
-        >
-          <Plus aria-hidden /> Agendar en este día
-        </Button>
-      </div>
     </SectionCard>
   )
 }

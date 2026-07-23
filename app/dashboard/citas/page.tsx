@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { motion } from "motion/react"
 import { CitasToolbar } from "@features/citas/components/CitasToolbar"
+import { CitasList } from "@features/citas/components/CitasList"
 import { GrillaSemana } from "@features/citas/components/GrillaSemana"
 import { PanelDia } from "@features/citas/components/PanelDia"
 import { CitasDetail } from "@features/citas/components/CitasDetail"
@@ -102,7 +104,8 @@ export default function CitasPage() {
   const cargando = loadingCitas || !semana
 
   return (
-    <main className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6">
+    // Móvil: scroll de página. md+: app-like — el alto es fijo y scrollean las áreas internas.
+    <main className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 md:overflow-hidden md:p-6">
       <CitasToolbar
         rotulo={semana?.rotulo ?? ""}
         vista={vista}
@@ -128,21 +131,48 @@ export default function CitasPage() {
       {!error && !cargando && semana && (
         <>
           <div className="flex min-h-0 flex-1 flex-col gap-4 xl:flex-row">
-            <GrillaSemana
-              semana={semana}
-              citas={citasFiltradas}
-              diaSeleccionado={diaSeleccionado}
-              alSeleccionarDia={setDiaSeleccionado}
-              alSeleccionarCita={setCitaSeleccionada}
-            />
-            <PanelDia
-              dia={semana.dias[diaSeleccionado]}
-              mes={semana.mes}
-              horas={semana.horas}
-              citas={citasDelDia}
-              citaSeleccionada={citaSeleccionada}
-              alSeleccionarCita={setCitaSeleccionada}
-            />
+            <motion.div
+              key={vista}
+              className="flex min-h-0 min-w-0 flex-1"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.08 }}
+            >
+              {vista === "lista" ? (
+                <CitasList
+                  semana={semana}
+                  citas={citasFiltradas}
+                  alSeleccionarCita={setCitaSeleccionada}
+                />
+              ) : (
+                <GrillaSemana
+                  semana={semana}
+                  citas={citasFiltradas}
+                  diaSeleccionado={diaSeleccionado}
+                  alSeleccionarDia={setDiaSeleccionado}
+                  alSeleccionarCita={setCitaSeleccionada}
+                  vista={vista}
+                />
+              )}
+            </motion.div>
+            {/* Panel lateral solo en vista semana y xl+: el detalle del día vive al costado */}
+            {vista === "semana" && (
+              <motion.div
+                className="hidden min-h-0 shrink-0 xl:flex xl:w-72"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.08 }}
+              >
+                <PanelDia
+                  dia={semana.dias[diaSeleccionado]}
+                  mes={semana.mes}
+                  horas={semana.horas}
+                  citas={citasDelDia}
+                  citaSeleccionada={citaSeleccionada}
+                  alSeleccionarCita={setCitaSeleccionada}
+                />
+              </motion.div>
+            )}
           </div>
 
           <CitasDetail

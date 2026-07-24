@@ -54,6 +54,16 @@ export function formatDateTime(
   }).format(typeof value === "string" ? new Date(value) : value)
 }
 
+export function formatWeekdayShort(
+  value: string | Date,
+  timeZone: string,
+  locale = DEFAULT_LOCALE
+): string {
+  return getDateTimeFormat(locale, { weekday: "short", timeZone }).format(
+    typeof value === "string" ? new Date(value) : value
+  )
+}
+
 export function formatWeekday(
   value: string | Date,
   timeZone: string,

@@ -8,6 +8,7 @@ import {
   formatShortDate,
   formatTime,
   formatWeekday,
+  formatWeekdayShort,
 } from "@shared/utils/datetime"
 import { formatCompact, formatNumber, formatPercent } from "@shared/utils/numbers"
 
@@ -23,6 +24,7 @@ export function useFormato() {
     fechaCorta: (valor: string | Date) => formatShortDate(valor, timezone, locale),
     fechaHora: (valor: string | Date) => formatDateTime(valor, timezone, locale),
     diaSemana: (valor: string | Date) => formatWeekday(valor, timezone, locale),
+    diaSemanaCorto: (valor: string | Date) => formatWeekdayShort(valor, timezone, locale),
     numero: (valor: number) => formatNumber(valor, locale),
     porcentaje: (valor: number) => formatPercent(valor, locale),
     compacto: (valor: number) => formatCompact(valor, locale),

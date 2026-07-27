@@ -15,6 +15,14 @@ export interface ApiEnvelope<T> {
   pagination?: PaginationInfo | null
 }
 
+// Contrato de error de la API: { error: { message, status }, meta }. El campo
+// `message` suelto queda como respaldo para errores que no pasan por su filtro
+// global (un 502 del proxy, por ejemplo).
+export interface ApiErrorEnvelope {
+  error?: { message?: string; status?: number }
+  message?: string
+}
+
 // Lo normalizado por ApiClient — lo que recibe el service.
 export interface ApiResult<T> {
   data: T

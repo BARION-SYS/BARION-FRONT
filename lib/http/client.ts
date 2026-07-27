@@ -4,7 +4,12 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
 } from "axios"
-import type { ApiEnvelope, ApiResult, HttpError } from "@shared/types/api.types"
+import type {
+  ApiEnvelope,
+  ApiErrorEnvelope,
+  ApiResult,
+  HttpError,
+} from "@shared/types/api.types"
 
 // Solo la clase — las instancias nombradas viven en lib/http/instances.ts.
 // Sin Content-Type fijo: axios pone application/json para objetos y
@@ -13,20 +18,27 @@ export class ApiClient {
   private readonly instance: AxiosInstance
 
   constructor(baseURL: string, options?: AxiosRequestConfig) {
-    this.instance = axios.create({ baseURL, timeout: 15000, ...options })
-
-    this.instance.interceptors.request.use((config) => {
-      // Al integrar auth real: leer token de la sesión y agregar Authorization.
-      return config
+    // withCredentials: la sesión viaja en una cookie httpOnly que pone la API.
+    // El navegador NO la manda en peticiones cross-origin sin esto, y el front
+    // (puerto 2203) y la API (4000) son orígenes distintos incluso en local.
+    // No hay token que leer ni cabecera que agregar: por eso el interceptor de
+    // request ya no existe.
+    this.instance = axios.create({
+      baseURL,
+      timeout: 15000,
+      withCredentials: true,
+      ...options,
     })
 
     this.instance.interceptors.response.use(
       (response) => response,
-      (error: AxiosError<{ message?: string }>) => {
+      (error: AxiosError<ApiErrorEnvelope>) => {
+        const cuerpo = error.response?.data
         const normalized: HttpError = {
           status: error.response?.status ?? 0,
-          message: error.response?.data?.message ?? error.message,
-          detail: error.response?.data,
+          // La API responde { error: { message, status } }, no { message }.
+          message: cuerpo?.error?.message ?? cuerpo?.message ?? error.message,
+          detail: cuerpo,
         }
         return Promise.reject(normalized)
       }

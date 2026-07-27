@@ -9,6 +9,11 @@ FROM node:22-slim
 WORKDIR /app
 RUN npm install -g pnpm@10
 
+# Aquí no se instala nada al construir, pero `make add-web` sí corre `pnpm add`
+# dentro del contenedor. Sin esto pnpm deja su store en `/app/.pnpm-store`, que
+# por el bind mount es el repo del host, y con dueño root.
+ENV npm_config_store_dir=/pnpm-store
+
 EXPOSE 2203
 ENV NEXT_TELEMETRY_DISABLED=1
 

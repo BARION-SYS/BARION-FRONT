@@ -4,12 +4,7 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
 } from "axios"
-import type {
-  ApiEnvelope,
-  ApiErrorEnvelope,
-  ApiResult,
-  HttpError,
-} from "@shared/types/api.types"
+import type { ApiEnvelope, ApiErrorEnvelope, ApiResult, HttpError } from "@shared/types/api.types"
 
 // Solo la clase — las instancias nombradas viven en lib/http/instances.ts.
 // Sin Content-Type fijo: axios pone application/json para objetos y

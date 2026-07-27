@@ -57,7 +57,13 @@ export function Login({ onSubmit, cargando, error }: LoginProps) {
     formState: { errors, isSubmitting },
   } = useForm<DatosLogin>({
     resolver: standardSchemaResolver(esquemaLogin),
-    defaultValues: { correo: "admin@elrey.mx", contrasena: "12345678", recordarme: true },
+    // Credenciales del seed de desarrollo (BARION-DB/prisma/seed.ts).
+    defaultValues: {
+      barberiaSlug: "barberia-el-corte",
+      correo: "propietario@elcorte.co",
+      contrasena: "Barion2026!",
+      recordarme: true,
+    },
   })
 
   const enviar = handleSubmit(async (datos) => {
@@ -98,6 +104,21 @@ export function Login({ onSubmit, cargando, error }: LoginProps) {
         </motion.div>
 
         <form className="mt-8 space-y-5" onSubmit={enviar} noValidate>
+          <motion.div variants={bloque}>
+            <Field data-invalid={!!errors.barberiaSlug}>
+              <FieldLabel htmlFor="barberiaSlug">Barbería</FieldLabel>
+              <Input
+                id="barberiaSlug"
+                autoComplete="organization"
+                placeholder="barberia-el-corte"
+                aria-invalid={!!errors.barberiaSlug}
+                className="h-11"
+                {...register("barberiaSlug")}
+              />
+              <FieldError errors={[errors.barberiaSlug]} />
+            </Field>
+          </motion.div>
+
           <motion.div variants={bloque}>
             <Field data-invalid={!!errors.correo}>
               <FieldLabel htmlFor="correo">Correo electrónico</FieldLabel>

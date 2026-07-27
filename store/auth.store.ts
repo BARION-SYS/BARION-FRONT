@@ -1,21 +1,29 @@
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import type { Sesion } from "@features/auth/types/auth.types"
+import type { Sesion, SesionActual } from "@features/auth/types/auth.types"
 
 interface AuthState {
-  sesion: Sesion | null
-  setSesion: (sesion: Sesion) => void
+  sesion: Sesion | SesionActual | null
+  /** `false` hasta que el intento de rehidratar termina (haya sesión o no). */
+  hidratada: boolean
+  setSesion: (sesion: Sesion | SesionActual) => void
+  setHidratada: (hidratada: boolean) => void
   cerrarSesion: () => void
 }
 
 // Store global de sesión — solo estado (set/get), nunca llama services.
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      sesion: null,
-      setSesion: (sesion) => set({ sesion }),
-      cerrarSesion: () => set({ sesion: null }),
-    }),
-    { name: "barion-auth" }
-  )
-)
+//
+// SIN `persist`: la sesión de verdad es la cookie httpOnly, que este código no
+// puede leer. Guardar una copia en localStorage crearía una segunda verdad que
+// sobrevive a la cookie: al caducar el token el panel seguiría pintándose como
+// autenticado y cada petición devolvería 401. Se rehidrata contra `/auth/yo`,
+// que es la única fuente que sabe si la sesión sigue viva.
+//
+// `hidratada` existe para distinguir "no hay sesión" de "todavía no se sabe" —
+// sin esa distinción, un guard de ruta expulsa al usuario en cada recarga.
+export const useAuthStore = create<AuthState>()((set) => ({
+  sesion: null,
+  hidratada: false,
+  setSesion: (sesion) => set({ sesion, hidratada: true }),
+  setHidratada: (hidratada) => set({ hidratada }),
+  cerrarSesion: () => set({ sesion: null, hidratada: true }),
+}))

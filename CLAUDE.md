@@ -1,8 +1,15 @@
 # CLAUDE.md — barion (front)
 
-Frontend de Barion — SaaS multi-tenant para barberías (Colombia base; opera también en EE. UU. y España). Next.js App Router. **PWA — no existe app nativa.** Consume la API de `barion-api` (`/v1`); los tipos de las respuestas son **propios de este repo**. Arquitectura diseñada para conectar la API real sin refactorizar estructura.
+Frontend de Barion — SaaS multi-tenant para barberías (Colombia base; opera también en EE. UU. y España). Next.js App Router. **PWA — no existe app nativa.** Consume la API de `barion-api` (`/api/v1` — prefijo global + versión); los tipos de las respuestas son **propios de este repo**. Arquitectura diseñada para conectar la API real sin refactorizar estructura.
 
-**Estado actual: mock de UI.** La data mock de cada feat vive en `constants/[feat].json`; el service es el ÚNICO que la importa y la sirve con la MISMA forma `ApiResult<T>` — al integrar solo cambia el cuerpo del service (JSON → `api.get/post/...`). Los íconos van en el JSON como nombre (string) y el service los mapea a componentes Lucide.
+**Estado actual: mock de UI, EXCEPTO `auth`.** La data mock de cada feat vive en `constants/[feat].json`; el service es el ÚNICO que la importa y la sirve con la MISMA forma `ApiResult<T>` — al integrar solo cambia el cuerpo del service (JSON → `api.get/post/...`). Los íconos van en el JSON como nombre (string) y el service los mapea a componentes Lucide.
+
+**`auth` ya es real** y marca el patrón para los demás:
+
+- La sesión viaja en una **cookie httpOnly** que este código no puede leer. No hay token que guardar ni cabecera que poner: basta `withCredentials` en el `ApiClient`.
+- El login **solo autentica** — identifica por correo, que es único; no se pide la barbería. Su respuesta se ignora a propósito.
+- **`GET /auth/me` es la ÚNICA fuente de la sesión**, tras entrar y tras cada recarga. Dos orígenes para lo mismo acaban siendo dos verdades.
+- El store **no persiste**: la verdad es la cookie, y una copia en localStorage le sobrevive — el panel seguiría pintándose autenticado mientras cada petición devuelve 401. `hidratada` distingue "no hay sesión" de "todavía no se sabe", para no expulsar a nadie en cada recarga.
 
 Este archivo define arquitectura y convenciones. NO lista los features a propósito: en cada tarea, leer el código del feat afectado — el código es la fuente de verdad.
 
@@ -243,7 +250,8 @@ Las dependencias se instalan SIEMPRE desde el host (`pnpm add` en este repo): el
 pnpm dev        # desarrollo (API local: docker compose del repo padre)
 pnpm build      # build de producción
 pnpm start      # servir el build
-pnpm lint       # eslint
+pnpm lint       # OJO: eslint NO está en devDependencies — este script falla hoy.
+                # Lo que sí verifica tipos: ./node_modules/.bin/tsc --noEmit
 pnpm format     # prettier --write (todo el repo)
 pnpm format:check # prettier --check (verifica sin modificar)
 ```

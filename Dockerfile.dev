@@ -7,12 +7,22 @@
 
 FROM node:22-slim
 WORKDIR /app
-RUN npm install -g pnpm@10
+
+# Versión EXACTA la que fija `packageManager` en package.json. pnpm 10 se
+# automantiene: si la global no coincide al carácter, ANTES de cualquier comando
+# se reinstala a sí mismo (`pnpm add pnpm@x.y.z`) — una descarga en cada arranque
+# que además escribe donde el contenedor no puede. Al subir el pin en el front,
+# subir también esta línea.
+RUN npm install -g pnpm@10.33.3
 
 # Aquí no se instala nada al construir, pero `make add-web` sí corre `pnpm add`
 # dentro del contenedor. Sin esto pnpm deja su store en `/app/.pnpm-store`, que
 # por el bind mount es el repo del host, y con dueño root.
+# El contenedor corre con el uid del host (no root, ver `user:` en el compose):
+# el directorio se crea al construir y se abre a cualquier uid, porque el que va
+# a escribir ahí no se conoce hasta que arranca.
 ENV npm_config_store_dir=/pnpm-store
+RUN mkdir -p /pnpm-store && chmod 777 /pnpm-store
 
 EXPOSE 2203
 ENV NEXT_TELEMETRY_DISABLED=1

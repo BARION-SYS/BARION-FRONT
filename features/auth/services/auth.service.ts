@@ -1,5 +1,5 @@
 import { esquemaLogin, type DatosLogin } from "@features/auth/schemas/auth.schema"
-import type { Sesion, SesionActual } from "@features/auth/types/auth.types"
+import type { Sesion } from "@features/auth/types/auth.types"
 import { api } from "@lib/http/instances"
 import type { ApiResult } from "@shared/types/api.types"
 
@@ -8,15 +8,25 @@ import type { ApiResult } from "@shared/types/api.types"
 // ApiClient es lo único que hace falta para que viaje en cada petición.
 
 export const authService = {
-  async login(datos: DatosLogin): Promise<ApiResult<Sesion>> {
-    const { barberiaSlug, correo, contrasena } = esquemaLogin.parse(datos)
+  /**
+   * Solo autentica: deja la cookie puesta y nada más. La API devuelve además un
+   * cuerpo con la sesión, pero este front NO lo consume —de ahí el `unknown`—
+   * porque dos orígenes para lo mismo terminan siendo dos verdades. Quién entró
+   * lo dice `sesionActual()`, siempre.
+   */
+  async login(datos: DatosLogin): Promise<ApiResult<unknown>> {
+    const { correo, contrasena } = esquemaLogin.parse(datos)
     // `correo` es el nombre del formulario; el contrato de la API usa `email`.
-    return api.post<Sesion>("/auth/login", { barberiaSlug, email: correo, contrasena })
+    return api.post<unknown>("/auth/login", { email: correo, contrasena })
   },
 
-  /** Rehidrata la sesión al recargar: la cookie sobrevive, el estado del front no. */
-  async sesionActual(): Promise<ApiResult<SesionActual>> {
-    return api.get<SesionActual>("/auth/yo")
+  /**
+   * La sesión: quién es, de qué barbería y con qué permisos AHORA. Es la única
+   * fuente — tras el login y tras cada recarga, porque la cookie sobrevive al
+   * refresco y el estado del front no.
+   */
+  async sesionActual(): Promise<ApiResult<Sesion>> {
+    return api.get<Sesion>("/auth/me")
   },
 
   async logout(): Promise<ApiResult<null>> {

@@ -1,15 +1,9 @@
 import { z } from "zod"
 
+// No se pide la barbería. El correo es único en toda la plataforma y una cuenta
+// pertenece a una sola barbería, así que identifica a la persona Y determina a
+// dónde entra — sin que tenga que recordar bajo qué nombre la registraron.
 export const esquemaLogin = z.object({
-  // La barbería a la que se entra. La API la exige porque `membresias` vive bajo
-  // RLS: sin barbería resuelta la consulta devuelve cero filas y nadie podría
-  // autenticarse. Es el mismo slug de la URL pública barion.app/b/{slug}.
-  barberiaSlug: z
-    .string()
-    .trim()
-    .min(2, "Indica la barbería")
-    .max(64)
-    .regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"),
   correo: z.email("Ingresa un correo válido"),
   contrasena: z.string().min(8, "La contraseña debe tener mínimo 8 caracteres"),
   recordarme: z.boolean(),

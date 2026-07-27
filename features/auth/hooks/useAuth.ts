@@ -6,8 +6,8 @@ import { authService } from "@features/auth/services/auth.service"
 import { useAuthStore } from "@store/auth.store"
 import { getErrorMessage } from "@shared/utils/error"
 
-// Solo estado de API — lo instancia SOLO el contenedor (app/page.tsx).
-// La sesión vive en el store global (auth.store).
+// Solo estado de API. La sesión vive en el store global (auth.store) y entra
+// ahí por UN solo camino: `fetchSesion`.
 export function useAuth() {
   const setSesion = useAuthStore((s) => s.setSesion)
   const setHidratada = useAuthStore((s) => s.setHidratada)
@@ -16,28 +16,35 @@ export function useAuth() {
   const [loadingSesion, setLoadingSesion] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleLoginAuth = useCallback(
-    async (datos: DatosLogin): Promise<string> => {
-      setLoadingLogin(true)
-      setError(null)
-      try {
-        const res = await authService.login(datos)
-        setSesion(res.data)
-        return res.message
-      } catch (err) {
-        setError(getErrorMessage(err))
-        throw err
-      } finally {
-        setLoadingLogin(false)
-      }
-    },
-    [setSesion]
-  )
+  /**
+   * Autentica y NADA MÁS: al volver, la cookie está puesta y el store sigue
+   * vacío. Quién entró lo resuelve `fetchSesion` contra `/auth/me`.
+   *
+   * No se llena el store con la respuesta del login a propósito: sería una
+   * segunda fuente de la sesión, con su propia forma y congelada en el instante
+   * de entrar. Con una sola, recargar la página y entrar por primera vez pasan
+   * exactamente por el mismo camino — y lo que se rompa, se rompe en los dos.
+   */
+  const handleLoginAuth = useCallback(async (datos: DatosLogin): Promise<string> => {
+    setLoadingLogin(true)
+    setError(null)
+    try {
+      const res = await authService.login(datos)
+      return res.message
+    } catch (err) {
+      setError(getErrorMessage(err))
+      throw err
+    } finally {
+      setLoadingLogin(false)
+    }
+  }, [])
 
   /**
-   * Recupera la sesión desde la cookie al montar la app. Un 401 aquí es la
-   * respuesta NORMAL de quien no ha entrado: no es un error que mostrar, solo
-   * significa que no hay sesión.
+   * Resuelve la sesión desde la cookie. Es el ÚNICO camino por el que la sesión
+   * entra al store: lo llama el AuthProvider al montar y después de entrar.
+   *
+   * Un 401 aquí es la respuesta NORMAL de quien no ha entrado: no es un error
+   * que mostrar, solo significa que no hay sesión.
    */
   const fetchSesion = useCallback(async (): Promise<void> => {
     setLoadingSesion(true)

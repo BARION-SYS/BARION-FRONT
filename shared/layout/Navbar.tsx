@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { motion } from "motion/react"
 import {
@@ -28,6 +28,7 @@ import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useNotificaciones } from "@features/notificaciones/hooks/useNotificaciones"
+import { useAuth } from "@features/auth/hooks/useAuth"
 import { useAuthStore } from "@store/auth.store"
 import { obtenerRutaActiva } from "@routes/rutasDashboard"
 import { cn } from "@shared/utils/cn"
@@ -43,9 +44,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   const ruta = obtenerRutaActiva(pathname)
 
   const sesion = useAuthStore((s) => s.sesion)
-  const cerrarSesion = useAuthStore((s) => s.cerrarSesion)
-  const [montado, setMontado] = useState(false)
-  useEffect(() => setMontado(true), [])
+  const { handleLogoutAuth } = useAuth()
 
   const { notificaciones, fetchNotificaciones, handleMarcarLeida, handleMarcarTodasLeidas } =
     useNotificaciones()
@@ -74,15 +73,18 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
     }
   }
 
-  const alCerrarSesion = () => {
-    cerrarSesion()
-    notify.info("Sesión cerrada")
-    router.push("/")
+  // La cookie la borra la API: limpiar solo el store dejaría la sesión viva en
+  // el servidor y el AuthProvider volvería a meter al usuario al panel.
+  const alCerrarSesion = async () => {
+    const message = await handleLogoutAuth()
+    notify.info(message)
+    router.replace("/")
   }
 
-  // Evita mismatch de hidratación: el store persistido solo se lee tras montar.
-  const nombreUsuario = montado && sesion ? sesion.usuario.nombre : "Admin"
-  const rolUsuario = montado && sesion ? sesion.usuario.rol : "Propietario"
+  // El AuthProvider no pinta el chrome sin sesión resuelta, así que aquí siempre
+  // hay una. El email es el respaldo de quien todavía no tiene nombre puesto.
+  const nombreUsuario = sesion?.usuario.nombre ?? sesion?.usuario.email ?? ""
+  const rolUsuario = sesion?.rol?.nombre ?? ""
 
   return (
     <motion.header

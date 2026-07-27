@@ -1,11 +1,12 @@
 import { create } from "zustand"
-import type { Sesion, SesionActual } from "@features/auth/types/auth.types"
+import type { Sesion } from "@features/auth/types/auth.types"
 
 interface AuthState {
-  sesion: Sesion | SesionActual | null
+  /** Siempre lo que devolvió `/auth/me`: no hay una segunda forma de sesión. */
+  sesion: Sesion | null
   /** `false` hasta que el intento de rehidratar termina (haya sesión o no). */
   hidratada: boolean
-  setSesion: (sesion: Sesion | SesionActual) => void
+  setSesion: (sesion: Sesion) => void
   setHidratada: (hidratada: boolean) => void
   cerrarSesion: () => void
 }
@@ -15,7 +16,7 @@ interface AuthState {
 // SIN `persist`: la sesión de verdad es la cookie httpOnly, que este código no
 // puede leer. Guardar una copia en localStorage crearía una segunda verdad que
 // sobrevive a la cookie: al caducar el token el panel seguiría pintándose como
-// autenticado y cada petición devolvería 401. Se rehidrata contra `/auth/yo`,
+// autenticado y cada petición devolvería 401. Se rehidrata contra `/auth/me`,
 // que es la única fuente que sabe si la sesión sigue viva.
 //
 // `hidratada` existe para distinguir "no hay sesión" de "todavía no se sabe" —

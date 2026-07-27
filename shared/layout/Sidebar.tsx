@@ -9,7 +9,7 @@ import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button } from "@shared/components/ui/button"
 import { InfoTooltip } from "@shared/components/tooltips/InfoTooltip"
 import { notify } from "@shared/services/notify"
-import { useAuthStore } from "@store/auth.store"
+import { useAuth } from "@features/auth/hooks/useAuth"
 import { rutasDashboard, esRutaActiva, seccionesSidebar } from "@routes/rutasDashboard"
 import { cn } from "@shared/utils/cn"
 
@@ -47,12 +47,14 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const cerrarSesion = useAuthStore((s) => s.cerrarSesion)
+  const { handleLogoutAuth } = useAuth()
 
-  const alCerrarSesion = () => {
-    cerrarSesion()
-    notify.info("Sesión cerrada")
-    router.push("/")
+  // La cookie la borra la API: limpiar solo el store dejaría la sesión viva en
+  // el servidor y el AuthProvider volvería a meter al usuario al panel.
+  const alCerrarSesion = async () => {
+    const message = await handleLogoutAuth()
+    notify.info(message)
+    router.replace("/")
   }
 
   // Cierra el drawer móvil al navegar
@@ -80,7 +82,7 @@ export function Sidebar({
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border bg-card",
-          "transition-transform duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
+          "transition-transform duration-400 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
           "w-64 lg:static lg:translate-x-0 lg:transition-[width] lg:duration-500 lg:ease-[cubic-bezier(0.16,1,0.3,1)]",
           abiertaEnMovil ? "translate-x-0" : "-translate-x-full",
           colapsada ? "lg:w-16" : "lg:w-60"
@@ -152,7 +154,7 @@ export function Sidebar({
                 Barbería El Rey
               </p>
               <p className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-(--exito)" aria-hidden />
+                <span className="h-1.5 w-1.5 rounded-full bg-exito" aria-hidden />
                 Abierta · Plan Premium
               </p>
             </div>

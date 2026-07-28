@@ -10,7 +10,8 @@ import { Button } from "@shared/components/ui/button"
 import { InfoTooltip } from "@shared/components/tooltips/InfoTooltip"
 import { notify } from "@shared/services/notify"
 import { useAuth } from "@features/auth/hooks/useAuth"
-import { rutasDashboard, esRutaActiva, seccionesSidebar } from "@routes/rutasDashboard"
+import { esRutaActiva, rutasDe, seccionesDe } from "@routes/rutasDashboard"
+import { useAuthStore } from "@store/auth.store"
 import { cn } from "@shared/utils/cn"
 
 // Entrada del chrome: cascada pausada desde la izquierda, con resorte suave.
@@ -46,6 +47,8 @@ export function Sidebar({
   alCerrarMovil,
 }: SidebarProps) {
   const pathname = usePathname()
+  const barberia = useAuthStore((s) => s.sesion?.barberia)
+
   const router = useRouter()
   const { handleLogoutAuth } = useAuth()
 
@@ -135,31 +138,31 @@ export function Sidebar({
           aria-hidden
         />
 
-        {/* Tenant */}
-        <motion.div
-          initial={{ opacity: 0, x: -28 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.22 }}
-          className={cn(
-            "overflow-hidden px-3 transition-[max-height,opacity,padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
-            colapsada ? "lg:max-h-0 lg:py-0 lg:opacity-0" : "max-h-24 py-3 opacity-100"
-          )}
-        >
-          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-secondary/50 px-3 py-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10">
-              <Store className="h-3.5 w-3.5 text-primary" aria-hidden />
+        {/* Tenant. El staff de Barion no tiene barbería: se omite en vez de
+            pintar un hueco con datos de nadie. */}
+        {barberia && (
+          <motion.div
+            initial={{ opacity: 0, x: -28 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.22 }}
+            className={cn(
+              "overflow-hidden px-3 transition-[max-height,opacity,padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              colapsada ? "lg:max-h-0 lg:py-0 lg:opacity-0" : "max-h-24 py-3 opacity-100"
+            )}
+          >
+            <div className="flex items-center gap-2.5 rounded-xl border border-border bg-secondary/50 px-3 py-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10">
+                <Store className="h-3.5 w-3.5 text-primary" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-xs leading-none font-semibold text-foreground">
+                  {barberia.nombreComercial}
+                </p>
+                <p className="mt-1 truncate text-[10px] text-muted-foreground">/{barberia.slug}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-xs leading-none font-semibold text-foreground">
-                Barbería El Rey
-              </p>
-              <p className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-exito" aria-hidden />
-                Abierta · Plan Premium
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Navegación agrupada por sección — desde routes/rutasDashboard.ts */}
         <motion.nav
@@ -169,8 +172,8 @@ export function Sidebar({
           initial="oculto"
           animate="visible"
         >
-          {seccionesSidebar.map((seccion) => {
-            const rutas = rutasDashboard.filter((r) => r.seccion === seccion.id)
+          {seccionesDe(pathname).map((seccion) => {
+            const rutas = rutasDe(pathname).filter((r) => r.seccion === seccion.id)
             if (rutas.length === 0) return null
             return (
               <motion.div

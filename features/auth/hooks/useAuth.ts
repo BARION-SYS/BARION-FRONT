@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react"
 import type { DatosLogin } from "@features/auth/schemas/auth.schema"
-import type { BarberiaParaElegir } from "@features/auth/types/auth.types"
+import type { BarberiaParaElegir, Sesion } from "@features/auth/types/auth.types"
 import { authService } from "@features/auth/services/auth.service"
 import { useAuthStore } from "@store/auth.store"
 import { getErrorMessage } from "@shared/utils/error"
@@ -66,13 +66,17 @@ export function useAuth() {
    * Un 401 aquí es la respuesta NORMAL de quien no ha entrado: no es un error
    * que mostrar, solo significa que no hay sesión.
    */
-  const fetchSesion = useCallback(async (): Promise<void> => {
+  const fetchSesion = useCallback(async (): Promise<Sesion | null> => {
     setLoadingSesion(true)
     try {
       const res = await authService.sesionActual()
       setSesion(res.data)
+      // Se devuelve además de guardarla: quien acaba de entrar necesita decidir
+      // a qué área va, y el store se actualiza en el siguiente render.
+      return res.data
     } catch {
       limpiarSesion()
+      return null
     } finally {
       setHidratada(true)
       setLoadingSesion(false)

@@ -7,6 +7,7 @@ import { Login } from "@features/auth/components/Login"
 import { PanelMarca } from "@features/auth/components/PanelMarca"
 import { SelectorBarberia } from "@features/auth/components/SelectorBarberia"
 import { useAuth } from "@features/auth/hooks/useAuth"
+import { appDeSesion } from "@features/auth/utils/permisos"
 import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { mensajeDeErrorOauth } from "@features/auth/utils/errores-oauth"
 import type { DatosLogin } from "@features/auth/schemas/auth.schema"
@@ -35,7 +36,7 @@ export default function LoginPage() {
 function ContenedorLogin() {
   const router = useRouter()
   const parametros = useSearchParams()
-  const { barberiasParaElegir, loadingLogin, error, handleLoginAuth } = useAuth()
+  const { barberiasParaElegir, loadingLogin, error, handleLoginAuth, fetchSesion } = useAuth()
 
   // El acceso con Google vuelve al panel por una navegación, no por una petición
   // del código, así que su fallo no puede llegar por el estado del hook: viaja
@@ -44,6 +45,7 @@ function ContenedorLogin() {
   const errorOauth = mensajeDeErrorOauth(parametros.get("error"))
   // Salida coordinada: al autenticar, la tarjeta anima su despedida y recién ahí navegamos.
   const [saliendo, setSaliendo] = useState(false)
+  const [destino, setDestino] = useState("/dashboard")
   // Se conservan para repetir el envío con la barbería elegida. Vive aquí y no
   // en el hook porque es estado de esta pantalla, no de la API.
   const [credenciales, setCredenciales] = useState<DatosLogin | null>(null)
@@ -52,12 +54,19 @@ function ContenedorLogin() {
     async (datos: DatosLogin, slug?: string) => {
       try {
         const haySesion = await handleLoginAuth(datos, slug)
-        if (haySesion) setSaliendo(true)
+        if (!haySesion) return
+        // A dónde entra lo decide el TIPO de actor, no la ruta desde la que
+        // llamó: el staff de Barion no tiene barbería y el panel se le pintaría
+        // vacío. Se resuelve aquí, con la sesión ya en la mano, en vez de
+        // navegar y que el área de destino rebote.
+        const sesion = await fetchSesion()
+        setDestino(appDeSesion(sesion) === "admin" ? "/admin" : "/dashboard")
+        setSaliendo(true)
       } catch {
         // El error ya queda en `error` del hook y se muestra en el form.
       }
     },
-    [handleLoginAuth]
+    [handleLoginAuth, fetchSesion]
   )
 
   const onSubmitLogin = useCallback(
@@ -104,7 +113,7 @@ function ContenedorLogin() {
             aria-hidden
           />
 
-          <AnimatePresence onExitComplete={() => router.push("/dashboard")}>
+          <AnimatePresence onExitComplete={() => router.push(destino)}>
             {!saliendo &&
               (eligiendo ? (
                 <SelectorBarberia

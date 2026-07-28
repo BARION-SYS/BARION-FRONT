@@ -9,6 +9,7 @@ import {
   Users,
 } from "lucide-react"
 import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
+import { rutasAdmin, seccionesAdmin } from "@routes/rutasAdmin"
 
 // Fuente única de navegación: la barra lateral y el encabezado se renderizan desde esta lista.
 export const rutasDashboard: RutaApp[] = [
@@ -95,12 +96,32 @@ export const rutasDashboard: RutaApp[] = [
 ]
 
 export function esRutaActiva(ruta: RutaApp, pathname: string): boolean {
-  if (ruta.href === "/dashboard") return pathname === ruta.href
+  // Las dos raíces de área coinciden EXACTO: si no, cualquier subruta activaría
+  // también la entrada de inicio y el sidebar marcaría dos a la vez.
+  if (ruta.href === "/dashboard" || ruta.href === "/admin") {
+    return pathname === ruta.href
+  }
   return pathname === ruta.href || pathname.startsWith(`${ruta.href}/`)
 }
 
+/**
+ * Las rutas del ÁREA en la que se está.
+ *
+ * El staff de Barion vive en la misma aplicación y entra por la misma puerta;
+ * lo único que cambia es qué navegación le corresponde. Resolverlo por la
+ * dirección —y no pasándoselo al chrome por props— evita tener que tocar el
+ * sidebar cada vez que aparezca un área nueva.
+ */
+export function rutasDe(pathname: string): RutaApp[] {
+  return pathname.startsWith("/admin") ? rutasAdmin : rutasDashboard
+}
+
+export function seccionesDe(pathname: string): { id: SeccionRuta; etiqueta: string }[] {
+  return pathname.startsWith("/admin") ? seccionesAdmin : seccionesSidebar
+}
+
 export function obtenerRutaActiva(pathname: string): RutaApp | undefined {
-  return rutasDashboard.find((ruta) => esRutaActiva(ruta, pathname))
+  return rutasDe(pathname).find((ruta) => esRutaActiva(ruta, pathname))
 }
 
 // Etiquetas y orden de las secciones del sidebar.

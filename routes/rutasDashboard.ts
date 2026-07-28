@@ -6,6 +6,7 @@ import {
   QrCode,
   Scissors,
   Settings,
+  ShieldCheck,
   Users,
 } from "lucide-react"
 import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
@@ -45,6 +46,17 @@ export const rutasDashboard: RutaApp[] = [
     subtitulo: "Equipo de trabajo y rendimiento",
     icono: Scissors,
     entrada: "izquierda",
+  },
+  {
+    clave: "equipo",
+    permisos: ["equipo.ver"],
+    seccion: "operacion",
+    href: "/dashboard/equipo",
+    etiqueta: "Equipo",
+    titulo: "Equipo",
+    subtitulo: "Quién entra al sistema y con qué capacidades",
+    icono: ShieldCheck,
+    entrada: "derecha",
   },
   {
     clave: "clientes",

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react"
 import type { DatosLogin } from "@features/auth/schemas/auth.schema"
+import type { BarberiaParaElegir } from "@features/auth/types/auth.types"
 import { authService } from "@features/auth/services/auth.service"
 import { useAuthStore } from "@store/auth.store"
 import { getErrorMessage } from "@shared/utils/error"
@@ -13,31 +14,50 @@ export function useAuth() {
   const setHidratada = useAuthStore((s) => s.setHidratada)
   const limpiarSesion = useAuthStore((s) => s.cerrarSesion)
   const [loadingLogin, setLoadingLogin] = useState(false)
+  // Dato de la API, no estado de UI: son las barberías que ella devuelve cuando
+  // la cuenta tiene más de una y no se dijo por cuál puerta se entraba.
+  const [barberiasParaElegir, setBarberiasParaElegir] = useState<BarberiaParaElegir[]>([])
   const [loadingSesion, setLoadingSesion] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   /**
-   * Autentica y NADA MÁS: al volver, la cookie está puesta y el store sigue
-   * vacío. Quién entró lo resuelve `fetchSesion` contra `/auth/me`.
+   * Autentica y casi nada más: al volver, la cookie está puesta y el store
+   * sigue vacío. Quién entró lo resuelve `fetchSesion` contra `/auth/me`.
+   *
+   * Devuelve si HAY sesión. Cuando la cuenta tiene varias barberías y no se
+   * entró por la puerta de ninguna, la API responde con la lista en vez de con
+   * una sesión: eso no es un error, es un paso más, y hasta que se elige no hay
+   * cookie que valga.
    *
    * No se llena el store con la respuesta del login a propósito: sería una
    * segunda fuente de la sesión, con su propia forma y congelada en el instante
    * de entrar. Con una sola, recargar la página y entrar por primera vez pasan
    * exactamente por el mismo camino — y lo que se rompa, se rompe en los dos.
    */
-  const handleLoginAuth = useCallback(async (datos: DatosLogin): Promise<string> => {
-    setLoadingLogin(true)
-    setError(null)
-    try {
-      const res = await authService.login(datos)
-      return res.message
-    } catch (err) {
-      setError(getErrorMessage(err))
-      throw err
-    } finally {
-      setLoadingLogin(false)
-    }
-  }, [])
+  const handleLoginAuth = useCallback(
+    async (datos: DatosLogin, slug?: string): Promise<boolean> => {
+      setLoadingLogin(true)
+      setError(null)
+      try {
+        const res = await authService.login(datos, slug)
+        // Entrar por la puerta de una barbería nunca pide elegir; por la global
+        // sí, cuando la persona trabaja en varias. Mientras haya que elegir NO
+        // hay cookie, así que el contenedor no debe navegar al panel.
+        if (res.data.requiereSeleccion) {
+          setBarberiasParaElegir(res.data.barberias)
+          return false
+        }
+        setBarberiasParaElegir([])
+        return true
+      } catch (err) {
+        setError(getErrorMessage(err))
+        throw err
+      } finally {
+        setLoadingLogin(false)
+      }
+    },
+    []
+  )
 
   /**
    * Resuelve la sesión desde la cookie. Es el ÚNICO camino por el que la sesión
@@ -74,6 +94,7 @@ export function useAuth() {
   }, [limpiarSesion])
 
   return {
+    barberiasParaElegir,
     loadingLogin,
     loadingSesion,
     error,

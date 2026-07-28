@@ -33,6 +33,16 @@ export interface RolSesion {
  * panel pintar. `usuario.nombre` es el de la MEMBRESÍA —el nombre con el que esa
  * barbería conoce a la persona—, así que también es null para plataforma.
  */
+/**
+ * Qué actor es. Decide qué APP se pinta; `permisos` decide qué acciones se ven
+ * dentro de ella.
+ *
+ * `staff` opera en una barbería con membresía. `plataforma` no pertenece a
+ * ninguna. `cliente` sí tiene barbería pero no membresía, y llega con
+ * `permisos: []` — lo que lo habilita es su tipo, no una capacidad.
+ */
+export type TipoSesion = "staff" | "cliente" | "plataforma"
+
 export interface Sesion {
   usuario: {
     id: string
@@ -44,5 +54,27 @@ export interface Sesion {
   rol: RolSesion | null
   sedeId: string | null
   permisos: string[]
+  tipo: TipoSesion
   esStaffPlataforma: boolean
 }
+
+/** Una de las barberías entre las que hay que elegir al entrar. */
+export interface BarberiaParaElegir {
+  id: string
+  slug: string
+  nombreComercial: string
+}
+
+/**
+ * Lo que devuelve el login, que no siempre es una sesión.
+ *
+ * Se entra por la puerta de una barbería —`/b/{slug}/entrar`— y no hay nada que
+ * elegir. Por la puerta global sí puede haberlo: quien trabaja en varias tiene
+ * que decir en cuál, y hasta entonces no hay cookie.
+ *
+ * De aquí se consume ÚNICAMENTE el discriminante y, si toca, la lista. La
+ * `sesion` que viene dentro se ignora igual que antes: es la foto del instante
+ * de entrar, y la verdad de la sesión sigue saliendo de `/auth/me`.
+ */
+export type ResultadoLogin =
+  { requiereSeleccion: false } | { requiereSeleccion: true; barberias: BarberiaParaElegir[] }

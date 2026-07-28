@@ -20,6 +20,12 @@ interface LoginProps {
   onSubmit: (datos: DatosLogin) => Promise<void>
   cargando?: boolean
   error?: string | null
+  /**
+   * Barbería por cuya puerta se entra. Viene de la RUTA, nunca de un campo del
+   * formulario: aquí solo se reenvía al acceso con Google para que la vuelta
+   * sepa a dónde entrar. Ausente en la puerta global.
+   */
+  slug?: string
 }
 
 // La tarjeta entra con resorte desde abajo y sale hacia arriba al autenticar.
@@ -51,7 +57,7 @@ const bloque: Variants = {
 }
 
 // Presentacional: el padre (app/page.tsx) entrega el submit y el estado por props.
-export function Login({ onSubmit, cargando, error }: LoginProps) {
+export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
   const [verContrasena, setVerContrasena] = useState(false)
   const {
     register,
@@ -212,7 +218,7 @@ export function Login({ onSubmit, cargando, error }: LoginProps) {
               del navegador hasta Google y de vuelta a la API, que es quien deja
               la cookie. Una petición desde el código no puede seguir ese viaje. */}
           <a
-            href={`${env.apiUrl}/auth/oauth/google`}
+            href={`${env.apiUrl}/auth/oauth/google${slug ? `?slug=${encodeURIComponent(slug)}` : ""}`}
             className={cn(
               buttonVariants({ variant: "outline" }),
               "mt-4 h-11 w-full text-sm font-medium"

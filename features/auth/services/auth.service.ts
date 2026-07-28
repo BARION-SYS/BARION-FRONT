@@ -1,5 +1,5 @@
 import { esquemaLogin, type DatosLogin } from "@features/auth/schemas/auth.schema"
-import type { Sesion } from "@features/auth/types/auth.types"
+import type { ResultadoLogin, Sesion } from "@features/auth/types/auth.types"
 import { api } from "@lib/http/instances"
 import type { ApiResult } from "@shared/types/api.types"
 
@@ -9,15 +9,25 @@ import type { ApiResult } from "@shared/types/api.types"
 
 export const authService = {
   /**
-   * Solo autentica: deja la cookie puesta y nada más. La API devuelve además un
-   * cuerpo con la sesión, pero este front NO lo consume —de ahí el `unknown`—
-   * porque dos orígenes para lo mismo terminan siendo dos verdades. Quién entró
-   * lo dice `sesionActual()`, siempre.
+   * Autentica y deja la cookie puesta — salvo cuando hay que elegir barbería,
+   * que es el único caso en que vuelve sin sesión.
+   *
+   * De la respuesta se consume SOLO el discriminante y la lista para elegir. La
+   * sesión que la API manda dentro se sigue ignorando: es la foto del instante
+   * de entrar, y quién entró lo dice `sesionActual()`, siempre. Dos orígenes
+   * para lo mismo terminan siendo dos verdades.
+   *
+   * `slug` no sale del formulario sino de la ruta de la puerta, y por eso entra
+   * como argumento aparte y no por el schema.
    */
-  async login(datos: DatosLogin): Promise<ApiResult<unknown>> {
+  async login(datos: DatosLogin, slug?: string): Promise<ApiResult<ResultadoLogin>> {
     const { correo, contrasena } = esquemaLogin.parse(datos)
     // `correo` es el nombre del formulario; el contrato de la API usa `email`.
-    return api.post<unknown>("/auth/login", { email: correo, contrasena })
+    return api.post<ResultadoLogin>("/auth/login", {
+      email: correo,
+      contrasena,
+      ...(slug ? { slug } : {}),
+    })
   },
 
   /**

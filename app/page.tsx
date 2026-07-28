@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import { Login } from "@features/auth/components/Login"
 import { PanelMarca } from "@features/auth/components/PanelMarca"
+import { SelectorBarberia } from "@features/auth/components/SelectorBarberia"
 import { useAuth } from "@features/auth/hooks/useAuth"
 import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { mensajeDeErrorOauth } from "@features/auth/utils/errores-oauth"
@@ -24,11 +25,17 @@ export default function LoginPage() {
   )
 }
 
-// Contenedor: instancia el hook UNA vez y reparte datos + callbacks por props.
+/**
+ * PUERTA GLOBAL. Es la de rescate: sirve a quien no recuerda la dirección de su
+ * barbería y al staff de la plataforma, que no pertenece a ninguna.
+ *
+ * Por eso es la única que puede acabar pidiendo elegir — quien entra por
+ * `/b/{slug}/entrar` trae la barbería resuelta desde la ruta.
+ */
 function ContenedorLogin() {
   const router = useRouter()
   const parametros = useSearchParams()
-  const { loadingLogin, error, handleLoginAuth } = useAuth()
+  const { barberiasParaElegir, loadingLogin, error, handleLoginAuth } = useAuth()
 
   // El acceso con Google vuelve al panel por una navegación, no por una petición
   // del código, así que su fallo no puede llegar por el estado del hook: viaja
@@ -37,18 +44,38 @@ function ContenedorLogin() {
   const errorOauth = mensajeDeErrorOauth(parametros.get("error"))
   // Salida coordinada: al autenticar, la tarjeta anima su despedida y recién ahí navegamos.
   const [saliendo, setSaliendo] = useState(false)
+  // Se conservan para repetir el envío con la barbería elegida. Vive aquí y no
+  // en el hook porque es estado de esta pantalla, no de la API.
+  const [credenciales, setCredenciales] = useState<DatosLogin | null>(null)
 
-  const onSubmitLogin = useCallback(
-    async (datos: DatosLogin) => {
+  const entrar = useCallback(
+    async (datos: DatosLogin, slug?: string) => {
       try {
-        await handleLoginAuth(datos)
-        setSaliendo(true)
+        const haySesion = await handleLoginAuth(datos, slug)
+        if (haySesion) setSaliendo(true)
       } catch {
         // El error ya queda en `error` del hook y se muestra en el form.
       }
     },
     [handleLoginAuth]
   )
+
+  const onSubmitLogin = useCallback(
+    async (datos: DatosLogin) => {
+      setCredenciales(datos)
+      await entrar(datos)
+    },
+    [entrar]
+  )
+
+  const onElegirBarberia = useCallback(
+    (slug: string) => {
+      if (credenciales) void entrar(credenciales, slug)
+    },
+    [credenciales, entrar]
+  )
+
+  const eligiendo = barberiasParaElegir.length > 0
 
   return (
     <MotionConfig reducedMotion="user">
@@ -78,14 +105,22 @@ function ContenedorLogin() {
           />
 
           <AnimatePresence onExitComplete={() => router.push("/dashboard")}>
-            {!saliendo && (
-              <Login
-                key="login"
-                onSubmit={onSubmitLogin}
-                cargando={loadingLogin}
-                error={error ?? errorOauth}
-              />
-            )}
+            {!saliendo &&
+              (eligiendo ? (
+                <SelectorBarberia
+                  key="selector"
+                  barberias={barberiasParaElegir}
+                  cargando={loadingLogin}
+                  onElegir={onElegirBarberia}
+                />
+              ) : (
+                <Login
+                  key="login"
+                  onSubmit={onSubmitLogin}
+                  cargando={loadingLogin}
+                  error={error ?? errorOauth}
+                />
+              ))}
           </AnimatePresence>
         </main>
       </div>

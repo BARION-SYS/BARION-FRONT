@@ -1,8 +1,11 @@
 import { z } from "zod"
 
-// No se pide la barbería. El correo es único en toda la plataforma y una cuenta
-// pertenece a una sola barbería, así que identifica a la persona Y determina a
-// dónde entra — sin que tenga que recordar bajo qué nombre la registraron.
+// El formulario tiene DOS campos y solo dos. La barbería no se teclea: sale de
+// la ruta de la puerta por la que se entra (`/b/{slug}/entrar`) y el service la
+// añade aparte.
+//
+// Por eso no está en este schema: zod valida lo que una persona escribió, y ahí
+// nadie escribió nada.
 export const esquemaLogin = z.object({
   correo: z.email("Ingresa un correo válido"),
   contrasena: z.string().min(8, "La contraseña debe tener mínimo 8 caracteres"),

@@ -10,7 +10,7 @@ import { Button } from "@shared/components/ui/button"
 import { InfoTooltip } from "@shared/components/tooltips/InfoTooltip"
 import { notify } from "@shared/services/notify"
 import { useAuth } from "@features/auth/hooks/useAuth"
-import { esRutaActiva, rutasDe, seccionesDe } from "@routes/rutasDashboard"
+import { esRutaActiva, rutasDe, rutasVisibles, seccionesDe } from "@routes/rutasDashboard"
 import { useAuthStore } from "@store/auth.store"
 import { cn } from "@shared/utils/cn"
 
@@ -48,7 +48,11 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname()
   const barberia = useAuthStore((s) => s.sesion?.barberia)
-
+  const permisos = useAuthStore((s) => s.sesion?.permisos)
+  // El menú se CONSTRUYE con lo que la sesión puede hacer, no es una lista fija.
+  // Sin sesión resuelta todavía no se pinta ninguna entrada: enseñarlas todas
+  // durante un instante y quitarlas después es peor que esperar.
+  const rutasDelArea = rutasVisibles(rutasDe(pathname), permisos ?? [])
   const router = useRouter()
   const { handleLogoutAuth } = useAuth()
 
@@ -173,7 +177,7 @@ export function Sidebar({
           animate="visible"
         >
           {seccionesDe(pathname).map((seccion) => {
-            const rutas = rutasDe(pathname).filter((r) => r.seccion === seccion.id)
+            const rutas = rutasDelArea.filter((r) => r.seccion === seccion.id)
             if (rutas.length === 0) return null
             return (
               <motion.div

@@ -14,6 +14,7 @@ import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
 export const rutasAdmin: RutaApp[] = [
   {
     clave: "admin",
+    permisos: ["plataforma.barberias.ver"],
     seccion: "principal",
     href: "/admin",
     etiqueta: "Barberías",

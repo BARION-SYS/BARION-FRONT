@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@features/auth/hooks/useAuth"
 import { appDeSesion } from "@features/auth/utils/permisos"
+import { obtenerRutaActiva, rutasDe, rutasVisibles } from "@routes/rutasDashboard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { useAuthStore } from "@store/auth.store"
 
@@ -43,12 +44,21 @@ export function AuthProvider({
   area?: Area
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { fetchSesion } = useAuth()
   const sesion = useAuthStore((s) => s.sesion)
   const hidratada = useAuthStore((s) => s.hidratada)
 
   const areaDeLaSesion = appDeSesion(sesion)
   const enSuArea = areaDeLaSesion === area
+
+  // Ocultar la entrada del menú no impide escribir la dirección a mano. Aquí se
+  // cierra el otro lado: una sección que esta sesión no puede abrir devuelve a
+  // la primera que sí. Sigue sin ser la defensa real —esa es la API, que
+  // revalida el permiso en cada petición— pero evita una pantalla de errores.
+  const visibles = rutasVisibles(rutasDe(pathname), sesion?.permisos ?? [])
+  const rutaActual = obtenerRutaActiva(pathname)
+  const puedeVerla = !rutaActual || visibles.some((r) => r.href === rutaActual.href)
 
   useEffect(() => {
     void fetchSesion()
@@ -62,8 +72,14 @@ export function AuthProvider({
     }
     if (!enSuArea && areaDeLaSesion) {
       router.replace(RUTA_DE_AREA[areaDeLaSesion] ?? "/")
+      return
     }
-  }, [hidratada, sesion, enSuArea, areaDeLaSesion, router])
+    // Sin ninguna sección visible no hay a dónde mandarla: se deja pasar y que
+    // la API responda. Redirigir en bucle sería peor que una pantalla vacía.
+    if (!puedeVerla && visibles.length > 0) {
+      router.replace(visibles[0].href)
+    }
+  }, [hidratada, sesion, enSuArea, areaDeLaSesion, puedeVerla, visibles, router])
 
   if (!hidratada || !sesion || !enSuArea) {
     return (

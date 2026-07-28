@@ -15,6 +15,7 @@ import { rutasAdmin, seccionesAdmin } from "@routes/rutasAdmin"
 export const rutasDashboard: RutaApp[] = [
   {
     clave: "dashboard",
+    permisos: ["reportes.ver", "agenda.ver_propia"],
     seccion: "principal",
     href: "/dashboard",
     etiqueta: "Dashboard",
@@ -25,6 +26,7 @@ export const rutasDashboard: RutaApp[] = [
   },
   {
     clave: "citas",
+    permisos: ["agenda.ver", "agenda.ver_propia"],
     seccion: "operacion",
     href: "/dashboard/citas",
     etiqueta: "Citas",
@@ -35,6 +37,7 @@ export const rutasDashboard: RutaApp[] = [
   },
   {
     clave: "barberos",
+    permisos: ["barberos.ver"],
     seccion: "operacion",
     href: "/dashboard/barberos",
     etiqueta: "Barberos",
@@ -45,6 +48,7 @@ export const rutasDashboard: RutaApp[] = [
   },
   {
     clave: "clientes",
+    permisos: ["clientes.ver"],
     seccion: "operacion",
     href: "/dashboard/clientes",
     etiqueta: "Clientes",
@@ -55,6 +59,7 @@ export const rutasDashboard: RutaApp[] = [
   },
   {
     clave: "nomina",
+    permisos: ["ganancias.ver", "ganancias.ver_propias"],
     seccion: "finanzas",
     href: "/dashboard/nomina",
     etiqueta: "Nómina",
@@ -65,6 +70,7 @@ export const rutasDashboard: RutaApp[] = [
   },
   {
     clave: "estadisticas",
+    permisos: ["reportes.ver"],
     seccion: "finanzas",
     href: "/dashboard/estadisticas",
     etiqueta: "Estadísticas",
@@ -75,6 +81,7 @@ export const rutasDashboard: RutaApp[] = [
   },
   {
     clave: "qr",
+    permisos: ["sedes.ver"],
     seccion: "herramientas",
     href: "/dashboard/qr",
     etiqueta: "Código QR",
@@ -85,6 +92,7 @@ export const rutasDashboard: RutaApp[] = [
   },
   {
     clave: "configuracion",
+    permisos: ["barberias.gestionar"],
     seccion: "herramientas",
     href: "/dashboard/configuracion",
     etiqueta: "Configuración",
@@ -118,6 +126,20 @@ export function rutasDe(pathname: string): RutaApp[] {
 
 export function seccionesDe(pathname: string): { id: SeccionRuta; etiqueta: string }[] {
   return pathname.startsWith("/admin") ? seccionesAdmin : seccionesSidebar
+}
+
+/**
+ * Las rutas que esta sesión puede abrir de verdad.
+ *
+ * Ocultar una entrada NO es seguridad: la API vuelve a comprobar el permiso en
+ * cada petición y es ella quien manda. Lo que evita es ofrecer secciones que
+ * terminan en un 403 — un barbero viendo "Nómina" y descubriendo al pulsarla
+ * que no era para él.
+ *
+ * Una ruta sin capacidades declaradas la ve todo el mundo, a propósito.
+ */
+export function rutasVisibles(rutas: RutaApp[], permisos: string[]): RutaApp[] {
+  return rutas.filter((ruta) => !ruta.permisos || ruta.permisos.some((p) => permisos.includes(p)))
 }
 
 export function obtenerRutaActiva(pathname: string): RutaApp | undefined {

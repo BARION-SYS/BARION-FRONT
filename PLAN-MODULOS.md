@@ -14,16 +14,16 @@ Lo que sí cambia, y cambia **en todas partes a la vez**, es la forma de los dat
 
 ### Los ocho supuestos que hay que corregir (Fase 0)
 
-| # | El mock asume | La api entrega | Alcance |
-|---|---|---|---|
-| 1 | `id: number` autoincremental | `id: string` (uuid) | **Todos** los `types/` y los `key=` de listas |
-| 2 | Precio como número suelto (`110`, `1840`) | `precioCentavos: string` + `moneda: "COP"` | `barberos`, `clientes`, `nomina`, `configuracion`, `estadisticas`, `dashboard` |
-| 3 | Fechas ya formateadas (`"Hoy"`, `"Hace 3 días"`, `"14 Jul"`) | Instante UTC ISO-8601 | `clientes`, `citas`, `qr`, `notificaciones` |
-| 4 | 5 estados de cita, en kebab (`"en-curso"`) | Enum de **8** en snake: `reservada, pendiente_confirmacion, confirmada, retrasada, en_curso, completada, cancelada, no_asistio` | `citas`, `portal`, `dashboard` |
-| 5 | `color: "var(--chart-1)"` en el dato | `indiceColor: number` | `barberos`, `citas`, `nomina`, `dashboard` |
-| 6 | Una cita = un servicio | Line items: N servicios por cita, con precio y duración congelados por línea | `citas`, `portal` |
-| 7 | Todo cuelga de "la barbería" | Todo cuelga de una **sede** (timezone, moneda operativa, horarios, QR) | Transversal: falta el concepto entero |
-| 8 | `barbero.rol: "Barbero Senior"` | `titulo` (vitrina) ≠ rol de autorización (`membresias.rol`) | `barberos`, `equipo` |
+| #   | El mock asume                                                | La api entrega                                                                                                                  | Alcance                                                                        |
+| --- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 1   | `id: number` autoincremental                                 | `id: string` (uuid)                                                                                                             | **Todos** los `types/` y los `key=` de listas                                  |
+| 2   | Precio como número suelto (`110`, `1840`)                    | `precioCentavos: string` + `moneda: "COP"`                                                                                      | `barberos`, `clientes`, `nomina`, `configuracion`, `estadisticas`, `dashboard` |
+| 3   | Fechas ya formateadas (`"Hoy"`, `"Hace 3 días"`, `"14 Jul"`) | Instante UTC ISO-8601                                                                                                           | `clientes`, `citas`, `qr`, `notificaciones`                                    |
+| 4   | 5 estados de cita, en kebab (`"en-curso"`)                   | Enum de **8** en snake: `reservada, pendiente_confirmacion, confirmada, retrasada, en_curso, completada, cancelada, no_asistio` | `citas`, `portal`, `dashboard`                                                 |
+| 5   | `color: "var(--chart-1)"` en el dato                         | `indiceColor: number`                                                                                                           | `barberos`, `citas`, `nomina`, `dashboard`                                     |
+| 6   | Una cita = un servicio                                       | Line items: N servicios por cita, con precio y duración congelados por línea                                                    | `citas`, `portal`                                                              |
+| 7   | Todo cuelga de "la barbería"                                 | Todo cuelga de una **sede** (timezone, moneda operativa, horarios, QR)                                                          | Transversal: falta el concepto entero                                          |
+| 8   | `barbero.rol: "Barbero Senior"`                              | `titulo` (vitrina) ≠ rol de autorización (`membresias.rol`)                                                                     | `barberos`, `equipo`                                                           |
 
 Ninguno es difícil por separado. Juntos son el trabajo de la Fase 0, y hacerlos **antes** de conectar el primer endpoint evita corregir diez features dos veces.
 
@@ -31,19 +31,19 @@ Ninguno es difícil por separado. Juntos son el trabajo de la Fase 0, y hacerlos
 
 ## Feature por feature
 
-| Feature | Veredicto | Qué se conserva | Qué se rehace |
-|---|---|---|---|
-| **auth** | ✅ Ya es real | Todo — es el patrón para los demás | Nada |
-| **portal** | 🟢 El mejor insumo | El flujo completo `servicio → barbero → agenda → datos → codigo → listo`, y `DiaAgenda`/`FranjaAgenda`, que son **la salida literal del motor de disponibilidad** | `id: 0` = "cualquier barbero" pasa a `barberoId: null`; `aceptaPromos` deja de ser un check de UI y pasa a ser un **consentimiento** con origen y versión de política |
-| **barberos** | 🟢 Alto valor | Tarjeta, sparkline semanal, formulario, filtros | `horario: string` plano → jornadas reales; `servicios: string[]` → oferta con precio y duración; `estado: "vacaciones"` → derivado de ausencia vigente; añadir sede base y comisión en bps |
-| **clientes** | 🟢 Alto valor | Lista, filtro por etiqueta, ficha, historial | `gastadoTotal` → centavos + moneda; `ultimaVisita` → ISO; `etiqueta` deja de ser un enum de 4 y pasa a ser el segmento mostrable que la api resuelve |
-| **nomina** | 🟢 Alto valor | Tabla por barbero, chart de producción diaria, selector de período | Solo unidades y moneda. **El mock encaja mejor con el modelo actual que la documentación vieja**: no hay períodos con estado abierto/cerrado, un período es un filtro de fechas |
-| **citas** | 🟡 Parcial | Grilla semanal, vistas semana/día/lista, código de color por barbero | `dia`/`horaInicio` como índices de grilla → instantes UTC + timezone de la sede; cubrir los 8 estados; soportar cita multi-servicio |
-| **configuracion** | 🟡 Parcial | Secciones, formularios, Apariencia (ya real vía marca) | **Horarios están a nivel barbería y van por sede**; servicios sin moneda, sin buffer, sin ámbito; falta la sección de plan/suscripción por completo |
-| **dashboard** | 🟡 Estructura sí | Composición de KPIs y charts — correcto que el título y el ícono los ponga el front | Todas las series; separar "hoy" (transaccional) de "tendencia" (agregado nocturno) |
-| **estadisticas** | 🟡 Estructura sí | Charts | Todas las series; `meta` sale de `metas_ingresos`, no de una constante |
-| **qr** | 🟢 Sirve | Enlace, stats, feed de escaneos | `url` sale de `sedes.slug_qr` (por **sede**, no por barbería); el feed es derivado |
-| **notificaciones** | 🟢 Sirve | Bandeja, marcar leída / todas | `hace` → `creadoEn` ISO |
+| Feature            | Veredicto          | Qué se conserva                                                                                                                                                   | Qué se rehace                                                                                                                                                                              |
+| ------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **auth**           | ✅ Ya es real      | Todo — es el patrón para los demás                                                                                                                                | Nada                                                                                                                                                                                       |
+| **portal**         | 🟢 El mejor insumo | El flujo completo `servicio → barbero → agenda → datos → codigo → listo`, y `DiaAgenda`/`FranjaAgenda`, que son **la salida literal del motor de disponibilidad** | `id: 0` = "cualquier barbero" pasa a `barberoId: null`; `aceptaPromos` deja de ser un check de UI y pasa a ser un **consentimiento** con origen y versión de política                      |
+| **barberos**       | 🟢 Alto valor      | Tarjeta, sparkline semanal, formulario, filtros                                                                                                                   | `horario: string` plano → jornadas reales; `servicios: string[]` → oferta con precio y duración; `estado: "vacaciones"` → derivado de ausencia vigente; añadir sede base y comisión en bps |
+| **clientes**       | 🟢 Alto valor      | Lista, filtro por etiqueta, ficha, historial                                                                                                                      | `gastadoTotal` → centavos + moneda; `ultimaVisita` → ISO; `etiqueta` deja de ser un enum de 4 y pasa a ser el segmento mostrable que la api resuelve                                       |
+| **nomina**         | 🟢 Alto valor      | Tabla por barbero, chart de producción diaria, selector de período                                                                                                | Solo unidades y moneda. **El mock encaja mejor con el modelo actual que la documentación vieja**: no hay períodos con estado abierto/cerrado, un período es un filtro de fechas            |
+| **citas**          | 🟡 Parcial         | Grilla semanal, vistas semana/día/lista, código de color por barbero                                                                                              | `dia`/`horaInicio` como índices de grilla → instantes UTC + timezone de la sede; cubrir los 8 estados; soportar cita multi-servicio                                                        |
+| **configuracion**  | 🟡 Parcial         | Secciones, formularios, Apariencia (ya real vía marca)                                                                                                            | **Horarios están a nivel barbería y van por sede**; servicios sin moneda, sin buffer, sin ámbito; falta la sección de plan/suscripción por completo                                        |
+| **dashboard**      | 🟡 Estructura sí   | Composición de KPIs y charts — correcto que el título y el ícono los ponga el front                                                                               | Todas las series; separar "hoy" (transaccional) de "tendencia" (agregado nocturno)                                                                                                         |
+| **estadisticas**   | 🟡 Estructura sí   | Charts                                                                                                                                                            | Todas las series; `meta` sale de `metas_ingresos`, no de una constante                                                                                                                     |
+| **qr**             | 🟢 Sirve           | Enlace, stats, feed de escaneos                                                                                                                                   | `url` sale de `sedes.slug_qr` (por **sede**, no por barbería); el feed es derivado                                                                                                         |
+| **notificaciones** | 🟢 Sirve           | Bandeja, marcar leída / todas                                                                                                                                     | `hace` → `creadoEn` ISO                                                                                                                                                                    |
 
 ---
 
@@ -63,11 +63,11 @@ El slug vive **solo en la puerta**. Una vez dentro, la cookie ya sabe de qué ba
 
 **Cero archivos movidos, cero routing tocado.** `app/dashboard/*` y `routes/rutasDashboard.ts` se quedan exactamente donde están. Lo que se añade son dos rutas nuevas y nada más.
 
-| Superficie | Ruta | Quién entra |
-|---|---|---|
-| Panel de barbería | `/b/[slug]/entrar` → `/dashboard` | Staff: propietario, admin, recepción, barbero |
-| Rescate + plataforma | `/entrar` → `/dashboard` o `/admin` | Quien no se sabe el slug · staff de Barion |
-| Cliente | `/b/[slug]/entrar-cliente` → `/b/[slug]/mis-citas` | Cliente final, por OTP |
+| Superficie           | Ruta                                               | Quién entra                                   |
+| -------------------- | -------------------------------------------------- | --------------------------------------------- |
+| Panel de barbería    | `/b/[slug]/entrar` → `/dashboard`                  | Staff: propietario, admin, recepción, barbero |
+| Rescate + plataforma | `/entrar` → `/dashboard` o `/admin`                | Quien no se sabe el slug · staff de Barion    |
+| Cliente              | `/b/[slug]/entrar-cliente` → `/b/[slug]/mis-citas` | Cliente final, por OTP                        |
 
 ### La puerta global tiene un paso más
 

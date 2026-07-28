@@ -7,10 +7,13 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { AnimatePresence, motion, type Variants } from "motion/react"
 import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
-import { Button } from "@shared/components/ui/button"
+import { Button, buttonVariants } from "@shared/components/ui/button"
+import { cn } from "@shared/utils/cn"
 import { Checkbox } from "@shared/components/ui/checkbox"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import { env } from "@config/env"
+import { LogoGoogle } from "@shared/components/brand/LogoGoogle"
 import { esquemaLogin, type DatosLogin } from "@features/auth/schemas/auth.schema"
 
 interface LoginProps {
@@ -197,6 +200,28 @@ export function Login({ onSubmit, cargando, error }: LoginProps) {
             </motion.div>
           </motion.div>
         </form>
+
+        <motion.div className="mt-6" variants={bloque}>
+          <div className="flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" aria-hidden />
+            <span className="text-xs text-muted-foreground">o</span>
+            <span className="h-px flex-1 bg-border" aria-hidden />
+          </div>
+
+          {/* Enlace y no botón con fetch: el acceso con Google es una NAVEGACIÓN
+              del navegador hasta Google y de vuelta a la API, que es quien deja
+              la cookie. Una petición desde el código no puede seguir ese viaje. */}
+          <a
+            href={`${env.apiUrl}/auth/oauth/google`}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "mt-4 h-11 w-full text-sm font-medium"
+            )}
+          >
+            <LogoGoogle aria-hidden />
+            Continuar con Google
+          </a>
+        </motion.div>
 
         <motion.p className="mt-7 text-center text-sm text-muted-foreground" variants={bloque}>
           ¿No tienes cuenta?{" "}

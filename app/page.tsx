@@ -1,18 +1,40 @@
 "use client"
 
-import { useCallback, useState } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useCallback, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import { Login } from "@features/auth/components/Login"
 import { PanelMarca } from "@features/auth/components/PanelMarca"
 import { useAuth } from "@features/auth/hooks/useAuth"
 import { ThemeToggle } from "@shared/layout/ThemeToggle"
+import { mensajeDeErrorOauth } from "@features/auth/utils/errores-oauth"
 import type { DatosLogin } from "@features/auth/schemas/auth.schema"
 
-// Contenedor: instancia el hook UNA vez y reparte datos + callbacks por props.
+/**
+ * `useSearchParams` obliga a que quien lo use viva bajo un `Suspense`: sin él,
+ * Next no puede prerenderizar la página y el build falla. Se aísla en este
+ * envoltorio para que el límite quede donde tiene que estar y no se pierda al
+ * tocar el contenedor.
+ */
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <ContenedorLogin />
+    </Suspense>
+  )
+}
+
+// Contenedor: instancia el hook UNA vez y reparte datos + callbacks por props.
+function ContenedorLogin() {
   const router = useRouter()
+  const parametros = useSearchParams()
   const { loadingLogin, error, handleLoginAuth } = useAuth()
+
+  // El acceso con Google vuelve al panel por una navegación, no por una petición
+  // del código, así que su fallo no puede llegar por el estado del hook: viaja
+  // en la URL. Sin esto la persona vuelve a la pantalla de entrada sin saber por
+  // qué no entró.
+  const errorOauth = mensajeDeErrorOauth(parametros.get("error"))
   // Salida coordinada: al autenticar, la tarjeta anima su despedida y recién ahí navegamos.
   const [saliendo, setSaliendo] = useState(false)
 
@@ -57,7 +79,12 @@ export default function LoginPage() {
 
           <AnimatePresence onExitComplete={() => router.push("/dashboard")}>
             {!saliendo && (
-              <Login key="login" onSubmit={onSubmitLogin} cargando={loadingLogin} error={error} />
+              <Login
+                key="login"
+                onSubmit={onSubmitLogin}
+                cargando={loadingLogin}
+                error={error ?? errorOauth}
+              />
             )}
           </AnimatePresence>
         </main>

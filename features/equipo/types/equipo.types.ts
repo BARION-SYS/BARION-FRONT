@@ -20,7 +20,11 @@ export interface Miembro {
   /** El de la membresía: cómo llama ESTA barbería a la persona. */
   nombre: string
   usuario: UsuarioResumen | null
-  /** Código del rol. No es lista cerrada: la barbería puede crear los suyos. */
+  /**
+   * Código del rol. La lista es cerrada —la define Barion— pero se maneja como
+   * texto y sale de `GET /equipo/roles`: hardcodear los cuatro códigos aquí
+   * duplicaría el catálogo y lo dejaría desincronizado el día que cambie.
+   */
   rol: string
   sedeId: string | null
   estado: EstadoMembresia

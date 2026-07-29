@@ -4,9 +4,10 @@ import type { Sesion } from "@features/auth/types/auth.types"
  * Si la sesión trae una capacidad concreta.
  *
  * Se pregunta por la CAPACIDAD, nunca por el rol: `puede(sesion, "agenda.gestionar")`
- * y jamás `sesion.rol?.codigo === "propietario"`. El código de rol no es lista
- * cerrada —una barbería puede crear los suyos— así que compararlo deja fuera a
- * cualquier rol nuevo sin que nadie se entere.
+ * y jamás `sesion.rol?.codigo === "propietario"`. Los roles son fijos, pero lo
+ * que puede una persona no sale solo de su rol: encima van sus concesiones y sus
+ * revocaciones. Comparar el código dejaría fuera al administrador al que le
+ * quitaron algo y al recepcionista al que le dieron de más.
  *
  * Ocultar un botón NO es seguridad: la API vuelve a comprobar el permiso en cada
  * petición y es ella quien manda. Esto solo evita ofrecer acciones que van a

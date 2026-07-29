@@ -12,7 +12,7 @@ El mock de UI de este repo **no es material desechable, es el diseño del produc
 
 Lo que sí cambia, y cambia **en todas partes a la vez**, es la forma de los datos. La arquitectura ya lo previó: `el service es el ÚNICO que importa el JSON`, así que al integrar solo cambia el cuerpo del service. Pero hay ocho supuestos del mock que la api no cumple, y esos sí tocan `types/`, `schemas/` y componentes.
 
-### Los ocho supuestos que hay que corregir (Fase 0)
+### Los ocho supuestos que hay que corregir (Fase 0) ⬜ SIN EMPEZAR
 
 | #   | El mock asume                                                | La api entrega                                                                                                                  | Alcance                                                                        |
 | --- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -47,7 +47,7 @@ Ninguno es difícil por separado. Juntos son el trabajo de la Fase 0, y hacerlos
 
 ---
 
-## Tres puertas, un panel: el slug no reestructura nada
+## Tres puertas, un panel: el slug no reestructura nada ✅ HECHO
 
 Cada barbería tiene su propia entrada, y el cliente final puede tener sesión. Suena a mover todo bajo `/b/[slug]/`. **No hace falta, y no se va a hacer.**
 
@@ -96,12 +96,12 @@ Consecuencia para este repo: **no se construyen** pantallas de registro, contras
 
 ### Lo que el mock **no** tiene y hay que construir de cero
 
-1. **Panel de staff de plataforma.** No existe ni la ruta. Es un área nueva (`/admin`), con su propio layout y su propia fuente de rutas: esa sesión llega con `barberia: null` y `esStaffPlataforma: true`, y `AuthProvider` ya distingue el caso.
+1. ~~**Panel de staff de plataforma.**~~ ✅ Hecho: `/admin`, dentro de la misma aplicación. Es un área nueva (`/admin`), con su propio layout y su propia fuente de rutas: esa sesión llega con `barberia: null` y `esStaffPlataforma: true`, y `AuthProvider` ya distingue el caso.
 2. **Concepto de sede.** No aparece en ninguna parte del front. Es transversal: selector en el `Navbar`, `sedeId` en filtros de listados, y la timezone de la sede como parámetro de todo formateo de fecha (`shared/utils/datetime.ts` ya la recibe por parámetro — la pieza está, falta quién se la pase).
 3. **Vistas propias del barbero.** El dashboard actual es del admin. El barbero necesita su agenda del día, su jornada editable y su "cuánto llevo ganado" — con permisos `*_propia`.
-4. **Roles y permisos.** Crear roles propios de la barbería y repartir permisos por persona. El modelo y los endpoints existen; el front no tiene ni pantalla.
+4. **Permisos por persona.** 🟡 La pestaña existe en `/dashboard/equipo`. **No hay creación de roles y no la habrá**: los define Barion y son iguales en todas las barberías, así que la pestaña Roles es de consulta (qué trae cada uno) y toda la edición vive en el modal de permisos de cada miembro — dar o quitar capacidades sin cambiarle el rol a nadie. Falta cablearla contra la api real.
 5. **Plan y suscripción.** Estado, uso vs límites, y el modo `solo_lectura` (trial vencido: se consulta la agenda, no se escribe) — que la UI tiene que saber pintar.
-6. **Gating por permiso.** `sesion.permisos` ya llega en `/auth/me` y hoy no se usa para nada. Cada acción del panel debería consultarlo.
+6. **Gating por permiso.** 🟡 El MENÚ ya se construye con `sesion.permisos`; falta que cada acción dentro de una pantalla (botones de crear, editar, eliminar) lo consulte también.
 
 ---
 
@@ -109,7 +109,15 @@ Consecuencia para este repo: **no se construyen** pantallas de registro, contras
 
 Cada fase espera a que su contraparte de la api esté publicada en `docs/frontend/api-barion/`. **El contrato va primero en la api, siempre.**
 
-### Fase 0 — Normalización (no depende de la api)
+### Fase 0 — Normalización (no depende de la api) 🟡
+
+Hecho ✅ — las dos puertas (`/b/[slug]/entrar` con la marca del tenant y la
+global con selector), el tipo de sesión en los tipos espejo, el `slug` hacia el
+acceso con Google, y las lecturas de capacidad y de tipo de actor
+(`features/auth/utils/permisos.ts`). Estas últimas están **escritas pero sin
+cablear**: se conectan cuando cada pantalla aplique su gating.
+
+Pendiente ⬜ — todo lo demás de esta lista, que es el grueso.
 
 Se puede hacer entera contra el mock, y conviene: deja los servicios listos para que integrar sea cambiar el cuerpo del método.
 
@@ -121,38 +129,50 @@ Se puede hacer entera contra el mock, y conviene: deja los servicios listos para
 - Gating: helper `puede(permiso)` sobre `sesion.permisos`, y `sesion.tipo` para decidir qué app se pinta.
 - **Las puertas**: `app/b/[slug]/entrar/page.tsx` (marca del tenant, reusa el `Login` que ya es real) y `app/entrar/page.tsx` (global, con el selector de barbería para el caso `requiereSeleccion`). `app/page.tsx` decide a dónde mandar según haya sesión o no. `app/dashboard/*` **no se toca**.
 
-### Fase 1 — Panel de plataforma (`/admin`)
+### Fase 1 — Panel de plataforma (`/admin`) ✅
+
+Hecho: área `/admin` dentro de la misma aplicación —misma puerta, misma barra
+lateral, otra navegación resuelta por la dirección— con inventario, alta y
+cambio de estado, y la pantalla de entrega que da al cliente sus enlaces listos
+para copiar.
+
+Hecho también, y no estaba en esta lista: **el menú se construye con las
+capacidades de la sesión**, tanto en la barra lateral como contra la dirección
+escrita a mano.
+
+Pendiente: la ficha individual de barbería y el formulario de registro abierto
+(`/registro`), cuya api ya existe.
 
 Área nueva. `routes/rutasAdmin.ts` como fuente única, layout propio reusando `LayoutDashboard`.
 
 `features/plataforma/`: listado de barberías, ficha, alta (el formulario más importante del sistema: crea barbería + sede inicial + propietario), cambio de estado, planes y suscripciones.
 
-### Fase 2 — Admin de barbería: estructura
+### Fase 2 — Admin de barbería: estructura ⬜
 
 - `features/sedes/` (nueva): CRUD, horarios por día con dos tramos, cierres.
-- `features/roles/` (nueva): roles propios, matriz de permisos, excepciones por persona.
+- `features/roles/`: roles en **solo lectura** (`RolesList` + `RolesDetail`) y la matriz de excepciones por persona (`RolesExcepcionesForm`), que es lo único que escribe. Sin formulario de rol: no hay endpoint que crearlos.
 - `features/equipo/` (nueva): hoy el mock mezcla equipo y barberos; son cosas distintas — equipo es **quién entra**, barberos es **quién atiende**.
 - `features/configuracion/`: General pasa a escribir la ficha pública (eslogan, descripción, ventajas); Horarios se muda a sede; se añade la sección Plan.
 
-### Fase 3 — Barberos
+### Fase 3 — Barberos ⬜
 
 `features/barberos/` real: perfil operativo, jornada semanal editable, excepciones, ausencias, oferta de servicios, comisión.
 
-### Fase 4 — Catálogo
+### Fase 4 — Catálogo ⬜
 
 Servicios de la barbería (con moneda y buffer, que hoy faltan) y oferta por barbero — que es **lo que se reserva de verdad**.
 
-### Fase 5 — Clientes
+### Fase 5 — Clientes ⬜
 
 `features/clientes/` real: listado con etiqueta resuelta por la api, ficha, historial, consentimientos, anonimizar (irreversible: confirmación explícita).
 
-### Fase 6 — Agenda
+### Fase 6 — Agenda ⬜
 
 La fase más grande del front. `features/citas/` sobre instantes UTC y timezone de sede, cita multi-servicio, los 8 estados, y disponibilidad real al crear.
 
 Aquí entra también la **vista del barbero**: su agenda del día y sus transiciones (`agenda.gestionar_propia`).
 
-### Fase 7 — Portal público y área del cliente
+### Fase 7 — Portal público y área del cliente ⬜
 
 `app/b/[slug]` sobre la api real: ficha, disponibilidad del motor, reserva, seguimiento por código. SSR sin login — es la superficie de conversión y tiene que ser rápida en gama baja.
 
@@ -163,15 +183,15 @@ Dos añadidos sobre lo que el mock ya tiene:
 
 El botón "Reservar" del invitado lleva al OTP en vez de al formulario de datos. Un cambio de destino, no de flujo.
 
-### Fase 8 — Nómina
+### Fase 8 — Nómina ⬜
 
 `features/nomina/` sobre `ganancias_barbero`, y la vista propia del barbero ("cuánto llevo esta semana").
 
-### Fase 9 — Dashboard y estadísticas
+### Fase 9 — Dashboard y estadísticas ⬜
 
 Series reales. Depende del job nocturno del worker: sin agregados no hay tendencia, solo el día de hoy.
 
-### Fase 10 — Notificaciones
+### Fase 10 — Notificaciones ⬜
 
 Bandeja in-app real. Push (VAPID) queda para después: en iOS solo funciona con la PWA en pantalla de inicio.
 

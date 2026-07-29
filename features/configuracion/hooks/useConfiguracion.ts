@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react"
 import type {
+  DatosFicha,
   DatosGeneral,
   DatosSeguridad,
   DatosServicio,
@@ -49,16 +50,32 @@ export function useConfiguracion() {
     }
   }, [])
 
+  /**
+   * La API devuelve la barbería completa, así que se refresca el estado en vez
+   * de volver a pedirla: un refetch dejaría la pantalla un instante con el valor
+   * viejo justo después de guardarlo.
+   */
   const handleGuardarGeneral = useCallback(async (payload: DatosGeneral): Promise<string> => {
     setLoadingAction(true)
-    setError(null)
     try {
       const res = await configuracionService.guardarGeneral(payload)
+      setBarberia(res.data)
       return res.message
     } catch (err) {
-      const mensaje = getErrorMessage(err)
-      setError(mensaje)
-      return mensaje
+      throw new Error(getErrorMessage(err))
+    } finally {
+      setLoadingAction(false)
+    }
+  }, [])
+
+  const handleGuardarFicha = useCallback(async (payload: DatosFicha): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await configuracionService.guardarFicha(payload)
+      setBarberia(res.data)
+      return res.message
+    } catch (err) {
+      throw new Error(getErrorMessage(err))
     } finally {
       setLoadingAction(false)
     }
@@ -138,6 +155,7 @@ export function useConfiguracion() {
     error,
     fetchConfiguracion,
     handleGuardarGeneral,
+    handleGuardarFicha,
     handleActualizarContrasena,
     handleCreateServicio,
     handleUpdateServicio,

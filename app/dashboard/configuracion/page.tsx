@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Apariencia } from "@features/configuracion/components/Apariencia"
+import { FichaPublica } from "@features/configuracion/components/FichaPublica"
 import { General } from "@features/configuracion/components/General"
 import { ConfiguracionNav } from "@features/configuracion/components/ConfiguracionNav"
 import { Notificaciones } from "@features/configuracion/components/Notificaciones"
@@ -13,8 +14,11 @@ import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { Button } from "@shared/components/ui/button"
 import { Modal } from "@shared/components/modals/Modal"
 import { notify } from "@shared/services/notify"
+import { useAuthStore } from "@store/auth.store"
+import { puede } from "@features/auth/utils/permisos"
 import { getErrorMessage } from "@shared/utils/error"
 import type {
+  DatosFicha,
   DatosGeneral,
   DatosSeguridad,
   DatosServicio,
@@ -38,11 +42,19 @@ export default function ConfiguracionPage() {
     loadingAction,
     fetchConfiguracion,
     handleGuardarGeneral,
+    handleGuardarFicha,
     handleActualizarContrasena,
     handleCreateServicio,
     handleUpdateServicio,
     handleDeleteServicio,
   } = useConfiguracion()
+
+  /**
+   * Ocultar el botón no es seguridad —la api revalida el permiso en cada
+   * petición—, pero evita ofrecer un guardado que va a terminar en 403.
+   */
+  const sesion = useAuthStore((estado) => estado.sesion)
+  const gestiona = puede(sesion, "barberias.gestionar")
 
   const [seccionActiva, setSeccionActiva] = useState<IdSeccionConfiguracion>("general")
   const [servicioFormOpen, setServicioFormOpen] = useState(false)
@@ -74,6 +86,14 @@ export default function ConfiguracionPage() {
   const onSubmitGeneral = async (datos: DatosGeneral) => {
     try {
       notify.success(await handleGuardarGeneral(datos))
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }
+
+  const onSubmitFicha = async (datos: DatosFicha) => {
+    try {
+      notify.success(await handleGuardarFicha(datos))
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
@@ -147,10 +167,23 @@ export default function ConfiguracionPage() {
 
       <div className="w-full min-w-0 flex-1 space-y-4">
         {seccionActiva === "general" && barberia && (
-          <General barberia={barberia} onSubmit={onSubmitGeneral} />
+          <>
+            <General
+              barberia={barberia}
+              soloLectura={!gestiona}
+              cargando={loadingAction}
+              onSubmit={onSubmitGeneral}
+            />
+            <FichaPublica
+              barberia={barberia}
+              soloLectura={!gestiona}
+              cargando={loadingAction}
+              onSubmit={onSubmitFicha}
+            />
+          </>
         )}
         {seccionActiva === "apariencia" && barberia && (
-          <Apariencia nombreBarberia={barberia.nombre} />
+          <Apariencia nombreBarberia={barberia.nombreComercial} />
         )}
         {seccionActiva === "notificaciones" && (
           <Notificaciones canales={canales} activos={canalesActivos} alAlternar={alternarCanal} />

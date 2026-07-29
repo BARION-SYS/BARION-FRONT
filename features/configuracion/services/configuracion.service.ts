@@ -1,10 +1,14 @@
 import { Bell, Clock, DollarSign, Palette, Shield, Store } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
+import { api } from "@lib/http/instances"
+import { omitEmpty } from "@shared/utils/params"
 import datos from "@features/configuracion/constants/configuracion.json"
 import {
+  esquemaFicha,
   esquemaGeneral,
   esquemaSeguridad,
   esquemaServicio,
+  type DatosFicha,
   type DatosGeneral,
   type DatosSeguridad,
   type DatosServicio,
@@ -17,7 +21,8 @@ import type {
 } from "@features/configuracion/types/configuracion.types"
 import type { ApiResult } from "@shared/types/api.types"
 
-// Capa mock — al integrar, cada método reemplaza su cuerpo por api.get/put(...) de @lib/http/instances.
+// La barbería ya es real; el resto de secciones sigue en mock hasta que exista
+// su contrato. Al integrar, cada método reemplaza su cuerpo por api.get/put(...).
 
 function ok<T>(data: T, message = "ok"): ApiResult<T> {
   return { data, status: 200, message, pagination: null }
@@ -47,7 +52,7 @@ export const configuracionService = {
   },
 
   async obtenerBarberia(): Promise<ApiResult<Barberia>> {
-    return ok(datos.barberia as Barberia)
+    return api.get<Barberia>("/barberias/mi")
   },
 
   // Presets de tema del tenant: el hex aquí es dato, no color de UI.
@@ -63,10 +68,24 @@ export const configuracionService = {
     return ok([...servicios])
   },
 
-  // Mock — al integrar: PUT /v1/settings/general.
-  async guardarGeneral(payload: DatosGeneral): Promise<ApiResult<null>> {
-    esquemaGeneral.parse(payload)
-    return ok(null, "Información de la barbería guardada")
+  async guardarGeneral(payload: DatosGeneral): Promise<ApiResult<Barberia>> {
+    const validos = esquemaGeneral.parse(payload)
+    // Los opcionales vacíos no viajan: omitirlos deja el campo como está, que no
+    // es lo mismo que mandarlos en blanco.
+    return api.patch<Barberia>("/barberias/mi", omitEmpty({ ...validos }))
+  },
+
+  /**
+   * El texto del portal. Va aparte de `guardarGeneral` porque son dos endpoints
+   * distintos: la identidad fiscal y la cara pública se tocan por separado.
+   */
+  async guardarFicha(payload: DatosFicha): Promise<ApiResult<Barberia>> {
+    const validos = esquemaFicha.parse(payload)
+    // `ventajas` viaja siempre, incluso vacío: es la única forma de borrarlas.
+    return api.patch<Barberia>("/barberias/mi/ficha", {
+      ...omitEmpty({ eslogan: validos.eslogan, descripcion: validos.descripcion }),
+      ventajas: validos.ventajas,
+    })
   },
 
   // Mock — al integrar: POST /v1/auth/change-password.

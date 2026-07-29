@@ -26,13 +26,6 @@
       "icono": "Shield"
     }
   ],
-  "barberia": {
-    "nombre": "Barbería El Rey",
-    "telefono": "+52 55 1234 5678",
-    "correo": "elrey@barion.mx",
-    "direccion": "Av. Reforma 123, CDMX",
-    "descripcion": "Barbería premium especializada en cortes modernos"
-  },
   "coloresPreset": ["#d4a843", "#3b82f6", "#22c55e", "#ef4444", "#a855f7", "#f97316"],
   "canales": [
     {

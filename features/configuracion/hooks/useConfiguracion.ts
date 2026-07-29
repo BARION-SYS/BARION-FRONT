@@ -3,14 +3,12 @@
 import { useCallback, useState } from "react"
 import type {
   DatosGeneral,
-  DatosHorarios,
   DatosSeguridad,
   DatosServicio,
 } from "@features/configuracion/schemas/configuracion.schema"
 import { configuracionService } from "@features/configuracion/services/configuracion.service"
 import type {
   Barberia,
-  HorarioDia,
   InfoCanalNotificacion,
   SeccionConfiguracion,
   Servicio,
@@ -22,7 +20,6 @@ export function useConfiguracion() {
   const [secciones, setSecciones] = useState<SeccionConfiguracion[]>([])
   const [barberia, setBarberia] = useState<Barberia | null>(null)
   const [coloresPreset, setColoresPreset] = useState<string[]>([])
-  const [horarios, setHorarios] = useState<HorarioDia[]>([])
   const [canales, setCanales] = useState<InfoCanalNotificacion[]>([])
   const [servicios, setServicios] = useState<Servicio[]>([])
   const [loadingConfiguracion, setLoadingConfiguracion] = useState(false)
@@ -33,19 +30,16 @@ export function useConfiguracion() {
     setLoadingConfiguracion(true)
     setError(null)
     try {
-      const [resSecciones, resBarberia, resColores, resHorarios, resCanales, resServicios] =
-        await Promise.all([
-          configuracionService.obtenerSecciones(),
-          configuracionService.obtenerBarberia(),
-          configuracionService.obtenerColoresPreset(),
-          configuracionService.obtenerHorarios(),
-          configuracionService.obtenerCanales(),
-          configuracionService.obtenerServicios(),
-        ])
+      const [resSecciones, resBarberia, resColores, resCanales, resServicios] = await Promise.all([
+        configuracionService.obtenerSecciones(),
+        configuracionService.obtenerBarberia(),
+        configuracionService.obtenerColoresPreset(),
+        configuracionService.obtenerCanales(),
+        configuracionService.obtenerServicios(),
+      ])
       setSecciones(resSecciones.data)
       setBarberia(resBarberia.data)
       setColoresPreset(resColores.data)
-      setHorarios(resHorarios.data)
       setCanales(resCanales.data)
       setServicios(resServicios.data)
     } catch (err) {
@@ -60,21 +54,6 @@ export function useConfiguracion() {
     setError(null)
     try {
       const res = await configuracionService.guardarGeneral(payload)
-      return res.message
-    } catch (err) {
-      const mensaje = getErrorMessage(err)
-      setError(mensaje)
-      return mensaje
-    } finally {
-      setLoadingAction(false)
-    }
-  }, [])
-
-  const handleGuardarHorarios = useCallback(async (payload: DatosHorarios): Promise<string> => {
-    setLoadingAction(true)
-    setError(null)
-    try {
-      const res = await configuracionService.guardarHorarios(payload)
       return res.message
     } catch (err) {
       const mensaje = getErrorMessage(err)
@@ -152,7 +131,6 @@ export function useConfiguracion() {
     secciones,
     barberia,
     coloresPreset,
-    horarios,
     canales,
     servicios,
     loadingConfiguracion,
@@ -160,7 +138,6 @@ export function useConfiguracion() {
     error,
     fetchConfiguracion,
     handleGuardarGeneral,
-    handleGuardarHorarios,
     handleActualizarContrasena,
     handleCreateServicio,
     handleUpdateServicio,

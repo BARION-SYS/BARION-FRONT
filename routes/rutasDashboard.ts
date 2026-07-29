@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Building2,
   CalendarDays,
   DollarSign,
   LayoutDashboard,
@@ -57,6 +58,17 @@ export const rutasDashboard: RutaApp[] = [
     subtitulo: "Quién entra al sistema y con qué capacidades",
     icono: ShieldCheck,
     entrada: "derecha",
+  },
+  {
+    clave: "sedes",
+    permisos: ["sedes.ver"],
+    seccion: "operacion",
+    href: "/dashboard/sedes",
+    etiqueta: "Sedes",
+    titulo: "Sedes",
+    subtitulo: "Dónde opera la barbería, con su horario y sus cierres",
+    icono: Building2,
+    entrada: "izquierda",
   },
   {
     clave: "clientes",

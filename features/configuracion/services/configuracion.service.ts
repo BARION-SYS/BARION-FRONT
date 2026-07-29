@@ -3,17 +3,14 @@ import type { LucideIcon } from "lucide-react"
 import datos from "@features/configuracion/constants/configuracion.json"
 import {
   esquemaGeneral,
-  esquemaHorarios,
   esquemaSeguridad,
   esquemaServicio,
   type DatosGeneral,
-  type DatosHorarios,
   type DatosSeguridad,
   type DatosServicio,
 } from "@features/configuracion/schemas/configuracion.schema"
 import type {
   Barberia,
-  HorarioDia,
   InfoCanalNotificacion,
   SeccionConfiguracion,
   Servicio,
@@ -58,10 +55,6 @@ export const configuracionService = {
     return ok(datos.coloresPreset as string[])
   },
 
-  async obtenerHorarios(): Promise<ApiResult<HorarioDia[]>> {
-    return ok(datos.horarios as HorarioDia[])
-  },
-
   async obtenerCanales(): Promise<ApiResult<InfoCanalNotificacion[]>> {
     return ok(datos.canales as InfoCanalNotificacion[])
   },
@@ -74,12 +67,6 @@ export const configuracionService = {
   async guardarGeneral(payload: DatosGeneral): Promise<ApiResult<null>> {
     esquemaGeneral.parse(payload)
     return ok(null, "Información de la barbería guardada")
-  },
-
-  // Mock — al integrar: PUT /v1/settings/hours.
-  async guardarHorarios(payload: DatosHorarios): Promise<ApiResult<null>> {
-    esquemaHorarios.parse(payload)
-    return ok(null, "Horarios de apertura guardados")
   },
 
   // Mock — al integrar: POST /v1/auth/change-password.

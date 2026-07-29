@@ -8,15 +8,6 @@ export const esquemaGeneral = z.object({
   descripcion: z.string().max(280, "Máximo 280 caracteres"),
 })
 
-const esquemaHorarioDia = z.object({
-  dia: z.string(),
-  abierto: z.boolean(),
-  apertura: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora inválida"),
-  cierre: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora inválida"),
-})
-
-export const esquemaHorarios = z.array(esquemaHorarioDia)
-
 export const esquemaSeguridad = z
   .object({
     contrasenaActual: z.string().min(1, "Ingresa tu contraseña actual"),
@@ -39,6 +30,5 @@ export const esquemaServicio = z.object({
 
 // Lo que se envía a la API es SIEMPRE el tipo inferido del schema.
 export type DatosGeneral = z.infer<typeof esquemaGeneral>
-export type DatosHorarios = z.infer<typeof esquemaHorarios>
 export type DatosSeguridad = z.infer<typeof esquemaSeguridad>
 export type DatosServicio = z.infer<typeof esquemaServicio>

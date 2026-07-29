@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { Apariencia } from "@features/configuracion/components/Apariencia"
 import { General } from "@features/configuracion/components/General"
-import { Horarios } from "@features/configuracion/components/Horarios"
 import { ConfiguracionNav } from "@features/configuracion/components/ConfiguracionNav"
 import { Notificaciones } from "@features/configuracion/components/Notificaciones"
 import { Seguridad } from "@features/configuracion/components/Seguridad"
@@ -23,7 +22,6 @@ import type {
 import type {
   CanalNotificacion,
   CanalesNotificacion,
-  HorarioDia,
   IdSeccionConfiguracion,
   Servicio,
 } from "@features/configuracion/types/configuracion.types"
@@ -34,14 +32,12 @@ export default function ConfiguracionPage() {
     secciones,
     barberia,
     coloresPreset,
-    horarios,
     canales,
     servicios,
     loadingConfiguracion,
     loadingAction,
     fetchConfiguracion,
     handleGuardarGeneral,
-    handleGuardarHorarios,
     handleActualizarContrasena,
     handleCreateServicio,
     handleUpdateServicio,
@@ -52,7 +48,6 @@ export default function ConfiguracionPage() {
   const [servicioFormOpen, setServicioFormOpen] = useState(false)
   const [servicioEnEdicion, setServicioEnEdicion] = useState<Servicio | null>(null)
   const [servicioAEliminar, setServicioAEliminar] = useState<Servicio | null>(null)
-  const [horariosEdicion, setHorariosEdicion] = useState<HorarioDia[]>([])
   const [canalesActivos, setCanalesActivos] = useState<CanalesNotificacion>({
     whatsapp: false,
     sms: false,
@@ -63,11 +58,6 @@ export default function ConfiguracionPage() {
   useEffect(() => {
     void fetchConfiguracion()
   }, [fetchConfiguracion])
-
-  // Copia editable de los horarios cuando llega la data
-  useEffect(() => {
-    setHorariosEdicion(horarios)
-  }, [horarios])
 
   // Estado inicial de los toggles según lo que reporta la API
   useEffect(() => {
@@ -81,22 +71,9 @@ export default function ConfiguracionPage() {
   const alternarCanal = (canal: CanalNotificacion) =>
     setCanalesActivos((activos) => ({ ...activos, [canal]: !activos[canal] }))
 
-  const cambiarHorario = (dia: string, cambios: Partial<HorarioDia>) =>
-    setHorariosEdicion((lista) =>
-      lista.map((horario) => (horario.dia === dia ? { ...horario, ...cambios } : horario))
-    )
-
   const onSubmitGeneral = async (datos: DatosGeneral) => {
     try {
       notify.success(await handleGuardarGeneral(datos))
-    } catch (err) {
-      notify.error(getErrorMessage(err))
-    }
-  }
-
-  const onSubmitHorarios = async () => {
-    try {
-      notify.success(await handleGuardarHorarios(horariosEdicion))
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
@@ -174,14 +151,6 @@ export default function ConfiguracionPage() {
         )}
         {seccionActiva === "apariencia" && barberia && (
           <Apariencia nombreBarberia={barberia.nombre} />
-        )}
-        {seccionActiva === "horarios" && (
-          <Horarios
-            horarios={horariosEdicion}
-            alCambiar={cambiarHorario}
-            guardando={loadingAction}
-            onSubmit={onSubmitHorarios}
-          />
         )}
         {seccionActiva === "notificaciones" && (
           <Notificaciones canales={canales} activos={canalesActivos} alAlternar={alternarCanal} />

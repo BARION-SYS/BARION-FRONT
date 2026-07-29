@@ -1,7 +1,12 @@
 import type { LucideIcon } from "lucide-react"
 
+/**
+ * Sin `horarios`: el horario comercial es de la SEDE, no de la barbería, y vive
+ * en `/dashboard/sedes`. Una cadena que abre en dos ciudades tiene dos semanas
+ * distintas y no caben en un único formulario de configuración.
+ */
 export type IdSeccionConfiguracion =
-  "general" | "apariencia" | "horarios" | "notificaciones" | "precios" | "seguridad"
+  "general" | "apariencia" | "notificaciones" | "precios" | "seguridad"
 
 export interface SeccionConfiguracion {
   id: IdSeccionConfiguracion
@@ -22,14 +27,6 @@ export interface Servicio {
   nombre: string
   precio: number
   duracionMin: number
-}
-
-export interface HorarioDia {
-  dia: string
-  abierto: boolean
-  /** Hora local de la sede, formato HH:mm */
-  apertura: string
-  cierre: string
 }
 
 export type CanalNotificacion = "whatsapp" | "sms" | "correo" | "interno"

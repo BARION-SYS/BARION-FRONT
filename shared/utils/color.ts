@@ -1,5 +1,21 @@
 // Utilidades puras de color para el tema de marca del tenant.
 
+/** Cuántos tokens `--chart-N` define la paleta antes de repetirse. */
+const TOKENS_DE_GRAFICA = 8
+
+/**
+ * Índice de color de la API → token de la paleta.
+ *
+ * La API entrega un ÍNDICE y no un hex a propósito: la paleta se re-tiñe con la
+ * marca de cada barbería, así que un color fijo por barbero rompería la armonía
+ * y obligaría a validar contraste uno por uno. El índice se resuelve aquí, que
+ * es donde vive el tema.
+ */
+export function tokenDeColor(indice: number): string {
+  const seguro = Number.isInteger(indice) && indice >= 0 ? indice : 0
+  return `var(--chart-${(seguro % TOKENS_DE_GRAFICA) + 1})`
+}
+
 // Luminancia relativa (WCAG) de un hex #rrggbb.
 function luminancia(hex: string): number {
   const limpio = hex.replace("#", "")

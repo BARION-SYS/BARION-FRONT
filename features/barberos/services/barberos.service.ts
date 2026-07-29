@@ -1,87 +1,122 @@
+import { api } from "@lib/http/instances"
+import { omitEmpty } from "@shared/utils/params"
+import {
+  esquemaAusencia,
+  esquemaBarbero,
+  esquemaExcepcion,
+  esquemaJornada,
+  type DatosAusencia,
+  type DatosBarbero,
+  type DatosExcepcion,
+  type DatosJornada,
+} from "@features/barberos/schemas/barberos.schema"
+import type {
+  Ausencia,
+  AusenciaCreada,
+  Barbero,
+  ExcepcionJornada,
+  FiltrosAusencias,
+  FiltrosBarberos,
+  JornadaSemanal,
+} from "@features/barberos/types/barberos.types"
 import type { ApiResult } from "@shared/types/api.types"
-import type { Barbero } from "@features/barberos/types/barberos.types"
-import { esquemaBarbero, type DatosBarbero } from "@features/barberos/schemas/barberos.schema"
-import datos from "@features/barberos/constants/barberos.json"
 
-function ok<T>(data: T, message = "ok"): ApiResult<T> {
-  return { data, status: 200, message, pagination: null }
-}
-
-// Copia en memoria del mock — las mutaciones la modifican y el refetch del padre ve el cambio.
-let barberos: Barbero[] = (datos.barberos as Barbero[]).map((barbero) => ({ ...barbero }))
-
-const coloresChart = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)"]
-
-function inicialesDe(nombre: string): string {
-  const partes = nombre.trim().split(/\s+/)
-  return `${partes[0]?.[0] ?? ""}${partes[1]?.[0] ?? ""}`.toUpperCase()
-}
-
-// Singleton mock — al integrar la API cada método pasa a usar el api-client.
 export const barberosService = {
-  async obtenerBarberos(): Promise<ApiResult<Barbero[]>> {
-    return ok(barberos)
+  async obtenerBarberos(filtros: FiltrosBarberos = {}): Promise<ApiResult<Barbero[]>> {
+    return api.get<Barbero[]>("/barberos", { params: omitEmpty({ ...filtros }) })
   },
 
-  // Mock — al integrar: POST /v1/barbers.
-  async crearBarbero(payload: DatosBarbero): Promise<ApiResult<null>> {
-    const validos = esquemaBarbero.parse(payload)
-    const id = barberos.reduce((max, barbero) => Math.max(max, barbero.id), 0) + 1
-    barberos = [
-      ...barberos,
-      {
-        id,
-        nombre: validos.nombre,
-        rol: validos.rol,
-        iniciales: inicialesDe(validos.nombre),
-        color: coloresChart[(id - 1) % coloresChart.length],
-        calificacion: 0,
-        resenas: 0,
-        estado: "activo",
-        horario: "Lun – Sáb · 09:00 – 19:00",
-        diasLaborales: validos.diasLaborales ?? [true, true, true, true, true, true, false],
-        servicios: [],
-        estadisticas: {
-          citas: 0,
-          ingresos: 0,
-          comision: 0,
-          porcentajeComision: validos.porcentajeComision,
-          horasPorDia: 0,
-        },
-        citasSemana: [0, 0, 0, 0, 0, 0, 0],
-        telefono: validos.telefono,
-        correo: validos.correo,
-      },
-    ]
-    return ok(null, "Barbero agregado al equipo")
+  /**
+   * El barbero que ES quien pregunta. Devuelve `null` si no atiende —el
+   * administrador no es barbero— y eso no es un error.
+   */
+  async obtenerMiPerfil(): Promise<ApiResult<Barbero | null>> {
+    return api.get<Barbero | null>("/barberos/mio")
   },
 
-  // Mock — al integrar: PUT /v1/barbers/:id.
-  async actualizarBarbero(id: number, payload: DatosBarbero): Promise<ApiResult<null>> {
+  async crearBarbero(payload: DatosBarbero): Promise<ApiResult<Barbero>> {
     const validos = esquemaBarbero.parse(payload)
-    barberos = barberos.map((barbero) =>
-      barbero.id === id
-        ? {
-            ...barbero,
-            nombre: validos.nombre,
-            rol: validos.rol,
-            iniciales: inicialesDe(validos.nombre),
-            telefono: validos.telefono,
-            correo: validos.correo,
-            diasLaborales: validos.diasLaborales ?? barbero.diasLaborales,
-            estadisticas: {
-              ...barbero.estadisticas,
-              porcentajeComision: validos.porcentajeComision,
-            },
-          }
-        : barbero
+    // Los opcionales vacíos no viajan: omitirlos deja que la API decida su
+    // valor por defecto, que no es lo mismo que mandarlos en blanco.
+    return api.post<Barbero>("/barberos", omitEmpty({ ...validos }))
+  },
+
+  async actualizarBarbero(id: string, payload: DatosBarbero): Promise<ApiResult<Barbero>> {
+    const validos = esquemaBarbero.parse(payload)
+    return api.patch<Barbero>(`/barberos/${id}`, omitEmpty({ ...validos }))
+  },
+
+  /** Soft delete: conserva su historial y NO cancela sus citas futuras. */
+  async desactivarBarbero(id: string, fechaRetiro?: string): Promise<ApiResult<Barbero>> {
+    return api.delete<Barbero>(`/barberos/${id}`, {
+      data: omitEmpty({ fechaRetiro }),
+    })
+  },
+
+  async activarBarbero(id: string): Promise<ApiResult<Barbero>> {
+    return api.post<Barbero>(`/barberos/${id}/activar`, {})
+  },
+
+  async obtenerJornada(barberoId: string): Promise<ApiResult<JornadaSemanal>> {
+    return api.get<JornadaSemanal>(`/barberos/${barberoId}/jornadas`)
+  },
+
+  /** Sustituye la semana entera: es lo que permite quitar un tramo. */
+  async reemplazarJornada(
+    barberoId: string,
+    payload: DatosJornada
+  ): Promise<ApiResult<JornadaSemanal>> {
+    const validos = esquemaJornada.parse(payload)
+    return api.put<JornadaSemanal>(`/barberos/${barberoId}/jornadas`, validos)
+  },
+
+  async obtenerExcepciones(
+    barberoId: string,
+    ventana: { desde?: string; hasta?: string } = {}
+  ): Promise<ApiResult<ExcepcionJornada[]>> {
+    return api.get<ExcepcionJornada[]>(`/barberos/${barberoId}/excepciones`, {
+      params: omitEmpty({ ...ventana }),
+    })
+  },
+
+  async guardarExcepcion(
+    barberoId: string,
+    payload: DatosExcepcion
+  ): Promise<ApiResult<ExcepcionJornada>> {
+    const validos = esquemaExcepcion.parse(payload)
+    return api.put<ExcepcionJornada>(
+      `/barberos/${barberoId}/excepciones`,
+      omitEmpty({ ...validos, cerrado: validos.cerrado })
     )
-    return ok(null, "Barbero actualizado")
   },
 
-  // Mock — al integrar: DELETE /v1/barbers/:id.
-  async eliminarBarbero(id: number): Promise<ApiResult<null>> {
-    barberos = barberos.filter((barbero) => barbero.id !== id)
-    return ok(null, "Barbero eliminado")
+  async eliminarExcepcion(barberoId: string, excepcionId: string): Promise<ApiResult<null>> {
+    return api.delete<null>(`/barberos/${barberoId}/excepciones/${excepcionId}`)
+  },
+
+  async obtenerAusencias(
+    barberoId: string,
+    filtros: FiltrosAusencias = {}
+  ): Promise<ApiResult<Ausencia[]>> {
+    return api.get<Ausencia[]>(`/barberos/${barberoId}/ausencias`, {
+      params: omitEmpty({ ...filtros }),
+    })
+  },
+
+  /** La respuesta trae `citasPisadas`: la ausencia NO cancela esas citas. */
+  async programarAusencia(
+    barberoId: string,
+    payload: DatosAusencia
+  ): Promise<ApiResult<AusenciaCreada>> {
+    const validos = esquemaAusencia.parse(payload)
+    return api.post<AusenciaCreada>(`/barberos/${barberoId}/ausencias`, omitEmpty({ ...validos }))
+  },
+
+  async aprobarAusencia(barberoId: string, ausenciaId: string): Promise<ApiResult<Ausencia>> {
+    return api.post<Ausencia>(`/barberos/${barberoId}/ausencias/${ausenciaId}/aprobar`, {})
+  },
+
+  async cancelarAusencia(barberoId: string, ausenciaId: string): Promise<ApiResult<null>> {
+    return api.delete<null>(`/barberos/${barberoId}/ausencias/${ausenciaId}`)
   },
 }

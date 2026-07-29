@@ -1,19 +1,101 @@
 import { z } from "zod"
 
-// Roles disponibles — también alimentan el select del formulario.
-export const rolesBarbero = ["Barbero Senior", "Barbero"] as const
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+const E164 = /^\+[1-9]\d{7,14}$/
+const HORA = /^(?:[01]\d|2[0-3]):[0-5]\d$|^24:00$/
+const FECHA = /^\d{4}-\d{2}-\d{2}$/
+
+/** 10000 puntos base = 100 %. */
+export const MAX_COMISION_BPS = 10000
 
 export const esquemaBarbero = z.object({
-  nombre: z.string().min(2, "Ingresa el nombre del barbero"),
-  rol: z.enum(rolesBarbero, "Selecciona un rol"),
-  telefono: z.string().min(7, "Ingresa un teléfono válido"),
-  correo: z.email("Ingresa un correo válido"),
-  porcentajeComision: z
-    .number("Ingresa el porcentaje de comisión")
-    .min(10, "La comisión mínima es 10%")
-    .max(70, "La comisión máxima es 70%"),
-  diasLaborales: z.array(z.boolean()).length(7, "Deben ser 7 días").optional(),
+  nombrePublico: z.string().min(2, "Mínimo 2 caracteres").max(120, "Máximo 120"),
+  // De vitrina, no de autorización: lo que el cliente lee bajo el nombre.
+  titulo: z.string().max(120, "Máximo 120").optional(),
+  bio: z.string().max(2000, "Máximo 2000").optional(),
+  slug: z.string().regex(SLUG, "Solo minúsculas, números y guiones").optional(),
+  telefonoE164: z.string().regex(E164, "Formato internacional: +573001112233").optional(),
+  email: z.email("Ingresa un correo válido").optional(),
+  fechaContratacion: z.string().regex(FECHA, "Formato AAAA-MM-DD").optional(),
+  // En puntos base, igual que la API. El formulario pide porcentaje y convierte:
+  // quien lo llena piensa en "50 %", y la base guarda 5000 para no arrastrar
+  // decimales en el cálculo de cada comisión.
+  comisionBps: z.number().int().min(0).max(MAX_COMISION_BPS).optional(),
+  sedeId: z.uuid().optional(),
+  // Vincularlo a quien ya entra al sistema. Sin esto queda un barbero SIN
+  // cuenta, que es un caso normal y no un alta a medias.
+  membresiaId: z.uuid().optional(),
 })
 
-// Lo que se envía a la API es SIEMPRE el tipo inferido del schema.
 export type DatosBarbero = z.infer<typeof esquemaBarbero>
+
+const tramo = z.object({
+  diaSemana: z.number().int().min(0).max(6),
+  inicio: z.string().regex(HORA, "Formato HH:mm"),
+  fin: z.string().regex(HORA, "Formato HH:mm"),
+})
+
+/**
+ * La semana COMPLETA: es lo único que permite quitar un tramo. Los solapes los
+ * rechazaría igual la API, pero comprobarlos aquí evita un viaje de ida y vuelta
+ * para decir algo que ya se sabe en el formulario.
+ */
+export const esquemaJornada = z
+  .object({ tramos: z.array(tramo) })
+  .refine(({ tramos }) => tramos.every((t) => aMinutos(t.fin) > aMinutos(t.inicio)), {
+    message: "Un tramo termina antes de empezar",
+    path: ["tramos"],
+  })
+  .refine(({ tramos }) => !haySolape(tramos), {
+    message: "Dos tramos del mismo día se solapan",
+    path: ["tramos"],
+  })
+
+export type DatosJornada = z.infer<typeof esquemaJornada>
+
+export const esquemaAusencia = z
+  .object({
+    iniciaEn: z.iso.datetime("Instante inválido"),
+    terminaEn: z.iso.datetime("Instante inválido"),
+    tipo: z.enum(["vacaciones", "incapacidad", "permiso", "bloqueo"]),
+    motivo: z.string().min(2, "Mínimo 2 caracteres").max(200, "Máximo 200").optional(),
+  })
+  .refine(({ iniciaEn, terminaEn }) => terminaEn > iniciaEn, {
+    message: "La ausencia termina antes de empezar",
+    path: ["terminaEn"],
+  })
+
+export type DatosAusencia = z.infer<typeof esquemaAusencia>
+
+export const esquemaExcepcion = z
+  .object({
+    fecha: z.string().regex(FECHA, "Formato AAAA-MM-DD"),
+    cerrado: z.boolean(),
+    inicio: z.string().regex(HORA, "Formato HH:mm").optional(),
+    fin: z.string().regex(HORA, "Formato HH:mm").optional(),
+    motivo: z.string().max(200, "Máximo 200").optional(),
+  })
+  .refine(({ cerrado, inicio, fin }) => cerrado || (Boolean(inicio) && Boolean(fin)), {
+    message: "Un día con jornada especial necesita hora de inicio y de fin",
+    path: ["inicio"],
+  })
+
+export type DatosExcepcion = z.infer<typeof esquemaExcepcion>
+
+function aMinutos(hora: string): number {
+  const [hh, mm] = hora.split(":")
+  return Number(hh) * 60 + Number(mm)
+}
+
+// Rango semiabierto: terminar a las 13:00 y volver a empezar a las 13:00 no es solape.
+function haySolape(tramos: { diaSemana: number; inicio: string; fin: string }[]): boolean {
+  return tramos.some((uno, i) =>
+    tramos.some(
+      (otro, j) =>
+        j > i &&
+        uno.diaSemana === otro.diaSemana &&
+        aMinutos(uno.inicio) < aMinutos(otro.fin) &&
+        aMinutos(otro.inicio) < aMinutos(uno.fin)
+    )
+  )
+}

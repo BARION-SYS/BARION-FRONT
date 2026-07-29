@@ -12,8 +12,8 @@ import { useEquipo } from "@features/equipo/hooks/useEquipo"
 import { useRoles } from "@features/roles/hooks/useRoles"
 import { EquipoForm } from "@features/equipo/components/EquipoForm"
 import { EquipoList } from "@features/equipo/components/EquipoList"
+import { RolesDetail } from "@features/roles/components/RolesDetail"
 import { RolesExcepcionesForm } from "@features/roles/components/RolesExcepcionesForm"
-import { RolesForm } from "@features/roles/components/RolesForm"
 import { RolesList } from "@features/roles/components/RolesList"
 import type { DatosInvitacion } from "@features/equipo/schemas/equipo.schema"
 import type { Miembro } from "@features/equipo/types/equipo.types"
@@ -23,8 +23,13 @@ import type { ExcepcionPermiso, Rol } from "@features/roles/types/roles.types"
  * Quién entra al sistema y con qué capacidades.
  *
  * Dos pestañas porque son dos preguntas distintas sobre lo mismo: a quién dejo
- * entrar, y qué puede hacer cada tipo de persona. Separarlas en dos secciones
- * del menú obligaría a saltar entre ellas para una sola tarea.
+ * entrar, y qué trae cada rol. Separarlas en dos secciones del menú obligaría a
+ * saltar entre ellas para una sola tarea.
+ *
+ * **Los roles no se crean ni se editan**: los define Barion y valen igual en
+ * todas las barberías, así que esa pestaña es de consulta. Lo que esta barbería
+ * decide —dar o quitar capacidades a una persona— vive en Personas, en el modal
+ * de permisos de cada miembro.
  *
  * No confundir con Barberos: aquí está quien ENTRA, allí quien ATIENDE — y el
  * segundo puede no tener cuenta.
@@ -45,19 +50,15 @@ export default function EquipoPage() {
     permisos,
     excepciones,
     loadingLista: cargandoRoles,
-    loadingAction: guardandoRol,
+    loadingAction: guardandoPermisos,
     fetchRoles,
     fetchExcepciones,
-    handleCreateRol,
-    handleUpdateRol,
-    handleDeleteRol,
     handleReplaceExcepciones,
   } = useRoles()
 
   // Estado de UI: vive en el contenedor.
   const [invitando, setInvitando] = useState(false)
-  const [rolEnEdicion, setRolEnEdicion] = useState<Rol | null>(null)
-  const [creandoRol, setCreandoRol] = useState(false)
+  const [rolEnDetalle, setRolEnDetalle] = useState<Rol | null>(null)
   const [miembroConPermisos, setMiembroConPermisos] = useState<Miembro | null>(null)
 
   const cargar = useCallback(() => {
@@ -85,25 +86,6 @@ export default function EquipoPage() {
       if (await conAviso(() => handleInviteMiembro(datos))) setInvitando(false)
     },
     [handleInviteMiembro] // eslint-disable-line react-hooks/exhaustive-deps
-  )
-
-  const onGuardarRol = useCallback(
-    async (datos: { codigo: string; nombre: string; permisos: string[] }) => {
-      const guardado = rolEnEdicion
-        ? await conAviso(() =>
-            handleUpdateRol(rolEnEdicion.id, {
-              nombre: datos.nombre,
-              permisos: datos.permisos,
-            })
-          )
-        : await conAviso(() => handleCreateRol(datos))
-
-      if (guardado) {
-        setRolEnEdicion(null)
-        setCreandoRol(false)
-      }
-    },
-    [rolEnEdicion, handleUpdateRol, handleCreateRol] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const onGuardarExcepciones = useCallback(
@@ -136,7 +118,7 @@ export default function EquipoPage() {
         <TabsContent value="personas" className="mt-4">
           <SectionCard
             titulo="Personas con acceso"
-            subtitulo="Quién entra al sistema y con qué rol"
+            subtitulo="Quién entra al sistema, con qué rol y con qué permisos"
             accion={
               <Button type="button" size="sm" onClick={() => setInvitando(true)}>
                 <Plus className="size-4" aria-hidden />
@@ -160,20 +142,9 @@ export default function EquipoPage() {
         <TabsContent value="roles" className="mt-4">
           <SectionCard
             titulo="Roles"
-            subtitulo="Paquetes de capacidades. Los de Barion se muestran pero no se editan"
-            accion={
-              <Button type="button" size="sm" onClick={() => setCreandoRol(true)}>
-                <Plus className="size-4" aria-hidden />
-                Nuevo rol
-              </Button>
-            }
+            subtitulo="Los define Barion y son iguales en todas las barberías. Para ajustar a una persona, ve a Personas"
           >
-            <RolesList
-              roles={roles}
-              loading={cargandoRoles}
-              onEditar={setRolEnEdicion}
-              onEliminar={(rol) => void conAviso(() => handleDeleteRol(rol.id))}
-            />
+            <RolesList roles={roles} loading={cargandoRoles} onVer={setRolEnDetalle} />
           </SectionCard>
         </TabsContent>
       </Tabs>
@@ -188,23 +159,13 @@ export default function EquipoPage() {
       </Modal>
 
       <Modal
-        open={creandoRol || rolEnEdicion !== null}
-        onOpenChange={(abierto) => {
-          if (!abierto) {
-            setCreandoRol(false)
-            setRolEnEdicion(null)
-          }
-        }}
-        titulo={rolEnEdicion ? rolEnEdicion.nombre : "Nuevo rol"}
+        open={rolEnDetalle !== null}
+        onOpenChange={(abierto) => !abierto && setRolEnDetalle(null)}
+        titulo={rolEnDetalle?.nombre ?? ""}
+        descripcion="Qué puede hacer quien tiene este rol."
         size="lg"
       >
-        <RolesForm
-          key={rolEnEdicion?.id ?? "nuevo"}
-          rol={rolEnEdicion}
-          permisos={permisos}
-          cargando={guardandoRol}
-          onSubmit={onGuardarRol}
-        />
+        {rolEnDetalle && <RolesDetail rol={rolEnDetalle} permisos={permisos} />}
       </Modal>
 
       <Modal
@@ -219,7 +180,7 @@ export default function EquipoPage() {
           rol={roles.find((r) => r.codigo === miembroConPermisos?.rol)}
           permisos={permisos}
           excepciones={excepciones}
-          cargando={guardandoRol}
+          cargando={guardandoPermisos}
           onSubmit={onGuardarExcepciones}
         />
       </Modal>

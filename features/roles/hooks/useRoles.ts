@@ -3,14 +3,16 @@
 import { useCallback, useState } from "react"
 import { rolesService } from "@features/roles/services/roles.service"
 import { getErrorMessage } from "@shared/utils/error"
-import type {
-  DatosEditarRol,
-  DatosExcepciones,
-  DatosRol,
-} from "@features/roles/schemas/roles.schema"
+import type { DatosExcepciones } from "@features/roles/schemas/roles.schema"
 import type { ExcepcionPermiso, Permiso, Rol } from "@features/roles/types/roles.types"
 
-// Solo estado de API — el estado de UI (modales, selección) vive en el padre.
+/**
+ * Solo estado de API — el estado de UI (modales, selección) vive en el padre.
+ *
+ * Los roles son de solo lectura: los define Barion y son los mismos en todas las
+ * barberías. La única mutación de esta feature es repartir capacidades a UNA
+ * persona, que es lo que cada barbería sí decide.
+ */
 export function useRoles() {
   const [roles, setRoles] = useState<Rol[]>([])
   const [permisos, setPermisos] = useState<Permiso[]>([])
@@ -53,45 +55,6 @@ export function useRoles() {
     }
   }, [])
 
-  const handleCreateRol = useCallback(async (payload: DatosRol): Promise<string> => {
-    setLoadingAction(true)
-    try {
-      const res = await rolesService.crearRol(payload)
-      return res.message
-    } catch (err) {
-      throw new Error(getErrorMessage(err))
-    } finally {
-      setLoadingAction(false)
-    }
-  }, [])
-
-  const handleUpdateRol = useCallback(
-    async (id: string, payload: DatosEditarRol): Promise<string> => {
-      setLoadingAction(true)
-      try {
-        const res = await rolesService.actualizarRol(id, payload)
-        return res.message
-      } catch (err) {
-        throw new Error(getErrorMessage(err))
-      } finally {
-        setLoadingAction(false)
-      }
-    },
-    []
-  )
-
-  const handleDeleteRol = useCallback(async (id: string): Promise<string> => {
-    setLoadingAction(true)
-    try {
-      const res = await rolesService.eliminarRol(id)
-      return res.message
-    } catch (err) {
-      throw new Error(getErrorMessage(err))
-    } finally {
-      setLoadingAction(false)
-    }
-  }, [])
-
   const handleReplaceExcepciones = useCallback(
     async (membresiaId: string, payload: DatosExcepciones): Promise<string> => {
       setLoadingAction(true)
@@ -116,9 +79,6 @@ export function useRoles() {
     error,
     fetchRoles,
     fetchExcepciones,
-    handleCreateRol,
-    handleUpdateRol,
-    handleDeleteRol,
     handleReplaceExcepciones,
   }
 }

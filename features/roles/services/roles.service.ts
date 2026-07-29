@@ -1,12 +1,5 @@
 import { api } from "@lib/http/instances"
-import {
-  esquemaEditarRol,
-  esquemaExcepciones,
-  esquemaRol,
-  type DatosEditarRol,
-  type DatosExcepciones,
-  type DatosRol,
-} from "@features/roles/schemas/roles.schema"
+import { esquemaExcepciones, type DatosExcepciones } from "@features/roles/schemas/roles.schema"
 import type { ExcepcionPermiso, Permiso, Rol } from "@features/roles/types/roles.types"
 import type { ApiResult } from "@shared/types/api.types"
 
@@ -16,22 +9,9 @@ export const rolesService = {
     return api.get<Permiso[]>("/equipo/permisos")
   },
 
+  /** Los roles que define Barion. Solo lectura: no hay alta, edición ni borrado. */
   async obtenerRoles(): Promise<ApiResult<Rol[]>> {
     return api.get<Rol[]>("/equipo/roles")
-  },
-
-  async crearRol(payload: DatosRol): Promise<ApiResult<Rol>> {
-    const validos = esquemaRol.parse(payload)
-    return api.post<Rol>("/equipo/roles", validos)
-  },
-
-  async actualizarRol(id: string, payload: DatosEditarRol): Promise<ApiResult<Rol>> {
-    const validos = esquemaEditarRol.parse(payload)
-    return api.patch<Rol>(`/equipo/roles/${id}`, validos)
-  },
-
-  async eliminarRol(id: string): Promise<ApiResult<null>> {
-    return api.delete<null>(`/equipo/roles/${id}`)
   },
 
   async obtenerExcepciones(membresiaId: string): Promise<ApiResult<ExcepcionPermiso[]>> {

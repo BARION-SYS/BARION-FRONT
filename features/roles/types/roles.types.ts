@@ -10,12 +10,17 @@ export interface Permiso {
   familia: string
 }
 
+/**
+ * Un rol. Los define Barion y son los mismos en todas las barberías: se leen y
+ * se asignan, pero no se crean ni se editan desde el panel. Lo que cada barbería
+ * ajusta son las excepciones por persona.
+ */
 export interface Rol {
   id: string
   /** Estable: es lo que compara el código y lo que viaja en la sesión. */
   codigo: string
   nombre: string
-  /** Los de sistema se muestran y se asignan, pero no se editan ni se borran. */
+  /** Hoy siempre `true`: todos los roles son de Barion. */
   esSistema: boolean
   orden: number
   permisos: string[]

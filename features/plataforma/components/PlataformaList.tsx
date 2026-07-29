@@ -28,6 +28,8 @@ import type { TonoEstado } from "@shared/types/ui.types"
 interface PlataformaListProps {
   barberias: BarberiaInventario[]
   loading: boolean
+  /** Sin `plataforma.barberias.gestionar` no hay estado que cambiar. */
+  gestiona: boolean
   onCambiarEstado: (barberia: BarberiaInventario, estado: EstadoBarberia) => void
 }
 
@@ -48,7 +50,12 @@ const TRANSICIONES: Record<EstadoBarberia, EstadoBarberia[]> = {
   suspendida: ["activa"],
 }
 
-export function PlataformaList({ barberias, loading, onCambiarEstado }: PlataformaListProps) {
+export function PlataformaList({
+  barberias,
+  loading,
+  gestiona,
+  onCambiarEstado,
+}: PlataformaListProps) {
   return (
     <Loadable
       loading={loading}

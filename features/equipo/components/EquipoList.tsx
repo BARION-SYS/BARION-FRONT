@@ -23,6 +23,10 @@ interface EquipoListProps {
   miembros: Miembro[]
   roles: Rol[]
   loading: boolean
+  /** `equipo.gestionar`: cambiar de rol y revocar el acceso. */
+  gestionaEquipo: boolean
+  /** `roles.gestionar`: repartir capacidades a una persona concreta. */
+  gestionaPermisos: boolean
   onCambiarRol: (miembro: Miembro, codigoRol: string) => void
   onPermisos: (miembro: Miembro) => void
   onRevocar: (miembro: Miembro) => void
@@ -38,6 +42,8 @@ export function EquipoList({
   miembros,
   roles,
   loading,
+  gestionaEquipo,
+  gestionaPermisos,
   onCambiarRol,
   onPermisos,
   onRevocar,
@@ -77,38 +83,46 @@ export function EquipoList({
               </span>
               <StatusBadge tono={estado.tono} etiqueta={estado.etiqueta} compacta />
 
-              <DropdownMenu>
-                <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
-                  <MoreHorizontal className="size-4" aria-hidden />
-                  <span className="sr-only">Acciones de {miembro.nombre}</span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Cambiar rol</DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                      {roles
-                        .filter((rol) => rol.codigo !== miembro.rol)
-                        .map((rol) => (
-                          <DropdownMenuItem
-                            key={rol.id}
-                            onClick={() => onCambiarRol(miembro, rol.codigo)}
-                          >
-                            {rol.nombre}
-                          </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-                  <DropdownMenuItem onClick={() => onPermisos(miembro)}>
-                    Permisos a medida
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  {miembro.estado !== "revocada" && (
-                    <DropdownMenuItem onClick={() => onRevocar(miembro)}>
-                      Revocar acceso
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {(gestionaEquipo || gestionaPermisos) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+                    <MoreHorizontal className="size-4" aria-hidden />
+                    <span className="sr-only">Acciones de {miembro.nombre}</span>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {gestionaEquipo && (
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>Cambiar rol</DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                          {roles
+                            .filter((rol) => rol.codigo !== miembro.rol)
+                            .map((rol) => (
+                              <DropdownMenuItem
+                                key={rol.id}
+                                onClick={() => onCambiarRol(miembro, rol.codigo)}
+                              >
+                                {rol.nombre}
+                              </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuSub>
+                    )}
+                    {gestionaPermisos && (
+                      <DropdownMenuItem onClick={() => onPermisos(miembro)}>
+                        Permisos a medida
+                      </DropdownMenuItem>
+                    )}
+                    {gestionaEquipo && miembro.estado !== "revocada" && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => onRevocar(miembro)}>
+                          Revocar acceso
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </li>
           )
         })}

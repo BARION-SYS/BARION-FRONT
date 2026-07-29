@@ -11,6 +11,8 @@ interface PlataformaToolbarProps {
   total: number
   onBuscar: (valor: string) => void
   onFiltrarEstado: (estado: EstadoBarberia | "todas") => void
+  /** Sin `plataforma.barberias.gestionar` el inventario se consulta, no se toca. */
+  gestiona: boolean
   onCrear: () => void
 }
 
@@ -27,6 +29,7 @@ export function PlataformaToolbar({
   total,
   onBuscar,
   onFiltrarEstado,
+  gestiona,
   onCrear,
 }: PlataformaToolbarProps) {
   return (
@@ -65,10 +68,12 @@ export function PlataformaToolbar({
         <span className="text-xs text-muted-foreground">
           {total} {total === 1 ? "barbería" : "barberías"}
         </span>
-        <Button type="button" onClick={onCrear}>
-          <Plus className="size-4" aria-hidden />
-          Nueva barbería
-        </Button>
+        {gestiona && (
+          <Button type="button" onClick={onCrear}>
+            <Plus className="size-4" aria-hidden />
+            Nueva barbería
+          </Button>
+        )}
       </div>
     </div>
   )

@@ -5,6 +5,8 @@ import { SectionCard } from "@shared/components/cards/SectionCard"
 import { Modal } from "@shared/components/modals/Modal"
 import { Button } from "@shared/components/ui/button"
 import { notify } from "@shared/services/notify"
+import { useAuthStore } from "@store/auth.store"
+import { puede } from "@features/auth/utils/permisos"
 import { getErrorMessage } from "@shared/utils/error"
 import { usePlataforma } from "@features/plataforma/hooks/usePlataforma"
 import { PlataformaEntrega } from "@features/plataforma/components/PlataformaEntrega"
@@ -40,6 +42,13 @@ export default function AdminPage() {
   } = usePlataforma()
 
   // Estado de UI: vive en el contenedor, nunca en el hook.
+  /**
+   * El staff de Barion también se reparte: quien solo consulta el inventario no
+   * tiene por qué encontrar el alta ni el cambio de estado.
+   */
+  const sesion = useAuthStore((estado) => estado.sesion)
+  const gestiona = puede(sesion, "plataforma.barberias.gestionar")
+
   const [busqueda, setBusqueda] = useState("")
   const [estado, setEstado] = useState<EstadoBarberia | "todas">("todas")
   const [creando, setCreando] = useState(false)
@@ -97,6 +106,7 @@ export default function AdminPage() {
             total={total}
             onBuscar={setBusqueda}
             onFiltrarEstado={setEstado}
+            gestiona={gestiona}
             onCrear={() => setCreando(true)}
           />
 
@@ -105,6 +115,7 @@ export default function AdminPage() {
           <PlataformaList
             barberias={barberias}
             loading={loadingLista}
+            gestiona={gestiona}
             onCambiarEstado={(barberia, destino) => void onCambiarEstado(barberia, destino)}
           />
         </div>

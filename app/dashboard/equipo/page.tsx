@@ -7,6 +7,8 @@ import { Modal } from "@shared/components/modals/Modal"
 import { Button } from "@shared/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/components/ui/tabs"
 import { notify } from "@shared/services/notify"
+import { useAuthStore } from "@store/auth.store"
+import { puede } from "@features/auth/utils/permisos"
 import { getErrorMessage } from "@shared/utils/error"
 import { useEquipo } from "@features/equipo/hooks/useEquipo"
 import { useRoles } from "@features/roles/hooks/useRoles"
@@ -55,6 +57,15 @@ export default function EquipoPage() {
     fetchExcepciones,
     handleReplaceExcepciones,
   } = useRoles()
+
+  /**
+   * Dos capacidades distintas, y la diferencia es real: `equipo.gestionar` mueve
+   * a la gente —invitar, cambiar de rol, revocar—, `roles.gestionar` reparte lo
+   * que cada persona puede hacer. Alguien puede tener una sin la otra.
+   */
+  const sesion = useAuthStore((estado) => estado.sesion)
+  const gestionaEquipo = puede(sesion, "equipo.gestionar")
+  const gestionaPermisos = puede(sesion, "roles.gestionar")
 
   // Estado de UI: vive en el contenedor.
   const [invitando, setInvitando] = useState(false)
@@ -120,16 +131,20 @@ export default function EquipoPage() {
             titulo="Personas con acceso"
             subtitulo="Quién entra al sistema, con qué rol y con qué permisos"
             accion={
-              <Button type="button" size="sm" onClick={() => setInvitando(true)}>
-                <Plus className="size-4" aria-hidden />
-                Invitar
-              </Button>
+              gestionaEquipo ? (
+                <Button type="button" size="sm" onClick={() => setInvitando(true)}>
+                  <Plus className="size-4" aria-hidden />
+                  Invitar
+                </Button>
+              ) : undefined
             }
           >
             <EquipoList
               miembros={miembros}
               roles={roles}
               loading={cargandoMiembros}
+              gestionaEquipo={gestionaEquipo}
+              gestionaPermisos={gestionaPermisos}
               onCambiarRol={(m, codigoRol) =>
                 void conAviso(() => handleChangeRolMiembro(m.id, { rol: codigoRol }))
               }

@@ -101,7 +101,7 @@ Consecuencia para este repo: **no se construyen** pantallas de registro, contras
 3. **Vistas propias del barbero.** El dashboard actual es del admin. El barbero necesita su agenda del día, su jornada editable y su "cuánto llevo ganado" — con permisos `*_propia`.
 4. **Permisos por persona.** 🟡 La pestaña existe en `/dashboard/equipo`. **No hay creación de roles y no la habrá**: los define Barion y son iguales en todas las barberías, así que la pestaña Roles es de consulta (qué trae cada uno) y toda la edición vive en el modal de permisos de cada miembro — dar o quitar capacidades sin cambiarle el rol a nadie. Falta cablearla contra la api real.
 5. **Plan y suscripción.** Estado, uso vs límites, y el modo `solo_lectura` (trial vencido: se consulta la agenda, no se escribe) — que la UI tiene que saber pintar.
-6. **Gating por permiso.** 🟡 El MENÚ ya se construye con `sesion.permisos`; falta que cada acción dentro de una pantalla (botones de crear, editar, eliminar) lo consulte también.
+6. **Gating por permiso.** 🟡 El MENÚ ya se construye con `sesion.permisos`, y `/dashboard/sedes` es la primera pantalla que además lo aplica **por acción** (`sedes.ver` consulta, `sedes.gestionar` edita). Falta hacer lo mismo en el resto.
 
 ---
 
@@ -147,12 +147,31 @@ Pendiente: la ficha individual de barbería y el formulario de registro abierto
 
 `features/plataforma/`: listado de barberías, ficha, alta (el formulario más importante del sistema: crea barbería + sede inicial + propietario), cambio de estado, planes y suscripciones.
 
-### Fase 2 — Admin de barbería: estructura ⬜
+### Fase 2 — Admin de barbería: estructura 🟡
 
-- `features/sedes/` (nueva): CRUD, horarios por día con dos tramos, cierres.
-- `features/roles/`: roles en **solo lectura** (`RolesList` + `RolesDetail`) y la matriz de excepciones por persona (`RolesExcepcionesForm`), que es lo único que escribe. Sin formulario de rol: no hay endpoint que crearlos.
-- `features/equipo/` (nueva): hoy el mock mezcla equipo y barberos; son cosas distintas — equipo es **quién entra**, barberos es **quién atiende**.
-- `features/configuracion/`: General pasa a escribir la ficha pública (eslogan, descripción, ventajas); Horarios se muda a sede; se añade la sección Plan.
+- ✅ `features/sedes/` (nueva, **contra la api real**): listado, alta y edición, activar/desactivar, el
+  horario comercial de la semana y los cierres. Ruta `/dashboard/sedes`, con su entrada en el menú
+  bajo `sedes.ver`.
+  - El horario se envía **entero**: es lo único que permite quitar un tramo, así que el formulario
+    mantiene los siete días en estado y un día sin tramos es un día cerrado.
+  - Los días se ordenan según el `inicioSemana` de la sede — verlos empezando en domingo desorienta a
+    quien configura su semana en Bogotá.
+  - Primera pantalla con **gating por acción cableado**: con `sedes.ver` se consulta, con
+    `sedes.gestionar` se edita. Ocultar el botón no es seguridad; evita ofrecer lo que va a dar 403.
+- ✅ `features/configuracion/`: la sección **Horarios desaparece** — el horario es de la SEDE, no de
+  la barbería, y una cadena que abre en dos ciudades no cabe en un único formulario.
+- ✅ `features/roles/`: roles en **solo lectura** (`RolesList` + `RolesDetail`) y la matriz de
+  excepciones por persona (`RolesExcepcionesForm`), que es lo único que escribe. Sin formulario de
+  rol: no hay endpoint para crearlos.
+- ✅ `features/equipo/`: ya es real contra `/equipo` — invitar, cambiar de rol, revocar acceso y el
+  reparto de permisos por persona. Queda ⬜ el gating por acción (`equipo.gestionar`,
+  `roles.gestionar`), que hoy solo tiene el menú.
+- ⬜ La separación con **barberos** sigue pendiente, pero está del lado de `features/barberos/`, que
+  aún es mock: equipo es **quién entra**, barberos es **quién atiende** y puede no tener cuenta.
+- ⬜ `features/configuracion/`: General todavía escribe contra el mock; le falta pasar a la ficha
+  pública real (`PATCH /barberias/mi/ficha`: eslogan, descripción, ventajas).
+- ⛔ La sección **Plan** no se puede hacer todavía: los endpoints de planes y suscripciones siguen
+  pendientes en la api (fase 1).
 
 ### Fase 3 — Barberos ⬜
 

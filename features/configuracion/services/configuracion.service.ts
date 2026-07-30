@@ -1,4 +1,4 @@
-import { Bell, Clock, DollarSign, Palette, Shield, Store } from "lucide-react"
+import { Bell, Palette, Shield, Store } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { api } from "@lib/http/instances"
 import { omitEmpty } from "@shared/utils/params"
@@ -7,22 +7,28 @@ import {
   esquemaFicha,
   esquemaGeneral,
   esquemaSeguridad,
-  esquemaServicio,
   type DatosFicha,
   type DatosGeneral,
   type DatosSeguridad,
-  type DatosServicio,
 } from "@features/configuracion/schemas/configuracion.schema"
 import type {
   Barberia,
   InfoCanalNotificacion,
   SeccionConfiguracion,
-  Servicio,
 } from "@features/configuracion/types/configuracion.types"
 import type { ApiResult } from "@shared/types/api.types"
 
-// La barbería ya es real; el resto de secciones sigue en mock hasta que exista
-// su contrato. Al integrar, cada método reemplaza su cuerpo por api.get/put(...).
+// La barbería, su ficha y el cambio de contraseña van contra la API. Siguen en
+// mock las secciones sin contrato: el catálogo de secciones, los presets de
+// color y los canales de notificación.
+//
+// Los COLORES del panel no están aquí y no lo estarán: son preferencia de quien
+// mira la pantalla y viven en `store/marca.store.ts`, en este navegador.
+//
+// El catálogo de servicios NO está aquí a propósito: es de la fase 4 y nacerá
+// como su propia feature contra el contrato real. Tenerlo en Configuración
+// dejaría precios inventados que nadie guarda, y dos sitios donde vivirían los
+// servicios el día que existan.
 
 function ok<T>(data: T, message = "ok"): ApiResult<T> {
   return { data, status: 200, message, pagination: null }
@@ -31,15 +37,10 @@ function ok<T>(data: T, message = "ok"): ApiResult<T> {
 // Los íconos no son serializables: en el JSON viajan como nombre string y aquí se resuelven al componente real.
 const iconosSeccion: Record<string, LucideIcon> = {
   Bell,
-  Clock,
-  DollarSign,
   Palette,
   Shield,
   Store,
 }
-
-// Copia mutable en memoria del catálogo — simula la persistencia hasta integrar la API.
-let servicios: Servicio[] = (datos.servicios as Servicio[]).map((servicio) => ({ ...servicio }))
 
 export const configuracionService = {
   async obtenerSecciones(): Promise<ApiResult<SeccionConfiguracion[]>> {
@@ -64,10 +65,6 @@ export const configuracionService = {
     return ok(datos.canales as InfoCanalNotificacion[])
   },
 
-  async obtenerServicios(): Promise<ApiResult<Servicio[]>> {
-    return ok([...servicios])
-  },
-
   async guardarGeneral(payload: DatosGeneral): Promise<ApiResult<Barberia>> {
     const validos = esquemaGeneral.parse(payload)
     // Los opcionales vacíos no viajan: omitirlos deja el campo como está, que no
@@ -88,32 +85,12 @@ export const configuracionService = {
     })
   },
 
-  // Mock — al integrar: POST /v1/auth/change-password.
+  /**
+   * La confirmación NO viaja: es una comprobación del formulario y la API
+   * rechaza cualquier propiedad que no declare su DTO.
+   */
   async actualizarContrasena(payload: DatosSeguridad): Promise<ApiResult<null>> {
-    esquemaSeguridad.parse(payload)
-    return ok(null, "Contraseña actualizada correctamente")
-  },
-
-  // Mock — al integrar: POST /v1/settings/services.
-  async crearServicio(payload: DatosServicio): Promise<ApiResult<null>> {
-    const datosServicio = esquemaServicio.parse(payload)
-    const id = servicios.reduce((max, servicio) => Math.max(max, servicio.id), 0) + 1
-    servicios = [...servicios, { id, ...datosServicio }]
-    return ok(null, "Servicio agregado")
-  },
-
-  // Mock — al integrar: PUT /v1/settings/services/:id.
-  async actualizarServicio(id: number, payload: DatosServicio): Promise<ApiResult<null>> {
-    const datosServicio = esquemaServicio.parse(payload)
-    servicios = servicios.map((servicio) =>
-      servicio.id === id ? { ...servicio, ...datosServicio } : servicio
-    )
-    return ok(null, "Servicio actualizado")
-  },
-
-  // Mock — al integrar: DELETE /v1/settings/services/:id.
-  async eliminarServicio(id: number): Promise<ApiResult<null>> {
-    servicios = servicios.filter((servicio) => servicio.id !== id)
-    return ok(null, "Servicio eliminado")
+    const { contrasenaActual, contrasenaNueva } = esquemaSeguridad.parse(payload)
+    return api.post<null>("/auth/cambiar-contrasena", { contrasenaActual, contrasenaNueva })
   },
 }

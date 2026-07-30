@@ -7,6 +7,7 @@ import { Loader2, Plus, X } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import { Textarea } from "@shared/components/ui/textarea"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import {
   esquemaTextoFicha,
@@ -92,13 +93,12 @@ export function FichaPublica({ barberia, soloLectura, cargando, onSubmit }: Fich
 
         <Field data-invalid={!!errors.descripcion}>
           <FieldLabel htmlFor="descripcion">Descripción</FieldLabel>
-          {/* shadcn no trae textarea instalado: nativo con el estilo del Input */}
-          <textarea
+          <Textarea
             id="descripcion"
             rows={4}
             disabled={soloLectura}
             aria-invalid={!!errors.descripcion}
-            className="w-full resize-none rounded-lg border border-input bg-input/30 px-2.5 py-1.5 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm"
+            className="resize-none"
             {...register("descripcion")}
           />
           <FieldError errors={[errors.descripcion]} />

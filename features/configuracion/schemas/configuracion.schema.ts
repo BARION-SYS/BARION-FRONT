@@ -6,10 +6,14 @@ import { z } from "zod"
  * Sin teléfono, correo ni dirección: no son de la barbería sino de la sede, y se
  * editan en `/dashboard/sedes`. El identificador público tampoco está aquí — se
  * imprime en los QR ya repartidos, así que no es un campo de formulario.
+ *
+ * Sin razón social: no existe en el modelo. La API rechaza con 400 cualquier
+ * propiedad que su DTO no declare, así que mandarla rompía el guardado entero en
+ * cuanto alguien escribía algo en ese campo. Si el negocio la necesita para
+ * facturar, empieza por una columna en `BARION-DB`.
  */
 export const esquemaGeneral = z.object({
   nombreComercial: z.string().min(2, "Ingresa el nombre del negocio").max(120, "Máximo 120"),
-  razonSocial: z.string().max(200, "Máximo 200").optional(),
   modoImpuesto: z.enum(["incluido", "agregado"]),
   // Basis points, no porcentaje: 1900 = 19 %. La conversión la hace el
   // formulario, porque quien lo llena piensa en porcentaje.
@@ -38,10 +42,17 @@ export const esquemaFicha = esquemaTextoFicha.extend({
     .max(8, "Hasta 8 viñetas"),
 })
 
+/**
+ * Cambio de contraseña (`POST /auth/cambiar-contrasena`). El mínimo de 12 lo
+ * exige la API: pedir menos aquí solo cambia un error inline por un 400.
+ *
+ * `confirmarContrasena` es del formulario y no del contrato — el service lo
+ * descarta antes de enviar.
+ */
 export const esquemaSeguridad = z
   .object({
     contrasenaActual: z.string().min(1, "Ingresa tu contraseña actual"),
-    contrasenaNueva: z.string().min(8, "La contraseña debe tener mínimo 8 caracteres"),
+    contrasenaNueva: z.string().min(12, "La contraseña debe tener mínimo 12 caracteres"),
     confirmarContrasena: z.string(),
   })
   .refine((datos) => datos.contrasenaNueva === datos.confirmarContrasena, {
@@ -49,18 +60,8 @@ export const esquemaSeguridad = z
     path: ["confirmarContrasena"],
   })
 
-export const esquemaServicio = z.object({
-  nombre: z.string().min(2, "Ingresa el nombre del servicio"),
-  precio: z.number("Ingresa el precio").positive("El precio debe ser mayor a 0"),
-  duracionMin: z
-    .number("Ingresa la duración")
-    .min(5, "La duración mínima es 5 minutos")
-    .max(180, "La duración máxima es 180 minutos"),
-})
-
 // Lo que se envía a la API es SIEMPRE el tipo inferido del schema.
 export type DatosGeneral = z.infer<typeof esquemaGeneral>
 export type DatosTextoFicha = z.infer<typeof esquemaTextoFicha>
 export type DatosFicha = z.infer<typeof esquemaFicha>
 export type DatosSeguridad = z.infer<typeof esquemaSeguridad>
-export type DatosServicio = z.infer<typeof esquemaServicio>

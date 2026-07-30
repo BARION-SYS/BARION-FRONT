@@ -1,11 +1,18 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Loader2 } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@shared/components/ui/select"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import {
   esquemaGeneral,
@@ -32,13 +39,13 @@ interface GeneralProps {
 export function General({ barberia, soloLectura, cargando, onSubmit }: GeneralProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<DatosGeneral>({
     resolver: standardSchemaResolver(esquemaGeneral),
     defaultValues: {
       nombreComercial: barberia.nombreComercial,
-      razonSocial: barberia.razonSocial ?? undefined,
       modoImpuesto: barberia.modoImpuesto,
       tasaImpuestoBps: barberia.tasaImpuestoBps ?? undefined,
     },
@@ -63,38 +70,29 @@ export function General({ barberia, soloLectura, cargando, onSubmit }: GeneralPr
           <FieldError errors={[errors.nombreComercial]} />
         </Field>
 
-        <Field data-invalid={!!errors.razonSocial}>
-          <FieldLabel htmlFor="razonSocial">Razón social</FieldLabel>
-          <Input
-            id="razonSocial"
-            type="text"
-            disabled={soloLectura}
-            aria-invalid={!!errors.razonSocial}
-            {...register("razonSocial")}
-          />
-          <p className="text-xs text-muted-foreground">
-            El nombre legal, si difiere del comercial. Es el que va en la facturación.
-          </p>
-          <FieldError errors={[errors.razonSocial]} />
-        </Field>
-
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field data-invalid={!!errors.modoImpuesto}>
-            <FieldLabel htmlFor="modoImpuesto">Impuesto</FieldLabel>
-            <select
-              id="modoImpuesto"
-              disabled={soloLectura}
-              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-              {...register("modoImpuesto")}
-            >
-              <option value="incluido">Incluido en el precio</option>
-              <option value="agregado">Se agrega al cobrar</option>
-            </select>
-            <p className="text-xs text-muted-foreground">
-              En Colombia y España va incluido; en EE. UU. se agrega.
-            </p>
-            <FieldError errors={[errors.modoImpuesto]} />
-          </Field>
+          <Controller
+            control={control}
+            name="modoImpuesto"
+            render={({ field }) => (
+              <Field data-invalid={!!errors.modoImpuesto}>
+                <FieldLabel htmlFor="modoImpuesto">Impuesto</FieldLabel>
+                <Select value={field.value} onValueChange={field.onChange} disabled={soloLectura}>
+                  <SelectTrigger id="modoImpuesto" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="incluido">Incluido en el precio</SelectItem>
+                    <SelectItem value="agregado">Se agrega al cobrar</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  En Colombia y España va incluido; en EE. UU. se agrega.
+                </p>
+                <FieldError errors={[errors.modoImpuesto]} />
+              </Field>
+            )}
+          />
 
           <Field data-invalid={!!errors.tasaImpuestoBps}>
             <FieldLabel htmlFor="tasaImpuestoBps">Tasa</FieldLabel>

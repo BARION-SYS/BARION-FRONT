@@ -5,8 +5,7 @@ import type { LucideIcon } from "lucide-react"
  * en `/dashboard/sedes`. Una cadena que abre en dos ciudades tiene dos semanas
  * distintas y no caben en un único formulario de configuración.
  */
-export type IdSeccionConfiguracion =
-  "general" | "apariencia" | "notificaciones" | "precios" | "seguridad"
+export type IdSeccionConfiguracion = "general" | "apariencia" | "notificaciones" | "seguridad"
 
 export interface SeccionConfiguracion {
   id: IdSeccionConfiguracion
@@ -29,10 +28,17 @@ export interface FichaBarberia {
   ventajas: string[]
 }
 
+/**
+ * Dos semillas de color y un logo — no una paleta. Las variantes por tema y los
+ * contrastes los deriva `shared/utils/color.ts`: la API guarda la elección, no
+ * el diseño.
+ */
 export interface MarcaBarberia {
   colorMarca: string | null
   colorFondo: string | null
   logoUrl: string | null
+  /** Instante UTC del último cambio. `null` si nadie la ha tocado. */
+  actualizadaEn: string | null
 }
 
 export type EstadoBarberia = "activa" | "suspendida" | "solo_lectura"
@@ -44,7 +50,6 @@ export interface Barberia {
   /** Su dirección pública: `/b/{slug}`. No se edita desde aquí. */
   slug: string
   nombreComercial: string
-  razonSocial: string | null
   pais: string
   monedaPorDefecto: string
   localePorDefecto: string
@@ -55,13 +60,6 @@ export interface Barberia {
   ficha: FichaBarberia
   marca: MarcaBarberia
   estado: EstadoBarberia
-}
-
-export interface Servicio {
-  id: number
-  nombre: string
-  precio: number
-  duracionMin: number
 }
 
 export type CanalNotificacion = "whatsapp" | "sms" | "correo" | "interno"

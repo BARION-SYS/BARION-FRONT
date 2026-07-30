@@ -16,11 +16,6 @@
       "icono": "Bell"
     },
     {
-      "id": "precios",
-      "etiqueta": "Precios y servicios",
-      "icono": "DollarSign"
-    },
-    {
       "id": "seguridad",
       "etiqueta": "Seguridad",
       "icono": "Shield"
@@ -55,44 +50,6 @@
       "descripcion": "Dentro del sistema para el equipo",
       "color": "var(--chart-4)",
       "activo": true
-    }
-  ],
-  "servicios": [
-    {
-      "id": 1,
-      "nombre": "Corte Clásico",
-      "precio": 110,
-      "duracionMin": 30
-    },
-    {
-      "id": 2,
-      "nombre": "Fade + Diseño",
-      "precio": 150,
-      "duracionMin": 50
-    },
-    {
-      "id": 3,
-      "nombre": "Corte + Barba",
-      "precio": 130,
-      "duracionMin": 45
-    },
-    {
-      "id": 4,
-      "nombre": "Barba Completa",
-      "precio": 80,
-      "duracionMin": 25
-    },
-    {
-      "id": 5,
-      "nombre": "Fade Skin",
-      "precio": 160,
-      "duracionMin": 55
-    },
-    {
-      "id": 6,
-      "nombre": "Corte Niño",
-      "precio": 90,
-      "duracionMin": 25
     }
   ]
 }

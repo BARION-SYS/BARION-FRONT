@@ -16,6 +16,7 @@ import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { SectionCard } from "@shared/components/cards/SectionCard"
+import { useFormato } from "@shared/hooks/useFormato"
 import { configEtiquetaCliente } from "@features/clientes/utils/etiquetaCliente"
 import type { Cliente, ServicioHistorial } from "@features/clientes/types/clientes.types"
 import { formatNumber } from "@shared/utils/numbers"
@@ -36,6 +37,7 @@ export function ClientesDetail({
   onEditar,
   onEliminar,
 }: Props) {
+  const { relativo, fechaCorta } = useFormato()
   const config = configEtiquetaCliente[cliente.etiqueta]
   const contacto = [
     { icono: Phone, valor: cliente.telefono, tabular: true },
@@ -47,7 +49,7 @@ export function ClientesDetail({
       etiqueta: "Total visitas",
       valor: `${cliente.visitas}`,
       icono: Calendar,
-      sub: `Última: ${cliente.ultimaVisita}`,
+      sub: `Última: ${relativo(cliente.ultimaVisitaEn)}`,
     },
     {
       etiqueta: "Total gastado",
@@ -164,7 +166,7 @@ export function ClientesDetail({
           <ul className="space-y-2">
             {historial.map((h) => (
               <li
-                key={`${h.fecha}-${h.servicio}`}
+                key={`${h.iniciaEn}-${h.servicio}`}
                 className="flex items-center gap-3 rounded-lg border border-border bg-secondary/60 p-3"
               >
                 <div
@@ -176,7 +178,7 @@ export function ClientesDetail({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-foreground">{h.servicio}</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    {h.fecha} · {h.barbero}
+                    {fechaCorta(h.iniciaEn)} · {h.barbero}
                   </p>
                 </div>
                 <p className="shrink-0 text-sm font-bold text-primary tabular-nums">{h.precio}</p>

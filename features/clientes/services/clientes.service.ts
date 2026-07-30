@@ -52,7 +52,7 @@ export const clientesService = {
       id: clientes.reduce((max, c) => Math.max(max, c.id), 0) + 1,
       iniciales: inicialesDe(validos.nombre),
       visitas: 0,
-      ultimaVisita: "Hoy",
+      ultimaVisitaEn: new Date().toISOString(),
       gastadoTotal: 0,
     }
     clientes.push(nuevo)

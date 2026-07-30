@@ -8,9 +8,9 @@
       "correo": "carlos@mail.com",
       "barberoFavorito": "Miguel",
       "visitas": 24,
-      "ultimaVisita": "Hoy",
       "gastadoTotal": 2760,
-      "etiqueta": "VIP"
+      "etiqueta": "VIP",
+      "ultimaVisitaEn": "2026-07-29T19:20:37.000Z"
     },
     {
       "id": 2,
@@ -20,9 +20,9 @@
       "correo": "luis@mail.com",
       "barberoFavorito": "Pedro",
       "visitas": 18,
-      "ultimaVisita": "Hace 3 días",
       "gastadoTotal": 1980,
-      "etiqueta": "Frecuente"
+      "etiqueta": "Frecuente",
+      "ultimaVisitaEn": "2026-07-26T22:20:37.000Z"
     },
     {
       "id": 3,
@@ -32,9 +32,9 @@
       "correo": "andres@mail.com",
       "barberoFavorito": "Miguel",
       "visitas": 12,
-      "ultimaVisita": "Hace 1 semana",
       "gastadoTotal": 1440,
-      "etiqueta": "Regular"
+      "etiqueta": "Regular",
+      "ultimaVisitaEn": "2026-07-22T22:20:37.000Z"
     },
     {
       "id": 4,
@@ -44,9 +44,9 @@
       "correo": "roberto@mail.com",
       "barberoFavorito": "Juan",
       "visitas": 8,
-      "ultimaVisita": "Hace 2 semanas",
       "gastadoTotal": 920,
-      "etiqueta": "Regular"
+      "etiqueta": "Regular",
+      "ultimaVisitaEn": "2026-07-15T22:20:37.000Z"
     },
     {
       "id": 5,
@@ -56,9 +56,9 @@
       "correo": "diego@mail.com",
       "barberoFavorito": "Pedro",
       "visitas": 5,
-      "ultimaVisita": "Hace 3 semanas",
       "gastadoTotal": 550,
-      "etiqueta": "Nuevo"
+      "etiqueta": "Nuevo",
+      "ultimaVisitaEn": "2026-07-08T22:20:37.000Z"
     },
     {
       "id": 6,
@@ -68,9 +68,9 @@
       "correo": "felipe@mail.com",
       "barberoFavorito": "Miguel",
       "visitas": 3,
-      "ultimaVisita": "Hace 1 mes",
       "gastadoTotal": 330,
-      "etiqueta": "Nuevo"
+      "etiqueta": "Nuevo",
+      "ultimaVisitaEn": "2026-06-29T22:20:37.000Z"
     },
     {
       "id": 7,
@@ -80,9 +80,9 @@
       "correo": "samuel@mail.com",
       "barberoFavorito": "Juan",
       "visitas": 1,
-      "ultimaVisita": "Hoy",
       "gastadoTotal": 120,
-      "etiqueta": "Nuevo"
+      "etiqueta": "Nuevo",
+      "ultimaVisitaEn": "2026-07-29T16:20:37.000Z"
     },
     {
       "id": 8,
@@ -92,9 +92,9 @@
       "correo": "mario@mail.com",
       "barberoFavorito": "Pedro",
       "visitas": 31,
-      "ultimaVisita": "Ayer",
       "gastadoTotal": 3720,
-      "etiqueta": "VIP"
+      "etiqueta": "VIP",
+      "ultimaVisitaEn": "2026-07-28T22:20:37.000Z"
     },
     {
       "id": 9,
@@ -104,9 +104,9 @@
       "correo": "hector@mail.com",
       "barberoFavorito": "Juan",
       "visitas": 15,
-      "ultimaVisita": "Hace 5 días",
       "gastadoTotal": 1650,
-      "etiqueta": "Frecuente"
+      "etiqueta": "Frecuente",
+      "ultimaVisitaEn": "2026-07-24T22:20:37.000Z"
     },
     {
       "id": 10,
@@ -116,9 +116,9 @@
       "correo": "julian@mail.com",
       "barberoFavorito": "Pedro",
       "visitas": 22,
-      "ultimaVisita": "Hace 2 días",
       "gastadoTotal": 2420,
-      "etiqueta": "Frecuente"
+      "etiqueta": "Frecuente",
+      "ultimaVisitaEn": "2026-07-27T22:20:37.000Z"
     },
     {
       "id": 11,
@@ -128,9 +128,9 @@
       "correo": "ricardo@mail.com",
       "barberoFavorito": "Miguel",
       "visitas": 27,
-      "ultimaVisita": "Hoy",
       "gastadoTotal": 3140,
-      "etiqueta": "VIP"
+      "etiqueta": "VIP",
+      "ultimaVisitaEn": "2026-07-29T21:20:37.000Z"
     },
     {
       "id": 12,
@@ -140,9 +140,9 @@
       "correo": "tomas@mail.com",
       "barberoFavorito": "Juan",
       "visitas": 9,
-      "ultimaVisita": "Hace 1 semana",
       "gastadoTotal": 1020,
-      "etiqueta": "Regular"
+      "etiqueta": "Regular",
+      "ultimaVisitaEn": "2026-07-22T22:20:37.000Z"
     },
     {
       "id": 13,
@@ -152,9 +152,9 @@
       "correo": "nicolas@mail.com",
       "barberoFavorito": "Pedro",
       "visitas": 6,
-      "ultimaVisita": "Hace 2 semanas",
       "gastadoTotal": 690,
-      "etiqueta": "Regular"
+      "etiqueta": "Regular",
+      "ultimaVisitaEn": "2026-07-15T22:20:37.000Z"
     },
     {
       "id": 14,
@@ -164,20 +164,60 @@
       "correo": "sergio@mail.com",
       "barberoFavorito": "Miguel",
       "visitas": 2,
-      "ultimaVisita": "Hace 4 días",
       "gastadoTotal": 260,
-      "etiqueta": "Nuevo"
+      "etiqueta": "Nuevo",
+      "ultimaVisitaEn": "2026-07-25T22:20:37.000Z"
     }
   ],
   "historial": [
-    { "fecha": "14 Jul", "servicio": "Corte + Barba", "barbero": "Miguel", "precio": "$130" },
-    { "fecha": "30 Jun", "servicio": "Fade + Diseño", "barbero": "Miguel", "precio": "$150" },
-    { "fecha": "16 Jun", "servicio": "Corte Clásico", "barbero": "Miguel", "precio": "$110" },
-    { "fecha": "2 Jun", "servicio": "Corte + Barba", "barbero": "Miguel", "precio": "$130" },
-    { "fecha": "19 May", "servicio": "Barba Completa", "barbero": "Miguel", "precio": "$80" },
-    { "fecha": "5 May", "servicio": "Fade Skin", "barbero": "Juan", "precio": "$160" },
-    { "fecha": "21 Abr", "servicio": "Corte + Barba", "barbero": "Miguel", "precio": "$130" },
-    { "fecha": "7 Abr", "servicio": "Corte Clásico", "barbero": "Pedro", "precio": "$110" }
+    {
+      "servicio": "Corte + Barba",
+      "barbero": "Miguel",
+      "precio": "$130",
+      "iniciaEn": "2026-07-14T19:00:00.000Z"
+    },
+    {
+      "servicio": "Fade + Diseño",
+      "barbero": "Miguel",
+      "precio": "$150",
+      "iniciaEn": "2026-06-30T19:00:00.000Z"
+    },
+    {
+      "servicio": "Corte Clásico",
+      "barbero": "Miguel",
+      "precio": "$110",
+      "iniciaEn": "2026-06-16T19:00:00.000Z"
+    },
+    {
+      "servicio": "Corte + Barba",
+      "barbero": "Miguel",
+      "precio": "$130",
+      "iniciaEn": "2026-06-02T19:00:00.000Z"
+    },
+    {
+      "servicio": "Barba Completa",
+      "barbero": "Miguel",
+      "precio": "$80",
+      "iniciaEn": "2026-05-19T19:00:00.000Z"
+    },
+    {
+      "servicio": "Fade Skin",
+      "barbero": "Juan",
+      "precio": "$160",
+      "iniciaEn": "2026-05-05T19:00:00.000Z"
+    },
+    {
+      "servicio": "Corte + Barba",
+      "barbero": "Miguel",
+      "precio": "$130",
+      "iniciaEn": "2026-04-21T19:00:00.000Z"
+    },
+    {
+      "servicio": "Corte Clásico",
+      "barbero": "Pedro",
+      "precio": "$110",
+      "iniciaEn": "2026-04-07T19:00:00.000Z"
+    }
   ],
   "resumen": {
     "nuevosHoy": 2

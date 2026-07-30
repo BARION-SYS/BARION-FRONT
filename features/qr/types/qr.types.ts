@@ -15,7 +15,8 @@ export interface EscaneoQr {
   nombre: string
   iniciales: string
   accion: string
-  hace: string
+  /** Instante UTC ISO-8601. El "hace X" es del cliente (`useFormato().relativo`). */
+  escaneadoEn: string
 }
 
 /** Enlace público de reservas de la barbería. */

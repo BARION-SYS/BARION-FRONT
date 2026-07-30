@@ -10,14 +10,16 @@ export interface Cliente {
   correo: string
   barberoFavorito: string
   visitas: number
-  ultimaVisita: string
+  /** Instante UTC ISO-8601. */
+  ultimaVisitaEn: string
   /** Acumulado gastado (mock; al integrar la API: centavos + moneda ISO) */
   gastadoTotal: number
   etiqueta: EtiquetaCliente
 }
 
 export interface ServicioHistorial {
-  fecha: string
+  /** Instante UTC ISO-8601. */
+  iniciaEn: string
   servicio: string
   barbero: string
   precio: string

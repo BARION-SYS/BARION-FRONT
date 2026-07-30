@@ -3,6 +3,7 @@ import { Button } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
+import { useFormato } from "@shared/hooks/useFormato"
 import { configEtiquetaCliente } from "@features/clientes/utils/etiquetaCliente"
 import type { Cliente } from "@features/clientes/types/clientes.types"
 
@@ -15,6 +16,8 @@ interface Props {
 
 // Presentacional: lista seleccionable de clientes + alta rápida.
 export function ClientesList({ clientes, seleccionadoId, onSeleccionar, onNuevo }: Props) {
+  const { relativo } = useFormato()
+
   return (
     <>
       <p
@@ -65,7 +68,8 @@ export function ClientesList({ clientes, seleccionadoId, onSeleccionar, onNuevo 
                       <StatusBadge etiqueta={c.etiqueta} tono={config.tono} />
                     </div>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      <span className="tabular-nums">{c.visitas}</span> visitas · {c.ultimaVisita}
+                      <span className="tabular-nums">{c.visitas}</span> visitas ·{" "}
+                      {relativo(c.ultimaVisitaEn)}
                     </p>
                   </div>
                 </div>

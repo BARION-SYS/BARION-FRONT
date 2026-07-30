@@ -1,6 +1,7 @@
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { Badge } from "@shared/components/ui/badge"
+import { useFormato } from "@shared/hooks/useFormato"
 import type { EscaneoQr } from "@features/qr/types/qr.types"
 
 const coloresAvatar = [
@@ -16,6 +17,8 @@ interface PropsEscaneosRecientes {
 }
 
 export function QrEscaneosList({ escaneos }: PropsEscaneosRecientes) {
+  const { relativo } = useFormato()
+
   return (
     <SectionCard
       titulo="Escaneos recientes"
@@ -36,7 +39,7 @@ export function QrEscaneosList({ escaneos }: PropsEscaneosRecientes) {
               <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{escaneo.accion}</p>
             </div>
             <Badge variant="secondary" className="shrink-0 text-[10px] tabular-nums">
-              {escaneo.hace}
+              {relativo(escaneo.escaneadoEn)}
             </Badge>
           </li>
         ))}

@@ -7,8 +7,18 @@
       "icono": "QrCode",
       "acento": true
     },
-    { "clave": "registros", "titulo": "Registros hoy", "valor": "8", "icono": "Users" },
-    { "clave": "citas-qr", "titulo": "Citas desde QR", "valor": "5", "icono": "Link" }
+    {
+      "clave": "registros",
+      "titulo": "Registros hoy",
+      "valor": "8",
+      "icono": "Users"
+    },
+    {
+      "clave": "citas-qr",
+      "titulo": "Citas desde QR",
+      "valor": "5",
+      "icono": "Link"
+    }
   ],
   "enlace": {
     "url": "https://barion.mx/b/el-rey-barber",
@@ -28,70 +38,70 @@
       "nombre": "Samuel López",
       "iniciales": "SL",
       "accion": "Reservó cita",
-      "hace": "Hace 5 min"
+      "escaneadoEn": "2026-07-29T22:08:51.000Z"
     },
     {
       "id": 2,
       "nombre": "Diego Martínez",
       "iniciales": "DM",
       "accion": "Se registró",
-      "hace": "Hace 22 min"
+      "escaneadoEn": "2026-07-29T21:51:51.000Z"
     },
     {
       "id": 3,
       "nombre": "Mario Vega",
       "iniciales": "MV",
       "accion": "Consultó horarios",
-      "hace": "Hace 1 hora"
+      "escaneadoEn": "2026-07-29T21:13:51.000Z"
     },
     {
       "id": 4,
       "nombre": "Oscar Torres",
       "iniciales": "OT",
       "accion": "Reservó cita",
-      "hace": "Hace 2 horas"
+      "escaneadoEn": "2026-07-29T20:13:51.000Z"
     },
     {
       "id": 5,
       "nombre": "Pablo Núñez",
       "iniciales": "PN",
       "accion": "Se registró",
-      "hace": "Ayer"
+      "escaneadoEn": "2026-07-28T20:13:51.000Z"
     },
     {
       "id": 6,
       "nombre": "Ricardo Ávila",
       "iniciales": "RA",
       "accion": "Reservó cita",
-      "hace": "Ayer"
+      "escaneadoEn": "2026-07-28T17:13:51.000Z"
     },
     {
       "id": 7,
       "nombre": "Julián Prieto",
       "iniciales": "JP",
       "accion": "Consultó horarios",
-      "hace": "Ayer"
+      "escaneadoEn": "2026-07-28T13:13:51.000Z"
     },
     {
       "id": 8,
       "nombre": "Héctor Molina",
       "iniciales": "HM",
       "accion": "Se registró",
-      "hace": "Hace 2 días"
+      "escaneadoEn": "2026-07-27T22:13:51.000Z"
     },
     {
       "id": 9,
       "nombre": "Tomás Barrera",
       "iniciales": "TB",
       "accion": "Reservó cita",
-      "hace": "Hace 2 días"
+      "escaneadoEn": "2026-07-27T16:13:51.000Z"
     },
     {
       "id": 10,
       "nombre": "Nicolás Franco",
       "iniciales": "NF",
       "accion": "Vio promociones",
-      "hace": "Hace 3 días"
+      "escaneadoEn": "2026-07-26T22:13:51.000Z"
     }
   ]
 }

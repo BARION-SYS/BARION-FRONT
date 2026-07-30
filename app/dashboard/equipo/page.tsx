@@ -12,6 +12,7 @@ import { puede } from "@features/auth/utils/permisos"
 import { getErrorMessage } from "@shared/utils/error"
 import { useEquipo } from "@features/equipo/hooks/useEquipo"
 import { useRoles } from "@features/roles/hooks/useRoles"
+import { useSedeActual } from "@store/sede.store"
 import { EquipoForm } from "@features/equipo/components/EquipoForm"
 import { EquipoList } from "@features/equipo/components/EquipoList"
 import { RolesDetail } from "@features/roles/components/RolesDetail"
@@ -66,6 +67,7 @@ export default function EquipoPage() {
   const sesion = useAuthStore((estado) => estado.sesion)
   const gestionaEquipo = puede(sesion, "equipo.gestionar")
   const gestionaPermisos = puede(sesion, "roles.gestionar")
+  const sedeActual = useSedeActual()
 
   // Estado de UI: vive en el contenedor.
   const [invitando, setInvitando] = useState(false)
@@ -73,9 +75,9 @@ export default function EquipoPage() {
   const [miembroConPermisos, setMiembroConPermisos] = useState<Miembro | null>(null)
 
   const cargar = useCallback(() => {
-    void fetchMiembros()
+    void fetchMiembros({ sedeId: sedeActual?.id })
     void fetchRoles()
-  }, [fetchMiembros, fetchRoles])
+  }, [fetchMiembros, fetchRoles, sedeActual?.id])
 
   useEffect(() => {
     cargar()

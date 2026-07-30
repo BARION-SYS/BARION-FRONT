@@ -11,7 +11,7 @@ export interface ConfigTenant extends ConfigRegional {
 
 const TenantContext = createContext<ConfigTenant | null>(null)
 
-// Config del tenant (moneda/locale/timezone + color de marca) — se carga UNA vez.
+// Config del tenant (moneda/locale/timezone) + los colores elegidos en este navegador.
 // Mock: región base; al integrar la API se hidrata con GET /tenant.
 export function TenantProvider({
   children,
@@ -24,7 +24,7 @@ export function TenantProvider({
   const colorMarca = useMarcaStore((s) => s.colorMarca)
   const colorFondo = useMarcaStore((s) => s.colorFondo)
 
-  // Marca del tenant (la define SOLO el admin): inyecta un <style> con un bloque
+  // Colores del panel: inyecta un <style> con un bloque
   // :root (claro) y otro .dark (oscuro) usando variantes ADAPTATIVAS del color elegido.
   // CSS puro: cada tema recibe su variante; sin elección → defaults de globals.css.
   useEffect(() => {

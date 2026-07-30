@@ -36,6 +36,7 @@ export interface Miembro {
 export interface FiltrosEquipo {
   estado?: EstadoMembresia
   rol?: string
+  sedeId?: string
   page?: number
   limit?: number
 }

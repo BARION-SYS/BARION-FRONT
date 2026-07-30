@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ChevronDown,
   LogOut,
+  MapPin,
   Menu,
   Search,
   Settings,
@@ -26,10 +27,13 @@ import { Input } from "@shared/components/ui/input"
 import { BrandStudio } from "@shared/layout/BrandStudio"
 import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { notify } from "@shared/services/notify"
+import { useFormato } from "@shared/hooks/useFormato"
 import { getErrorMessage } from "@shared/utils/error"
 import { useNotificaciones } from "@features/notificaciones/hooks/useNotificaciones"
+import { useSedes } from "@features/sedes/hooks/useSedes"
 import { useAuth } from "@features/auth/hooks/useAuth"
 import { useAuthStore } from "@store/auth.store"
+import { useSedeActual, useSedeStore } from "@store/sede.store"
 import { obtenerRutaActiva } from "@routes/rutasDashboard"
 import { cn } from "@shared/utils/cn"
 
@@ -45,12 +49,26 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
 
   const sesion = useAuthStore((s) => s.sesion)
   const { handleLogoutAuth } = useAuth()
+  const { relativo } = useFormato()
 
   const { notificaciones, fetchNotificaciones, handleMarcarLeida, handleMarcarTodasLeidas } =
     useNotificaciones()
   useEffect(() => {
     void fetchNotificaciones()
   }, [fetchNotificaciones])
+
+  // Transversal: la sede activa alimenta filtros de listados y timezone de
+  // formateo (`useFormato`) en todo el panel, no solo aquí.
+  const { sedes, fetchSedes } = useSedes()
+  const setSedes = useSedeStore((s) => s.setSedes)
+  const setSedeActual = useSedeStore((s) => s.setSedeActual)
+  const sedeActual = useSedeActual()
+  useEffect(() => {
+    void fetchSedes()
+  }, [fetchSedes])
+  useEffect(() => {
+    setSedes(sedes)
+  }, [sedes, setSedes])
 
   const noLeidas = notificaciones.filter((n) => !n.leida).length
 
@@ -143,6 +161,33 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
           </kbd>
         </div>
 
+        {sedes.length > 1 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label={`Sede activa: ${sedeActual?.nombre ?? ""}`}
+                  className="hidden max-w-40 gap-1.5 text-xs font-medium md:inline-flex"
+                >
+                  <MapPin className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                  <span className="truncate">{sedeActual?.nombre}</span>
+                  <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              {sedes.map((sede) => (
+                <DropdownMenuItem key={sede.id} onClick={() => setSedeActual(sede.id)}>
+                  <MapPin aria-hidden />
+                  {sede.nombre}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
         <BrandStudio />
         <ThemeToggle />
 
@@ -210,7 +255,9 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
                     {n.titulo}
                   </span>
                   <span className="block truncate text-xs text-muted-foreground">{n.detalle}</span>
-                  <span className="mt-0.5 block text-[10px] text-muted-foreground">{n.hace}</span>
+                  <span className="mt-0.5 block text-[10px] text-muted-foreground">
+                    {relativo(n.creadaEn)}
+                  </span>
                 </span>
               </DropdownMenuItem>
             ))}

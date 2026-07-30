@@ -6,9 +6,15 @@ Frontend de Barion — SaaS multi-tenant para barberías. Next.js (App Router) +
 
 Superficies previstas:
 
-- `/` — landing del SaaS y registro de barberías.
-- `/b/[slug]` — booking público por barbería (QR/link, SSR, sin login).
-- `/app/admin` · `/app/barber` · `/app/front` · `/app/me` — paneles por rol (admin, barbero, recepción, cliente).
+- `/` — landing del SaaS (ver [`PLAN-LANDING.md`](./PLAN-LANDING.md)) · `/registro` — alta de barbería.
+- `/entrar` — puerta global de acceso; `/b/[slug]/entrar` — la de cada barbería.
+- `/b/[slug]` — booking público por barbería (QR/link, SSR, sin login) · `/b/[slug]/mis-citas` — el cliente.
+- `/dashboard/*` — **un solo panel** para los tres roles (`propietario`, `administrador`, `barbero`): lo que cambia es el alcance, no la aplicación.
+- `/admin` — área del staff de Barion.
+
+> **Ojo:** hoy `app/page.tsx` es el inicio de sesión. Se muda a `/entrar` cuando
+> entre la landing. Los tres roles y el panel único están definidos en
+> `BARION-SYS/docs/FLUJO-LOGIN.md`.
 
 ## Requisitos
 

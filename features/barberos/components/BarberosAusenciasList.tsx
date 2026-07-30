@@ -4,11 +4,13 @@ import { CalendarOff, Check, Trash2 } from "lucide-react"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { useFormato } from "@shared/hooks/useFormato"
-import { TIPOS_AUSENCIA } from "@features/barberos/constants/dias"
 import type { Ausencia } from "@features/barberos/types/barberos.types"
+import type { OpcionCatalogo } from "@features/catalogos/types/catalogos.types"
 
 interface BarberosAusenciasListProps {
   ausencias: Ausencia[]
+  /** `GET /catalogos` — `tiposAusencia`. */
+  tiposAusencia: OpcionCatalogo[]
   loading: boolean
   /** `barberos.gestionar`: solo con eso se aprueba y se cancela. */
   gestiona: boolean
@@ -18,6 +20,7 @@ interface BarberosAusenciasListProps {
 
 export function BarberosAusenciasList({
   ausencias,
+  tiposAusencia,
   loading,
   gestiona,
   onAprobar,
@@ -45,7 +48,7 @@ export function BarberosAusenciasList({
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm">{etiquetaTipo(ausencia.tipo)}</p>
+                <p className="text-sm">{etiquetaTipo(ausencia.tipo, tiposAusencia)}</p>
                 <StatusBadge
                   tono={ausencia.aprobadaEn ? "exito" : "advertencia"}
                   etiqueta={ausencia.aprobadaEn ? "Aprobada" : "Pendiente"}
@@ -88,6 +91,6 @@ export function BarberosAusenciasList({
   )
 }
 
-function etiquetaTipo(tipo: string): string {
-  return TIPOS_AUSENCIA.find((opcion) => opcion.valor === tipo)?.etiqueta ?? tipo
+function etiquetaTipo(tipo: string, tiposAusencia: OpcionCatalogo[]): string {
+  return tiposAusencia.find((opcion) => opcion.codigo === tipo)?.etiqueta ?? tipo
 }

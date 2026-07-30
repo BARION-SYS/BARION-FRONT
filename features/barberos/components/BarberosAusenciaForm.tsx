@@ -1,15 +1,24 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Loader2 } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
-import { TIPOS_AUSENCIA } from "@features/barberos/constants/dias"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@shared/components/ui/select"
 import { esquemaAusencia, type DatosAusencia } from "@features/barberos/schemas/barberos.schema"
+import type { OpcionCatalogo } from "@features/catalogos/types/catalogos.types"
 
 interface BarberosAusenciaFormProps {
+  /** `GET /catalogos` — `tiposAusencia`. */
+  tiposAusencia: OpcionCatalogo[]
   cargando?: boolean
   onSubmit: (datos: DatosAusencia) => Promise<void>
 }
@@ -26,9 +35,14 @@ interface BarberosAusenciaFormProps {
  * pisadas y el aviso lo dice: son clientes ya citados y hay que reasignarlos uno
  * por uno.
  */
-export function BarberosAusenciaForm({ cargando, onSubmit }: BarberosAusenciaFormProps) {
+export function BarberosAusenciaForm({
+  tiposAusencia,
+  cargando,
+  onSubmit,
+}: BarberosAusenciaFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<DatosAusencia>({
@@ -66,21 +80,28 @@ export function BarberosAusenciaForm({ cargando, onSubmit }: BarberosAusenciaFor
         </Field>
       </div>
 
-      <Field data-invalid={!!errors.tipo}>
-        <FieldLabel htmlFor="tipo">Tipo</FieldLabel>
-        <select
-          id="tipo"
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-          {...register("tipo")}
-        >
-          {TIPOS_AUSENCIA.map((opcion) => (
-            <option key={opcion.valor} value={opcion.valor}>
-              {opcion.etiqueta}
-            </option>
-          ))}
-        </select>
-        <FieldError errors={[errors.tipo]} />
-      </Field>
+      <Controller
+        control={control}
+        name="tipo"
+        render={({ field }) => (
+          <Field data-invalid={!!errors.tipo}>
+            <FieldLabel htmlFor="tipo">Tipo</FieldLabel>
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger id="tipo" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {tiposAusencia.map((opcion) => (
+                  <SelectItem key={opcion.codigo} value={opcion.codigo}>
+                    {opcion.etiqueta}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError errors={[errors.tipo]} />
+          </Field>
+        )}
+      />
 
       <Field data-invalid={!!errors.motivo}>
         <FieldLabel htmlFor="motivo">Motivo</FieldLabel>

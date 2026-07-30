@@ -17,10 +17,3 @@ export function diasOrdenados(inicioSemana = 1): number[] {
 
 /** Tope por día. Mañana, tarde y un turno extra cubren cualquier caso real. */
 export const MAX_TRAMOS_POR_DIA = 3
-
-export const TIPOS_AUSENCIA = [
-  { valor: "vacaciones", etiqueta: "Vacaciones" },
-  { valor: "incapacidad", etiqueta: "Incapacidad" },
-  { valor: "permiso", etiqueta: "Permiso" },
-  { valor: "bloqueo", etiqueta: "Bloqueo" },
-] as const

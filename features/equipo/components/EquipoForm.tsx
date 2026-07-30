@@ -1,11 +1,18 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Loader2 } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@shared/components/ui/select"
 import { esquemaInvitacion, type DatosInvitacion } from "@features/equipo/schemas/equipo.schema"
 import type { Rol } from "@features/roles/types/roles.types"
 
@@ -25,6 +32,7 @@ interface EquipoFormProps {
 export function EquipoForm({ roles, cargando, onSubmit }: EquipoFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<DatosInvitacion>({
@@ -58,21 +66,28 @@ export function EquipoForm({ roles, cargando, onSubmit }: EquipoFormProps) {
         {errors.telefonoE164 && <FieldError>{errors.telefonoE164.message}</FieldError>}
       </Field>
 
-      <Field>
-        <FieldLabel htmlFor="rol">Rol</FieldLabel>
-        <select
-          id="rol"
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-          {...register("rol")}
-        >
-          {roles.map((rol) => (
-            <option key={rol.id} value={rol.codigo}>
-              {rol.nombre}
-            </option>
-          ))}
-        </select>
-        {errors.rol && <FieldError>{errors.rol.message}</FieldError>}
-      </Field>
+      <Controller
+        control={control}
+        name="rol"
+        render={({ field }) => (
+          <Field>
+            <FieldLabel htmlFor="rol">Rol</FieldLabel>
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger id="rol" className="w-full">
+                <SelectValue placeholder="Selecciona un rol" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((rol) => (
+                  <SelectItem key={rol.id} value={rol.codigo}>
+                    {rol.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.rol && <FieldError>{errors.rol.message}</FieldError>}
+          </Field>
+        )}
+      />
 
       <Button type="submit" disabled={cargando} className="h-10">
         {cargando && <Loader2 className="size-4 animate-spin" aria-hidden />}

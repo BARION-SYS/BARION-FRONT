@@ -1,11 +1,18 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Loader2 } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@shared/components/ui/select"
 import { regiones } from "@config/regiones"
 import {
   esquemaAltaBarberia,
@@ -29,6 +36,7 @@ interface PlataformaFormProps {
 export function PlataformaForm({ cargando, onSubmit }: PlataformaFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<DatosAltaBarberia>({
@@ -64,21 +72,28 @@ export function PlataformaForm({ cargando, onSubmit }: PlataformaFormProps) {
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="codigoPais">País</FieldLabel>
-            <select
-              id="codigoPais"
-              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-              {...register("codigoPais")}
-            >
-              {Object.entries(regiones).map(([codigo, config]) => (
-                <option key={codigo} value={codigo}>
-                  {codigo} · {config.moneda}
-                </option>
-              ))}
-            </select>
-            {errors.codigoPais && <FieldError>{errors.codigoPais.message}</FieldError>}
-          </Field>
+          <Controller
+            control={control}
+            name="codigoPais"
+            render={({ field }) => (
+              <Field>
+                <FieldLabel htmlFor="codigoPais">País</FieldLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="codigoPais" className="w-full">
+                    <SelectValue placeholder="Selecciona un país" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(regiones).map(([codigo, config]) => (
+                      <SelectItem key={codigo} value={codigo}>
+                        {codigo} · {config.moneda}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.codigoPais && <FieldError>{errors.codigoPais.message}</FieldError>}
+              </Field>
+            )}
+          />
 
           <Field>
             <FieldLabel htmlFor="planCodigo">Plan</FieldLabel>

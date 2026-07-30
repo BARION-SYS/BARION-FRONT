@@ -10,15 +10,23 @@ import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useAuthStore } from "@store/auth.store"
 import { puede } from "@features/auth/utils/permisos"
+import { useCatalogos } from "@features/catalogos/hooks/useCatalogos"
 import { useBarberos } from "@features/barberos/hooks/useBarberos"
+import { useSedeActual } from "@store/sede.store"
 import { BarberosAusenciaForm } from "@features/barberos/components/BarberosAusenciaForm"
 import { BarberosAusenciasList } from "@features/barberos/components/BarberosAusenciasList"
 import { BarberosCard } from "@features/barberos/components/BarberosCard"
 import { BarberosDetail } from "@features/barberos/components/BarberosDetail"
+import { BarberosExcepcionForm } from "@features/barberos/components/BarberosExcepcionForm"
+import { BarberosExcepcionesList } from "@features/barberos/components/BarberosExcepcionesList"
 import { BarberosForm } from "@features/barberos/components/BarberosForm"
 import { BarberosJornadaForm } from "@features/barberos/components/BarberosJornadaForm"
-import type { DatosAusencia, DatosBarbero } from "@features/barberos/schemas/barberos.schema"
-import type { Ausencia, Barbero } from "@features/barberos/types/barberos.types"
+import type {
+  DatosAusencia,
+  DatosBarbero,
+  DatosExcepcion,
+} from "@features/barberos/schemas/barberos.schema"
+import type { Ausencia, Barbero, ExcepcionJornada } from "@features/barberos/types/barberos.types"
 
 /**
  * Quién ATIENDE, y cuándo.
@@ -32,6 +40,7 @@ export default function BarberosPage() {
     barberos,
     jornada,
     ausencias,
+    excepciones,
     loadingLista,
     loadingDisponibilidad,
     loadingAction,
@@ -42,10 +51,15 @@ export default function BarberosPage() {
     handleUpdateBarbero,
     handleToggleBarbero,
     handleReplaceJornada,
+    handleGuardarExcepcion,
+    handleEliminarExcepcion,
     handleCreateAusencia,
     handleApproveAusencia,
     handleCancelAusencia,
   } = useBarberos()
+
+  const { catalogos, fetchCatalogos } = useCatalogos()
+  const sedeActual = useSedeActual()
 
   /**
    * Ocultar un botón no es seguridad —la api revalida el permiso en cada
@@ -60,12 +74,20 @@ export default function BarberosPage() {
   const [barberoEnEdicion, setBarberoEnEdicion] = useState<Barbero | null>(null)
   const [barberoEnDisponibilidad, setBarberoEnDisponibilidad] = useState<Barbero | null>(null)
   const [creandoAusencia, setCreandoAusencia] = useState(false)
+  const [excepcionEnEdicion, setExcepcionEnEdicion] = useState<ExcepcionJornada | null>(null)
+  const [creandoExcepcion, setCreandoExcepcion] = useState(false)
 
   const seleccionado = barberos.find((barbero) => barbero.id === seleccionadoId) ?? barberos[0]
 
+  const recargarBarberos = useCallback(
+    () => fetchBarberos({ sedeId: sedeActual?.id }),
+    [fetchBarberos, sedeActual?.id]
+  )
+
   useEffect(() => {
-    void fetchBarberos()
-  }, [fetchBarberos])
+    void recargarBarberos()
+    void fetchCatalogos()
+  }, [recargarBarberos, fetchCatalogos])
 
   // El detalle enseña la jornada del seleccionado, así que se trae con él.
   useEffect(() => {
@@ -91,17 +113,17 @@ export default function BarberosPage() {
       if (guardado) {
         setBarberoEnEdicion(null)
         setCreando(false)
-        void fetchBarberos()
+        void recargarBarberos()
       }
     },
-    [barberoEnEdicion, handleUpdateBarbero, handleCreateBarbero, fetchBarberos] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoEnEdicion, handleUpdateBarbero, handleCreateBarbero, recargarBarberos] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const onAlternarActivo = useCallback(
     async (barbero: Barbero) => {
-      if (await conAviso(() => handleToggleBarbero(barbero))) void fetchBarberos()
+      if (await conAviso(() => handleToggleBarbero(barbero))) void recargarBarberos()
     },
-    [handleToggleBarbero, fetchBarberos] // eslint-disable-line react-hooks/exhaustive-deps
+    [handleToggleBarbero, recargarBarberos] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const abrirDisponibilidad = useCallback(
@@ -128,20 +150,44 @@ export default function BarberosPage() {
         setCreandoAusencia(false)
         void fetchDisponibilidad(barberoEnDisponibilidad.id)
         // La ausencia puede volver "de vacaciones" al barbero: la tarjeta lo pinta.
-        void fetchBarberos()
+        void recargarBarberos()
       }
     },
-    [barberoEnDisponibilidad, handleCreateAusencia, fetchDisponibilidad, fetchBarberos] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoEnDisponibilidad, handleCreateAusencia, fetchDisponibilidad, recargarBarberos] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
+  const onGuardarExcepcion = useCallback(
+    async (datos: DatosExcepcion) => {
+      if (!barberoEnDisponibilidad) return
+      const guardado = await conAviso(() =>
+        handleGuardarExcepcion(barberoEnDisponibilidad.id, datos)
+      )
+      if (guardado) {
+        setCreandoExcepcion(false)
+        setExcepcionEnEdicion(null)
+        void fetchDisponibilidad(barberoEnDisponibilidad.id)
+      }
+    },
+    [barberoEnDisponibilidad, handleGuardarExcepcion, fetchDisponibilidad] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
+  const onEliminarExcepcion = useCallback(
+    async (excepcion: ExcepcionJornada) => {
+      if (!barberoEnDisponibilidad) return
+      if (await conAviso(() => handleEliminarExcepcion(barberoEnDisponibilidad.id, excepcion.id)))
+        void fetchDisponibilidad(barberoEnDisponibilidad.id)
+    },
+    [barberoEnDisponibilidad, handleEliminarExcepcion, fetchDisponibilidad] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const onAusenciaTocada = useCallback(
     async (accion: () => Promise<string>) => {
       if ((await conAviso(accion)) && barberoEnDisponibilidad) {
         void fetchDisponibilidad(barberoEnDisponibilidad.id)
-        void fetchBarberos()
+        void recargarBarberos()
       }
     },
-    [barberoEnDisponibilidad, fetchDisponibilidad, fetchBarberos] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoEnDisponibilidad, fetchDisponibilidad, recargarBarberos] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   return (
@@ -245,6 +291,7 @@ export default function BarberosPage() {
           <Tabs defaultValue="jornada">
             <TabsList>
               <TabsTrigger value="jornada">Jornada</TabsTrigger>
+              <TabsTrigger value="dias-especiales">Días especiales</TabsTrigger>
               <TabsTrigger value="ausencias">Ausencias</TabsTrigger>
             </TabsList>
 
@@ -255,6 +302,29 @@ export default function BarberosPage() {
                 cargando={loadingAction || loadingDisponibilidad}
                 soloLectura={!gestiona}
                 onSubmit={onGuardarJornada}
+              />
+            </TabsContent>
+
+            <TabsContent value="dias-especiales" className="mt-4 flex flex-col gap-3">
+              {gestiona && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  className="self-end"
+                  onClick={() => setCreandoExcepcion(true)}
+                >
+                  <Plus className="size-4" aria-hidden />
+                  Agregar día especial
+                </Button>
+              )}
+
+              <BarberosExcepcionesList
+                excepciones={excepciones}
+                loading={loadingDisponibilidad}
+                gestiona={gestiona}
+                onEditar={setExcepcionEnEdicion}
+                onEliminar={(excepcion) => void onEliminarExcepcion(excepcion)}
               />
             </TabsContent>
 
@@ -274,6 +344,7 @@ export default function BarberosPage() {
 
               <BarberosAusenciasList
                 ausencias={ausencias}
+                tiposAusencia={catalogos?.tiposAusencia ?? []}
                 loading={loadingDisponibilidad}
                 gestiona={gestiona}
                 onAprobar={(ausencia: Ausencia) =>
@@ -298,7 +369,32 @@ export default function BarberosPage() {
         titulo="Programar ausencia"
         descripcion="Bloquea al barbero en ese rango. No cancela las citas que ya tenía."
       >
-        <BarberosAusenciaForm cargando={loadingAction} onSubmit={onGuardarAusencia} />
+        <BarberosAusenciaForm
+          tiposAusencia={catalogos?.tiposAusencia ?? []}
+          cargando={loadingAction}
+          onSubmit={onGuardarAusencia}
+        />
+      </Modal>
+
+      <Modal
+        open={creandoExcepcion || excepcionEnEdicion !== null}
+        onOpenChange={(abierto) => {
+          if (!abierto) {
+            setCreandoExcepcion(false)
+            setExcepcionEnEdicion(null)
+          }
+        }}
+        titulo={
+          excepcionEnEdicion ? `Día especial del ${excepcionEnEdicion.fecha}` : "Nuevo día especial"
+        }
+        descripcion="Reemplaza la jornada normal solo ese día."
+      >
+        <BarberosExcepcionForm
+          key={excepcionEnEdicion?.id ?? "nuevo"}
+          excepcion={excepcionEnEdicion}
+          cargando={loadingAction}
+          onSubmit={onGuardarExcepcion}
+        />
       </Modal>
     </main>
   )

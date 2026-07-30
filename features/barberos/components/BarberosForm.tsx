@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import { Textarea } from "@shared/components/ui/textarea"
 import { esquemaBarbero, type DatosBarbero } from "@features/barberos/schemas/barberos.schema"
 import type { Barbero } from "@features/barberos/types/barberos.types"
 
@@ -132,13 +133,7 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
 
       <Field data-invalid={!!errors.bio}>
         <FieldLabel htmlFor="bio">Presentación</FieldLabel>
-        {/* shadcn no trae textarea instalado: nativo con el estilo del Input */}
-        <textarea
-          id="bio"
-          rows={3}
-          className="w-full resize-none rounded-lg border border-input bg-input/30 px-2.5 py-1.5 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
-          {...register("bio")}
-        />
+        <Textarea id="bio" rows={3} className="resize-none" {...register("bio")} />
         <FieldError errors={[errors.bio]} />
       </Field>
 

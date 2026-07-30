@@ -6,9 +6,16 @@ import { getErrorMessage } from "@shared/utils/error"
 import type {
   DatosAusencia,
   DatosBarbero,
+  DatosExcepcion,
   DatosJornada,
 } from "@features/barberos/schemas/barberos.schema"
-import type { Ausencia, Barbero, JornadaSemanal } from "@features/barberos/types/barberos.types"
+import type {
+  Ausencia,
+  Barbero,
+  ExcepcionJornada,
+  FiltrosBarberos,
+  JornadaSemanal,
+} from "@features/barberos/types/barberos.types"
 
 /**
  * Un solo hook para toda la feature, incluidas la jornada y las ausencias: son
@@ -21,16 +28,17 @@ export function useBarberos() {
   const [barberos, setBarberos] = useState<Barbero[]>([])
   const [jornada, setJornada] = useState<JornadaSemanal | null>(null)
   const [ausencias, setAusencias] = useState<Ausencia[]>([])
+  const [excepciones, setExcepciones] = useState<ExcepcionJornada[]>([])
   const [loadingLista, setLoadingLista] = useState(false)
   const [loadingDisponibilidad, setLoadingDisponibilidad] = useState(false)
   const [loadingAction, setLoadingAction] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchBarberos = useCallback(async () => {
+  const fetchBarberos = useCallback(async (filtros: FiltrosBarberos = {}) => {
     setLoadingLista(true)
     setError(null)
     try {
-      const res = await barberosService.obtenerBarberos({ paginar: false })
+      const res = await barberosService.obtenerBarberos({ ...filtros, paginar: false })
       setBarberos(res.data)
     } catch (err) {
       setError(getErrorMessage(err))
@@ -40,20 +48,22 @@ export function useBarberos() {
   }, [])
 
   /**
-   * Jornada y ausencias en la misma llamada: la pantalla de disponibilidad no
-   * sirve con una sola, y pedirlas por separado deja un estado intermedio en el
-   * que la semana se pinta sin sus excepciones.
+   * Jornada, ausencias y días especiales en la misma llamada: la pantalla de
+   * disponibilidad no sirve con una sola, y pedirlas por separado deja un
+   * estado intermedio en el que la semana se pinta sin sus excepciones.
    */
   const fetchDisponibilidad = useCallback(async (barberoId: string) => {
     setLoadingDisponibilidad(true)
     setError(null)
     try {
-      const [resJornada, resAusencias] = await Promise.all([
+      const [resJornada, resAusencias, resExcepciones] = await Promise.all([
         barberosService.obtenerJornada(barberoId),
         barberosService.obtenerAusencias(barberoId, { paginar: false }),
+        barberosService.obtenerExcepciones(barberoId),
       ])
       setJornada(resJornada.data)
       setAusencias(resAusencias.data)
+      setExcepciones(resExcepciones.data)
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
@@ -140,6 +150,37 @@ export function useBarberos() {
     []
   )
 
+  /** Se escribe por fecha: repetir el mismo día sustituye la excepción anterior. */
+  const handleGuardarExcepcion = useCallback(
+    async (barberoId: string, payload: DatosExcepcion): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await barberosService.guardarExcepcion(barberoId, payload)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  const handleEliminarExcepcion = useCallback(
+    async (barberoId: string, excepcionId: string): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await barberosService.eliminarExcepcion(barberoId, excepcionId)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
   const handleApproveAusencia = useCallback(
     async (barberoId: string, ausenciaId: string): Promise<string> => {
       setLoadingAction(true)
@@ -174,6 +215,7 @@ export function useBarberos() {
     barberos,
     jornada,
     ausencias,
+    excepciones,
     loadingLista,
     loadingDisponibilidad,
     loadingAction,
@@ -184,6 +226,8 @@ export function useBarberos() {
     handleUpdateBarbero,
     handleToggleBarbero,
     handleReplaceJornada,
+    handleGuardarExcepcion,
+    handleEliminarExcepcion,
     handleCreateAusencia,
     handleApproveAusencia,
     handleCancelAusencia,

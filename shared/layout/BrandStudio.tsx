@@ -145,12 +145,12 @@ function PreviewPanel({ tokens }: { tokens: Record<string, string> }) {
   )
 }
 
-// Estudio de marca del tenant — SOLO el admin. Borrador + preview del diseño; nada cambia hasta Aplicar.
+// Colores del panel — preferencia de quien lo usa, guardada en este navegador.
+// Borrador + preview del diseño: nada cambia hasta Aplicar.
 export function BrandStudio() {
   const colorMarca = useMarcaStore((s) => s.colorMarca)
   const colorFondo = useMarcaStore((s) => s.colorFondo)
-  const setColorMarca = useMarcaStore((s) => s.setColorMarca)
-  const setColorFondo = useMarcaStore((s) => s.setColorFondo)
+  const setMarca = useMarcaStore((s) => s.setMarca)
 
   const { resolvedTheme } = useTheme()
   const [montado, setMontado] = useState(false)
@@ -171,22 +171,23 @@ export function BrandStudio() {
 
   const sinCambios = borradorMarca === colorMarca && borradorFondo === colorFondo
 
+  // No hay petición que esperar ni permiso que pedir: es una preferencia de
+  // quien mira la pantalla y se queda en este navegador.
   const aplicar = () => {
-    setColorMarca(borradorMarca)
-    setColorFondo(borradorFondo)
+    setMarca({ colorMarca: borradorMarca, colorFondo: borradorFondo })
     setAbierto(false)
-    notify.success("Colores del negocio actualizados")
+    notify.success("Colores actualizados")
   }
 
   const tokens = tokensDeTema(borradorMarca, borradorFondo, temaOscuro)
 
   return (
     <>
-      <InfoTooltip contenido="Colores del negocio">
+      <InfoTooltip contenido="Colores del panel">
         <Button
           variant="outline"
           size="icon"
-          aria-label="Colores del negocio"
+          aria-label="Colores del panel"
           onClick={() => alCambiarAbierto(true)}
         >
           <Palette aria-hidden />
@@ -196,8 +197,8 @@ export function BrandStudio() {
       <Modal
         open={abierto}
         onOpenChange={alCambiarAbierto}
-        titulo="Colores del negocio"
-        descripcion="Se adaptan solos al tema claro y oscuro — aplican al panel y al portal de tus clientes."
+        titulo="Colores del panel"
+        descripcion="Se adaptan solos al tema claro y oscuro. Es tu preferencia: se guarda en este navegador y no cambia lo que ven los demás."
         size="lg"
         footer={
           <>

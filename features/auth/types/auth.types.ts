@@ -15,13 +15,19 @@ export interface BarberiaSesion {
   nombreComercial: string
 }
 
+/** Los cuatro roles del sistema. Los define Barion; una barbería no crea los suyos. */
+export type CodigoRol = "propietario" | "administrador" | "recepcion" | "barbero"
+
 /**
- * `codigo` es lo que se compara en el código; `nombre` lo que se pinta. El
- * código NO es lista cerrada: además de los de sistema (propietario,
- * administrador, recepcion, barbero) una barbería puede definir los suyos.
+ * `codigo` es estable y `nombre` es lo que se pinta.
+ *
+ * Que la lista sea cerrada NO autoriza a comparar contra ella: lo que decide si
+ * una acción se ofrece es `permisos`, porque encima del rol van las concesiones
+ * y las revocaciones de esa persona. `rol.codigo === "administrador"` deja fuera
+ * al administrador al que le quitaron algo. Para eso está `puede()`.
  */
 export interface RolSesion {
-  codigo: string
+  codigo: CodigoRol
   nombre: string
 }
 

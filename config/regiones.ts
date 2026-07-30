@@ -18,3 +18,13 @@ export const regiones: Record<CodigoRegion, ConfigRegional> = {
 
 // Región base del producto (Colombia).
 export const REGION_DEFAULT: CodigoRegion = "CO"
+
+/**
+ * Las monedas que Barion maneja hoy, derivadas de las regiones: agregar un país
+ * arriba las actualiza solas. Sirven para que una sede se elija de una lista en
+ * vez de teclear tres letras — la API acepta cualquier trío y `MXN` guardado por
+ * error no falla hasta que alguien mira un precio.
+ */
+export const monedas: CodigoMoneda[] = [
+  ...new Set(Object.values(regiones).map((region) => region.moneda)),
+]

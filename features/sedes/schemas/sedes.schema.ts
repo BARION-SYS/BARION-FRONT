@@ -1,4 +1,6 @@
 import { z } from "zod"
+import { monedas } from "@config/regiones"
+import { esZonaHorariaValida } from "@shared/utils/i18n"
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const HORA = /^(?:[01]\d|2[0-3]):[0-5]\d$|^24:00$/
@@ -14,14 +16,19 @@ const direccion = z.object({
 
 export const esquemaSede = z.object({
   nombre: z.string().min(2, "Mínimo 2 caracteres").max(120, "Máximo 120"),
-  zonaHoraria: z.string().min(1, "Elige la zona horaria de la sede"),
+  // La API acepta cualquier cadena corta: si el valor no es una zona IANA real,
+  // lo que se rompe es el formateo de la agenda, lejos de aquí y sin pistas.
+  zonaHoraria: z
+    .string()
+    .min(1, "Elige la zona horaria de la sede")
+    .refine(esZonaHorariaValida, "Elige una zona horaria de la lista"),
   slugQr: z
     .string()
     .min(2, "Mínimo 2 caracteres")
     .max(64, "Máximo 64 caracteres")
     .regex(SLUG, "Solo minúsculas, números y guiones simples"),
   // Vacío es válido: sin moneda propia, la sede hereda la de la barbería.
-  moneda: z.string().length(3, "Código ISO de tres letras").optional(),
+  moneda: z.enum(monedas, "Elige una de las monedas disponibles").optional(),
   telefono: z.string().max(32, "Máximo 32 caracteres").optional(),
   direccion: direccion.optional(),
   inicioSemana: z.union([z.literal(0), z.literal(1)]).optional(),

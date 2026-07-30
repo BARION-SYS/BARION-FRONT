@@ -1,11 +1,20 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Loader2 } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@shared/components/ui/select"
+import { monedas } from "@config/regiones"
+import { zonasHorarias } from "@shared/utils/i18n"
 import { esquemaSede, type DatosSede } from "@features/sedes/schemas/sedes.schema"
 import type { Sede } from "@features/sedes/types/sedes.types"
 
@@ -25,9 +34,11 @@ interface SedesFormProps {
  */
 export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
   const editando = Boolean(sede)
+  const zonas = zonasHorarias()
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<DatosSede>({
@@ -36,7 +47,10 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
       nombre: sede?.nombre ?? "",
       zonaHoraria: sede?.zonaHoraria ?? "America/Bogota",
       slugQr: sede?.slugQr ?? "",
-      moneda: sede?.moneda ?? undefined,
+      // Se busca en la lista en vez de confiar en lo guardado: la API admite
+      // cualquier trío de letras, y una moneda que Barion no maneja no se puede
+      // formatear ni ofrecer como opción.
+      moneda: monedas.find((moneda) => moneda === sede?.moneda),
       telefono: sede?.telefono ?? undefined,
       direccion: sede?.direccion ?? undefined,
       inicioSemana: sede?.inicioSemana === 0 ? 0 : 1,
@@ -54,7 +68,19 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
           <FieldLabel htmlFor="zonaHoraria">Zona horaria</FieldLabel>
-          <Input id="zonaHoraria" placeholder="America/Bogota" {...register("zonaHoraria")} />
+          {/* Sin pieza shadcn de combobox instalada: select nativo con datalist
+              para poder escribir y filtrar entre varios cientos de zonas. */}
+          <Input
+            id="zonaHoraria"
+            list="zonas-horarias"
+            placeholder="America/Bogota"
+            {...register("zonaHoraria")}
+          />
+          <datalist id="zonas-horarias">
+            {zonas.map((zona) => (
+              <option key={zona} value={zona} />
+            ))}
+          </datalist>
           <p className="text-xs text-muted-foreground">
             De la sede, no de la barbería: es la hora en la que se lee su agenda.
           </p>
@@ -78,12 +104,33 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
           {errors.telefono && <FieldError>{errors.telefono.message}</FieldError>}
         </Field>
 
-        <Field>
-          <FieldLabel htmlFor="moneda">Moneda</FieldLabel>
-          <Input id="moneda" placeholder="COP" {...register("moneda")} />
-          <p className="text-xs text-muted-foreground">En blanco hereda la de la barbería.</p>
-          {errors.moneda && <FieldError>{errors.moneda.message}</FieldError>}
-        </Field>
+        <Controller
+          control={control}
+          name="moneda"
+          render={({ field }) => (
+            <Field>
+              <FieldLabel htmlFor="moneda">Moneda</FieldLabel>
+              <Select
+                value={field.value ?? "_heredar"}
+                onValueChange={(valor) => field.onChange(valor === "_heredar" ? undefined : valor)}
+              >
+                <SelectTrigger id="moneda" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_heredar">Hereda la de la barbería</SelectItem>
+                  {monedas.map((moneda) => (
+                    <SelectItem key={moneda} value={moneda}>
+                      {moneda}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">En blanco hereda la de la barbería.</p>
+              {errors.moneda && <FieldError>{errors.moneda.message}</FieldError>}
+            </Field>
+          )}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -101,18 +148,28 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
         </Field>
       </div>
 
-      <Field>
-        <FieldLabel htmlFor="inicioSemana">Primer día de la semana</FieldLabel>
-        <select
-          id="inicioSemana"
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-          {...register("inicioSemana", { valueAsNumber: true })}
-        >
-          <option value={1}>Lunes</option>
-          <option value={0}>Domingo</option>
-        </select>
-        {errors.inicioSemana && <FieldError>{errors.inicioSemana.message}</FieldError>}
-      </Field>
+      <Controller
+        control={control}
+        name="inicioSemana"
+        render={({ field }) => (
+          <Field>
+            <FieldLabel htmlFor="inicioSemana">Primer día de la semana</FieldLabel>
+            <Select
+              value={String(field.value)}
+              onValueChange={(valor) => field.onChange(Number(valor))}
+            >
+              <SelectTrigger id="inicioSemana" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Lunes</SelectItem>
+                <SelectItem value="0">Domingo</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.inicioSemana && <FieldError>{errors.inicioSemana.message}</FieldError>}
+          </Field>
+        )}
+      />
 
       <Button type="submit" disabled={cargando} className="h-10">
         {cargando && <Loader2 className="size-4 animate-spin" aria-hidden />}

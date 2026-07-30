@@ -2,6 +2,7 @@ import { CalendarDays, Clock } from "lucide-react"
 import { cn } from "@shared/utils/cn"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { resumenServicios } from "@features/citas/utils/servicios"
 import type { CitaCalendario, SemanaCalendario } from "@features/citas/types/citas.types"
 
 interface CitasListProps {
@@ -64,7 +65,7 @@ export function CitasList({ semana, citas, alSeleccionarCita }: CitasListProps) 
                   <button
                     type="button"
                     onClick={() => alSeleccionarCita(cita)}
-                    aria-label={`Cita de ${cita.cliente}, ${cita.servicio}, ${semana.horas[cita.horaInicio]}`}
+                    aria-label={`Cita de ${cita.cliente}, ${resumenServicios(cita.servicios)}, ${semana.horas[cita.horaInicio]}`}
                     style={{ "--tono": cita.color } as React.CSSProperties}
                     className="flex w-full cursor-pointer flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-l-2 border-border border-l-(--tono) bg-secondary/40 px-3 py-2.5 text-left transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none motion-reduce:transition-none"
                   >
@@ -77,7 +78,7 @@ export function CitasList({ semana, citas, alSeleccionarCita }: CitasListProps) 
                         {cita.cliente}
                       </span>
                       <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <span className="truncate">{cita.servicio}</span>
+                        <span className="truncate">{resumenServicios(cita.servicios)}</span>
                         <span className="h-1 w-1 shrink-0 rounded-full bg-(--tono)" aria-hidden />
                         <span className="shrink-0">{cita.barbero}</span>
                       </span>

@@ -6,6 +6,7 @@ import type { Control, FieldError as ErrorRHF, FieldPath } from "react-hook-form
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Button } from "@shared/components/ui/button"
 import { Modal } from "@shared/components/modals/Modal"
+import { Checkbox } from "@shared/components/ui/checkbox"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
 import {
@@ -77,6 +78,49 @@ function CampoSelect({
   )
 }
 
+interface CampoServiciosProps {
+  control: Control<DatosCita>
+  error?: ErrorRHF
+}
+
+// Checkbox múltiple: una cita admite N servicios, no uno solo.
+function CampoServicios({ control, error }: CampoServiciosProps) {
+  return (
+    <Controller
+      control={control}
+      name="servicios"
+      render={({ field }) => {
+        const seleccionados: string[] = field.value ?? []
+        const alternar = (servicio: string, marcado: boolean) =>
+          field.onChange(
+            marcado ? [...seleccionados, servicio] : seleccionados.filter((s) => s !== servicio)
+          )
+
+        return (
+          <Field data-invalid={!!error}>
+            <FieldLabel>Servicios</FieldLabel>
+            <div className="grid max-h-40 grid-cols-2 gap-2 overflow-y-auto rounded-md border border-input p-3">
+              {serviciosCita.map((servicio) => (
+                <label
+                  key={servicio}
+                  className="flex cursor-pointer items-center gap-2 text-sm text-foreground"
+                >
+                  <Checkbox
+                    checked={seleccionados.includes(servicio)}
+                    onCheckedChange={(marcado) => alternar(servicio, marcado === true)}
+                  />
+                  {servicio}
+                </label>
+              ))}
+            </div>
+            <FieldError errors={[error]} />
+          </Field>
+        )
+      }}
+    />
+  )
+}
+
 interface CitasFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -86,7 +130,7 @@ interface CitasFormProps {
   guardando?: boolean
 }
 
-const valoresIniciales: Partial<DatosCita> = { cliente: "", duracion: 1 }
+const valoresIniciales: Partial<DatosCita> = { cliente: "", servicios: [], duracion: 1 }
 
 // Presentacional: crear cuando no hay cita, reagendar cuando llega una precargada.
 export function CitasForm({
@@ -115,7 +159,7 @@ export function CitasForm({
       cita
         ? {
             cliente: cita.cliente,
-            servicio: cita.servicio as DatosCita["servicio"],
+            servicios: cita.servicios as DatosCita["servicios"],
             barbero: cita.barbero as DatosCita["barbero"],
             dia: cita.dia,
             horaInicio: cita.horaInicio,
@@ -131,7 +175,6 @@ export function CitasForm({
 
   const deshabilitado = isSubmitting || !!guardando
 
-  const opcionesServicio: OpcionSelect[] = serviciosCita.map((s) => ({ valor: s, etiqueta: s }))
   const opcionesBarbero: OpcionSelect[] = barberosCita.map((b) => ({ valor: b, etiqueta: b }))
   const opcionesDia: OpcionSelect[] =
     semana?.dias.map((dia, indice) => ({
@@ -164,14 +207,7 @@ export function CitasForm({
           <FieldError errors={[errors.cliente]} />
         </Field>
 
-        <CampoSelect
-          control={control}
-          name="servicio"
-          label="Servicio"
-          placeholder="Selecciona un servicio"
-          opciones={opcionesServicio}
-          error={errors.servicio}
-        />
+        <CampoServicios control={control} error={errors.servicios as ErrorRHF | undefined} />
 
         <CampoSelect
           control={control}

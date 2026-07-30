@@ -6,6 +6,7 @@ import { CalendarCheck, CheckCircle2, MapPin, RotateCcw } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { useFormato } from "@shared/hooks/useFormato"
 import { formatDuration } from "@shared/utils/datetime"
+import { resumenServicios } from "@features/citas/utils/servicios"
 import type { BarberiaPortal, ReservaConfirmada } from "@features/portal/types/portal.types"
 
 interface PortalConfirmacionProps {
@@ -23,6 +24,8 @@ export function PortalConfirmacion({
   onReservarOtra,
 }: PortalConfirmacionProps) {
   const { dinero, diaSemana, hora } = useFormato()
+  const precioTotal = reserva.lineasServicio.reduce((total, l) => total + l.precio, 0)
+  const duracionTotal = reserva.lineasServicio.reduce((total, l) => total + l.duracionMin, 0)
 
   return (
     <motion.section
@@ -61,9 +64,10 @@ export function PortalConfirmacion({
             </dd>
           </div>
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-xs text-muted-foreground">Servicio</dt>
+            <dt className="text-xs text-muted-foreground">Servicios</dt>
             <dd className="text-right text-sm font-medium text-foreground">
-              {reserva.servicio} · {formatDuration(reserva.duracionMin)}
+              {resumenServicios(reserva.lineasServicio.map((l) => l.nombre))} ·{" "}
+              {formatDuration(duracionTotal)}
             </dd>
           </div>
           <div className="flex items-baseline justify-between gap-3">
@@ -73,7 +77,7 @@ export function PortalConfirmacion({
           <div className="flex items-baseline justify-between gap-3 border-t border-dashed border-border pt-3">
             <dt className="text-xs text-muted-foreground">Total a pagar en sede</dt>
             <dd className="text-right text-base font-bold text-primary tabular-nums">
-              {dinero(reserva.precio)}
+              {dinero(precioTotal)}
             </dd>
           </div>
         </dl>

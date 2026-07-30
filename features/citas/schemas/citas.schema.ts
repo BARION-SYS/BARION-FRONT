@@ -17,7 +17,8 @@ export const barberosCita = ["Miguel", "Pedro", "Juan"] as const
 
 export const esquemaCita = z.object({
   cliente: z.string().min(1, "Ingresa el nombre del cliente"),
-  servicio: z.enum(serviciosCita, "Selecciona un servicio"),
+  // N servicios por cita, no uno: el cliente puede pedir corte y barba en la misma visita.
+  servicios: z.array(z.enum(serviciosCita)).min(1, "Selecciona al menos un servicio"),
   barbero: z.enum(barberosCita, "Selecciona un barbero"),
   dia: z.number("Selecciona el día").int().min(0, "Día inválido").max(6, "Día inválido"),
   horaInicio: z.number("Selecciona la hora").int().min(0, "Hora inválida").max(11, "Hora inválida"),

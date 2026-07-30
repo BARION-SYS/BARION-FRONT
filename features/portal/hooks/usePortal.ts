@@ -53,11 +53,11 @@ export function usePortal() {
     }
   }, [])
 
-  const fetchAgenda = useCallback(async (servicioId: number, barberoId: number) => {
+  const fetchAgenda = useCallback(async (servicioIds: number[], barberoId: number) => {
     setLoadingAgenda(true)
     setError(null)
     try {
-      const res = await portalService.obtenerAgenda(servicioId, barberoId)
+      const res = await portalService.obtenerAgenda(servicioIds, barberoId)
       setAgenda(res.data)
     } catch (err) {
       setError(getErrorMessage(err))

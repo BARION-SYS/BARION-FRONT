@@ -96,7 +96,9 @@ export default function CitasPage() {
   const termino = busqueda.trim().toLowerCase()
   const citasFiltradas = termino
     ? citas.filter((c) =>
-        [c.cliente, c.servicio, c.barbero].some((campo) => campo.toLowerCase().includes(termino))
+        [c.cliente, ...c.servicios, c.barbero].some((campo) =>
+          campo.toLowerCase().includes(termino)
+        )
       )
     : citas
   const citasDelDia = citasFiltradas.filter((c) => c.dia === diaSeleccionado)

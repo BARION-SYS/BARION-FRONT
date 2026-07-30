@@ -4,6 +4,7 @@ import { Button } from "@shared/components/ui/button"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { resumenServicios } from "@features/citas/utils/servicios"
 import type { CitaCalendario, DiaCalendario } from "@features/citas/types/citas.types"
 
 interface Props {
@@ -67,7 +68,7 @@ export function PanelDia({ dia, mes, horas, citas, citaSeleccionada, alSeleccion
                     {cita.cliente}
                   </span>
                   <span className="truncate text-[11px] leading-tight font-normal text-muted-foreground">
-                    {cita.servicio}
+                    {resumenServicios(cita.servicios)}
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-(--tono)" aria-hidden />

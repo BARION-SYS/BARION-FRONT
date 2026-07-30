@@ -51,22 +51,78 @@
     }
   ],
   "ingresosSemana": [
-    { "dia": "Lun", "ingresos": 420, "citas": 12 },
-    { "dia": "Mar", "ingresos": 580, "citas": 16 },
-    { "dia": "Mié", "ingresos": 390, "citas": 10 },
-    { "dia": "Jue", "ingresos": 720, "citas": 20 },
-    { "dia": "Vie", "ingresos": 890, "citas": 24 },
-    { "dia": "Sáb", "ingresos": 1240, "citas": 32 },
-    { "dia": "Dom", "ingresos": 760, "citas": 18 }
+    {
+      "dia": "Lun",
+      "ingresos": 420,
+      "citas": 12
+    },
+    {
+      "dia": "Mar",
+      "ingresos": 580,
+      "citas": 16
+    },
+    {
+      "dia": "Mié",
+      "ingresos": 390,
+      "citas": 10
+    },
+    {
+      "dia": "Jue",
+      "ingresos": 720,
+      "citas": 20
+    },
+    {
+      "dia": "Vie",
+      "ingresos": 890,
+      "citas": 24
+    },
+    {
+      "dia": "Sáb",
+      "ingresos": 1240,
+      "citas": 32
+    },
+    {
+      "dia": "Dom",
+      "ingresos": 760,
+      "citas": 18
+    }
   ],
   "ingresosMensuales": [
-    { "mes": "Ene", "ingresos": 12400, "meta": 14000 },
-    { "mes": "Feb", "ingresos": 15200, "meta": 14000 },
-    { "mes": "Mar", "ingresos": 13800, "meta": 15000 },
-    { "mes": "Abr", "ingresos": 17600, "meta": 16000 },
-    { "mes": "May", "ingresos": 16400, "meta": 16000 },
-    { "mes": "Jun", "ingresos": 19200, "meta": 18000 },
-    { "mes": "Jul", "ingresos": 21000, "meta": 20000 }
+    {
+      "mes": "Ene",
+      "ingresos": 12400,
+      "meta": 14000
+    },
+    {
+      "mes": "Feb",
+      "ingresos": 15200,
+      "meta": 14000
+    },
+    {
+      "mes": "Mar",
+      "ingresos": 13800,
+      "meta": 15000
+    },
+    {
+      "mes": "Abr",
+      "ingresos": 17600,
+      "meta": 16000
+    },
+    {
+      "mes": "May",
+      "ingresos": 16400,
+      "meta": 16000
+    },
+    {
+      "mes": "Jun",
+      "ingresos": 19200,
+      "meta": 18000
+    },
+    {
+      "mes": "Jul",
+      "ingresos": 21000,
+      "meta": 20000
+    }
   ],
   "citasHoy": [
     {
@@ -74,70 +130,70 @@
       "cliente": "Carlos Mendoza",
       "iniciales": "CM",
       "barbero": "Miguel",
-      "servicio": "Corte + Barba",
       "hora": "09:00",
       "duracionMin": 45,
-      "estado": "completada"
+      "estado": "completada",
+      "servicios": ["Corte + Barba"]
     },
     {
       "id": 2,
       "cliente": "Luis García",
       "iniciales": "LG",
       "barbero": "Pedro",
-      "servicio": "Corte Clásico",
       "hora": "09:30",
       "duracionMin": 30,
-      "estado": "completada"
+      "estado": "completada",
+      "servicios": ["Corte Clásico"]
     },
     {
       "id": 3,
       "cliente": "Andrés Torres",
       "iniciales": "AT",
       "barbero": "Miguel",
-      "servicio": "Fade + Diseño",
       "hora": "10:15",
       "duracionMin": 50,
-      "estado": "en-curso"
+      "estado": "en_curso",
+      "servicios": ["Fade + Diseño"]
     },
     {
       "id": 4,
       "cliente": "Roberto Silva",
       "iniciales": "RS",
       "barbero": "Juan",
-      "servicio": "Corte + Barba",
       "hora": "11:00",
       "duracionMin": 45,
-      "estado": "confirmada"
+      "estado": "confirmada",
+      "servicios": ["Corte + Barba"]
     },
     {
       "id": 5,
       "cliente": "Diego Martínez",
       "iniciales": "DM",
       "barbero": "Pedro",
-      "servicio": "Corte Clásico",
       "hora": "11:30",
       "duracionMin": 30,
-      "estado": "confirmada"
+      "estado": "confirmada",
+      "servicios": ["Corte Clásico"]
     },
     {
       "id": 6,
       "cliente": "Felipe Ruiz",
       "iniciales": "FR",
       "barbero": "Miguel",
-      "servicio": "Barba",
       "hora": "12:00",
       "duracionMin": 25,
-      "estado": "pendiente"
+      "estado": "pendiente_confirmacion",
+      "servicios": ["Barba"]
     },
     {
       "id": 7,
       "cliente": "Samuel López",
       "iniciales": "SL",
       "barbero": "Juan",
-      "servicio": "Fade Completo",
       "hora": "14:00",
       "duracionMin": 60,
-      "estado": "cancelada"
+      "estado": "cancelada",
+      "servicios": ["Fade Completo"]
     }
   ],
   "resumenBarberos": [
@@ -170,9 +226,25 @@
     }
   ],
   "serviciosPopulares": [
-    { "nombre": "Corte Clásico", "porcentaje": 35, "color": "var(--chart-1)" },
-    { "nombre": "Fade + Diseño", "porcentaje": 28, "color": "var(--chart-3)" },
-    { "nombre": "Corte + Barba", "porcentaje": 22, "color": "var(--chart-2)" },
-    { "nombre": "Solo Barba", "porcentaje": 15, "color": "var(--chart-4)" }
+    {
+      "nombre": "Corte Clásico",
+      "porcentaje": 35,
+      "color": "var(--chart-1)"
+    },
+    {
+      "nombre": "Fade + Diseño",
+      "porcentaje": 28,
+      "color": "var(--chart-3)"
+    },
+    {
+      "nombre": "Corte + Barba",
+      "porcentaje": 22,
+      "color": "var(--chart-2)"
+    },
+    {
+      "nombre": "Solo Barba",
+      "porcentaje": 15,
+      "color": "var(--chart-4)"
+    }
   ]
 }

@@ -4,7 +4,9 @@ import { cn } from "@shared/utils/cn"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
+import { useFormato } from "@shared/hooks/useFormato"
 import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { resumenServicios } from "@features/citas/utils/servicios"
 import type { CitaHoy } from "@features/citas/types/citas.types"
 
 const coloresAvatar = ["var(--chart-1)", "var(--chart-3)", "var(--chart-2)", "var(--chart-4)"]
@@ -14,14 +16,15 @@ interface Props {
 }
 
 export function DashboardCitasCard({ citas }: Props) {
+  const { diaSemana } = useFormato()
   const completadas = citas.filter((c) => c.estado === "completada").length
-  const enCurso = citas.filter((c) => c.estado === "en-curso").length
+  const enCurso = citas.filter((c) => c.estado === "en_curso").length
   const canceladas = citas.filter((c) => c.estado === "cancelada").length
 
   return (
     <SectionCard
       titulo="Citas de hoy"
-      subtitulo="Lunes, 14 Julio 2026"
+      subtitulo={diaSemana(new Date())}
       className="flex flex-col"
       accion={
         <Link
@@ -40,7 +43,7 @@ export function DashboardCitasCard({ citas }: Props) {
               key={cita.id}
               className={cn(
                 "flex items-center gap-3 rounded-lg border p-3 transition-colors",
-                cita.estado === "en-curso"
+                cita.estado === "en_curso"
                   ? "border-primary/30 bg-primary/5"
                   : "border-transparent bg-secondary/50 hover:bg-secondary"
               )}
@@ -52,7 +55,7 @@ export function DashboardCitasCard({ citas }: Props) {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold text-foreground">{cita.cliente}</p>
                 <p className="truncate text-[11px] text-muted-foreground">
-                  {cita.servicio} · {cita.barbero}
+                  {resumenServicios(cita.servicios)} · {cita.barbero}
                 </p>
               </div>
               <div className="shrink-0 text-right">

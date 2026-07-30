@@ -9,6 +9,7 @@ import { PortalCitasList } from "@features/portal/components/PortalCitasList"
 import { PortalNegocioCard } from "@features/portal/components/PortalNegocioCard"
 import { PortalOtpForm } from "@features/portal/components/PortalOtpForm"
 import { usePortal } from "@features/portal/hooks/usePortal"
+import { resumenServicios } from "@features/citas/utils/servicios"
 import { Button } from "@shared/components/ui/button"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { Modal } from "@shared/components/modals/Modal"
@@ -39,8 +40,7 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
   const [telefono, setTelefono] = useState("")
   const [citaACancelar, setCitaACancelar] = useState<CitaCliente | null>(null)
 
-  const setColorMarca = useMarcaStore((s) => s.setColorMarca)
-  const setColorFondo = useMarcaStore((s) => s.setColorFondo)
+  const setMarca = useMarcaStore((s) => s.setMarca)
 
   useEffect(() => {
     void fetchPortal(slug)
@@ -48,9 +48,8 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
 
   useEffect(() => {
     if (!barberia) return
-    setColorMarca(barberia.colorMarca)
-    setColorFondo(barberia.colorFondo)
-  }, [barberia, setColorMarca, setColorFondo])
+    setMarca({ colorMarca: barberia.colorMarca, colorFondo: barberia.colorFondo })
+  }, [barberia, setMarca])
 
   const pedirCodigo = useCallback(
     async (datos: DatosAcceso) => {
@@ -211,7 +210,8 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
         }
       >
         <p className="text-sm text-muted-foreground">
-          {citaACancelar?.servicio} con {citaACancelar?.barbero} · {citaACancelar?.codigo}
+          {citaACancelar && resumenServicios(citaACancelar.lineasServicio.map((l) => l.nombre))} con{" "}
+          {citaACancelar?.barbero} · {citaACancelar?.codigo}
         </p>
       </Modal>
     </MotionConfig>

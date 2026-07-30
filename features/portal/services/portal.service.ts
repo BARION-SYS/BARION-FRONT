@@ -122,9 +122,13 @@ export const portalService = {
     return ok([...barberos])
   },
 
-  // Mock — al integrar: GET /v1/public/shops/:slug/availability?service=&barber=.
-  async obtenerAgenda(servicioId: number, barberoId: number): Promise<ApiResult<DiaAgenda[]>> {
-    const duracion = servicios.find((s) => s.id === servicioId)?.duracionMin ?? PASO_FRANJA_MIN
+  // Mock — al integrar: GET /v1/public/shops/:slug/availability?services=&barber=.
+  async obtenerAgenda(servicioIds: number[], barberoId: number): Promise<ApiResult<DiaAgenda[]>> {
+    // La franja necesita el tiempo de TODOS los servicios pedidos, no de uno solo.
+    const duracion =
+      servicios
+        .filter((s) => servicioIds.includes(s.id))
+        .reduce((total, s) => total + s.duracionMin, 0) || PASO_FRANJA_MIN
     const { anio, mes, dia } = hoyEnSede()
 
     const agenda = Array.from({ length: DIAS_AGENDA }, (_, indice): DiaAgenda => {
@@ -172,17 +176,22 @@ export const portalService = {
     const reserva = esquemaReserva.parse(payload)
     esquemaCodigo.parse(codigo)
 
-    const servicio = servicios.find((s) => s.id === reserva.servicioId)
-    if (!servicio) throw new Error("El servicio ya no está disponible")
+    const lineasServicio = servicios
+      .filter((s) => reserva.servicioIds.includes(s.id))
+      .map((s) => ({
+        servicioId: s.id,
+        nombre: s.nombre,
+        precio: s.precio,
+        duracionMin: s.duracionMin,
+      }))
+    if (lineasServicio.length === 0) throw new Error("El servicio ya no está disponible")
     const barbero = barberos.find((b) => b.id === reserva.barberoId) ?? barberos[0]
 
     const confirmada: ReservaConfirmada = {
       codigo: `REY-${String(4900 + citasCliente.length)}`,
       inicio: reserva.inicio,
-      servicio: servicio.nombre,
+      lineasServicio,
       barbero: barbero.id === 0 ? "Primer barbero disponible" : barbero.nombre,
-      precio: servicio.precio,
-      duracionMin: servicio.duracionMin,
       cliente: reserva.nombre,
     }
 
@@ -191,9 +200,8 @@ export const portalService = {
         id: citasCliente.reduce((max, cita) => Math.max(max, cita.id), 0) + 1,
         codigo: confirmada.codigo,
         inicio: confirmada.inicio,
-        servicio: confirmada.servicio,
+        lineasServicio: confirmada.lineasServicio,
         barbero: confirmada.barbero,
-        precio: confirmada.precio,
         estado: "confirmada",
       },
       ...citasCliente,

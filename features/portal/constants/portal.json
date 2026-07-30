@@ -15,13 +15,48 @@
     "abiertoAhora": true,
     "horarioHoy": "09:00 – 20:00",
     "horarios": [
-      { "dia": "Lunes", "abierto": true, "apertura": "09:00", "cierre": "20:00" },
-      { "dia": "Martes", "abierto": true, "apertura": "09:00", "cierre": "20:00" },
-      { "dia": "Miércoles", "abierto": true, "apertura": "09:00", "cierre": "20:00" },
-      { "dia": "Jueves", "abierto": true, "apertura": "09:00", "cierre": "20:00" },
-      { "dia": "Viernes", "abierto": true, "apertura": "09:00", "cierre": "21:00" },
-      { "dia": "Sábado", "abierto": true, "apertura": "09:00", "cierre": "18:00" },
-      { "dia": "Domingo", "abierto": false, "apertura": "09:00", "cierre": "20:00" }
+      {
+        "dia": "Lunes",
+        "abierto": true,
+        "apertura": "09:00",
+        "cierre": "20:00"
+      },
+      {
+        "dia": "Martes",
+        "abierto": true,
+        "apertura": "09:00",
+        "cierre": "20:00"
+      },
+      {
+        "dia": "Miércoles",
+        "abierto": true,
+        "apertura": "09:00",
+        "cierre": "20:00"
+      },
+      {
+        "dia": "Jueves",
+        "abierto": true,
+        "apertura": "09:00",
+        "cierre": "20:00"
+      },
+      {
+        "dia": "Viernes",
+        "abierto": true,
+        "apertura": "09:00",
+        "cierre": "21:00"
+      },
+      {
+        "dia": "Sábado",
+        "abierto": true,
+        "apertura": "09:00",
+        "cierre": "18:00"
+      },
+      {
+        "dia": "Domingo",
+        "abierto": false,
+        "apertura": "09:00",
+        "cierre": "20:00"
+      }
     ],
     "ventajas": [
       "Confirmación inmediata por WhatsApp",
@@ -126,30 +161,48 @@
       "codigo": "REY-4821",
       "diasDesdeHoy": 2,
       "hora": "16:00",
-      "servicio": "Fade + diseño",
       "barbero": "Miguel Ángel",
-      "precio": 38000,
-      "estado": "confirmada"
+      "estado": "confirmada",
+      "lineasServicio": [
+        {
+          "servicioId": 2,
+          "nombre": "Fade + diseño",
+          "precio": 38000,
+          "duracionMin": 50
+        }
+      ]
     },
     {
       "id": 2,
       "codigo": "REY-4610",
       "diasDesdeHoy": -9,
       "hora": "10:30",
-      "servicio": "Corte + barba",
       "barbero": "Pedro Ramírez",
-      "precio": 42000,
-      "estado": "completada"
+      "estado": "completada",
+      "lineasServicio": [
+        {
+          "servicioId": 3,
+          "nombre": "Corte + barba",
+          "precio": 42000,
+          "duracionMin": 60
+        }
+      ]
     },
     {
       "id": 3,
       "codigo": "REY-4402",
       "diasDesdeHoy": -24,
       "hora": "18:00",
-      "servicio": "Corte clásico",
       "barbero": "Miguel Ángel",
-      "precio": 25000,
-      "estado": "cancelada"
+      "estado": "cancelada",
+      "lineasServicio": [
+        {
+          "servicioId": 1,
+          "nombre": "Corte clásico",
+          "precio": 25000,
+          "duracionMin": 30
+        }
+      ]
     }
   ]
 }

@@ -1,4 +1,5 @@
 import { cn } from "@shared/utils/cn"
+import { resumenServicios } from "@features/citas/utils/servicios"
 import type { CitaCalendario, SemanaCalendario } from "@features/citas/types/citas.types"
 
 // Grilla custom de calendario: markup nativo — no existe pieza shadcn para esto.
@@ -30,7 +31,7 @@ function CitaChip({
     <button
       type="button"
       onClick={() => alSeleccionar(cita)}
-      aria-label={`Cita de ${cita.cliente}, ${cita.servicio}, ${hora}`}
+      aria-label={`Cita de ${cita.cliente}, ${resumenServicios(cita.servicios)}, ${hora}`}
       className="mb-1 w-full cursor-pointer rounded-md px-2 py-1.5 text-left text-[11px] transition-[box-shadow,filter] hover:shadow-md hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none motion-reduce:transition-none"
       style={{
         color: cita.color,
@@ -39,7 +40,9 @@ function CitaChip({
       }}
     >
       <p className="truncate leading-tight font-semibold">{cita.cliente}</p>
-      <p className="mt-0.5 truncate text-[10px] leading-tight opacity-75">{cita.servicio}</p>
+      <p className="mt-0.5 truncate text-[10px] leading-tight opacity-75">
+        {resumenServicios(cita.servicios)}
+      </p>
     </button>
   )
 }

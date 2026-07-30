@@ -9,17 +9,18 @@ import type { ServicioPortal } from "@features/portal/types/portal.types"
 
 interface PortalServiciosListProps {
   servicios: ServicioPortal[]
-  servicioId: number | null
+  servicioIds: number[]
   loading: boolean
-  onSeleccionar: (servicio: ServicioPortal) => void
+  /** N servicios por cita: cada click alterna, no reemplaza la elección. */
+  onAlternar: (servicio: ServicioPortal) => void
 }
 
 // Paso 1: catálogo del negocio. Presentacional puro — la selección la maneja la página.
 export function PortalServiciosList({
   servicios,
-  servicioId,
+  servicioIds,
   loading,
-  onSeleccionar,
+  onAlternar,
 }: PortalServiciosListProps) {
   const { dinero } = useFormato()
 
@@ -27,12 +28,12 @@ export function PortalServiciosList({
     <Loadable loading={loading} variant="list" count={4} isEmpty={servicios.length === 0}>
       <ul className="grid gap-3 xl:grid-cols-2">
         {servicios.map((servicio) => {
-          const activo = servicio.id === servicioId
+          const activo = servicioIds.includes(servicio.id)
           return (
             <li key={servicio.id}>
               <button
                 type="button"
-                onClick={() => onSeleccionar(servicio)}
+                onClick={() => onAlternar(servicio)}
                 aria-pressed={activo}
                 className={cn(
                   "flex min-h-11 w-full cursor-pointer flex-col gap-2 rounded-xl border p-4 text-left transition-colors motion-reduce:transition-none",

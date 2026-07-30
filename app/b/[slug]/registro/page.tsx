@@ -45,8 +45,7 @@ export default function RegistroPage({ params }: { params: Promise<{ slug: strin
   const [fase, setFase] = useState<FaseRegistro>("datos")
   const [datos, setDatos] = useState<DatosRegistro | null>(null)
 
-  const setColorMarca = useMarcaStore((s) => s.setColorMarca)
-  const setColorFondo = useMarcaStore((s) => s.setColorFondo)
+  const setMarca = useMarcaStore((s) => s.setMarca)
 
   useEffect(() => {
     void fetchPortal(slug)
@@ -54,9 +53,8 @@ export default function RegistroPage({ params }: { params: Promise<{ slug: strin
 
   useEffect(() => {
     if (!barberia) return
-    setColorMarca(barberia.colorMarca)
-    setColorFondo(barberia.colorFondo)
-  }, [barberia, setColorMarca, setColorFondo])
+    setMarca({ colorMarca: barberia.colorMarca, colorFondo: barberia.colorFondo })
+  }, [barberia, setMarca])
 
   const enviarDatos = useCallback(
     async (valores: DatosRegistro) => {

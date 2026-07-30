@@ -13,13 +13,19 @@ function ok<T>(data: T, message = "ok"): ApiResult<T> {
   return { data, status: 200, message, pagination: null }
 }
 
-// Mismo mapeo estado → token de gráfica que trae el mock.
+// Mismo mapeo estado → token de gráfica que trae el mock. Solo 5 tokens para 8
+// estados: familias emparentadas comparten token (reservada/confirmada,
+// pendiente/retrasada, cancelada/no_asistio) — es el chip de la grilla, no el
+// badge; el badge (configEstadoCita) sí distingue los 8 por ícono y tono.
 const colorPorEstado: Record<EstadoCita, string> = {
-  completada: "var(--chart-2)",
-  "en-curso": "var(--chart-1)",
+  reservada: "var(--chart-3)",
+  pendiente_confirmacion: "var(--chart-4)",
   confirmada: "var(--chart-3)",
-  pendiente: "var(--chart-4)",
+  retrasada: "var(--chart-4)",
+  en_curso: "var(--chart-1)",
+  completada: "var(--chart-2)",
   cancelada: "var(--chart-5)",
+  no_asistio: "var(--chart-5)",
 }
 
 // Copia en memoria del JSON — las mutaciones se ven al refetchear, mismo flujo que con la API real.

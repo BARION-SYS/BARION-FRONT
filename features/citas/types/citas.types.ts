@@ -1,11 +1,21 @@
-export type EstadoCita = "completada" | "en-curso" | "confirmada" | "pendiente" | "cancelada"
+/** Igual al enum de la API (`GET /catalogos` → `estadosCita`), 8 valores en snake_case. */
+export type EstadoCita =
+  | "reservada"
+  | "pendiente_confirmacion"
+  | "confirmada"
+  | "retrasada"
+  | "en_curso"
+  | "completada"
+  | "cancelada"
+  | "no_asistio"
 
 export interface CitaHoy {
   id: number
   cliente: string
   iniciales: string
   barbero: string
-  servicio: string
+  /** N servicios por cita, no uno: corte y barba en la misma visita son dos líneas. */
+  servicios: string[]
   hora: string
   duracionMin: number
   estado: EstadoCita
@@ -16,7 +26,8 @@ export type VistaCalendario = "semana" | "dia" | "lista"
 export interface CitaCalendario {
   id: number
   cliente: string
-  servicio: string
+  /** N servicios por cita, no uno: corte y barba en la misma visita son dos líneas. */
+  servicios: string[]
   barbero: string
   /** Índice del día dentro de la semana, 0 = lunes */
   dia: number

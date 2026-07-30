@@ -42,14 +42,14 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
 
   // Estado de UI del flujo — el hook solo guarda estado de API.
   const [paso, setPaso] = useState<PasoReserva>("servicio")
-  const [servicioId, setServicioId] = useState<number | null>(null)
+  // N servicios por cita, no uno: el cliente puede pedir corte y barba en la misma visita.
+  const [servicioIds, setServicioIds] = useState<number[]>([])
   const [barberoId, setBarberoId] = useState<number | null>(null)
   const [fechaDia, setFechaDia] = useState<string | null>(null)
   const [inicio, setInicio] = useState<string | null>(null)
   const [contacto, setContacto] = useState<DatosContacto | null>(null)
 
-  const setColorMarca = useMarcaStore((s) => s.setColorMarca)
-  const setColorFondo = useMarcaStore((s) => s.setColorFondo)
+  const setMarca = useMarcaStore((s) => s.setMarca)
 
   useEffect(() => {
     void fetchPortal(slug)
@@ -58,22 +58,21 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
   // La marca la define el tenant y el portal SOLO la refleja (el cliente nunca la edita).
   useEffect(() => {
     if (!barberia) return
-    setColorMarca(barberia.colorMarca)
-    setColorFondo(barberia.colorFondo)
-  }, [barberia, setColorMarca, setColorFondo])
+    setMarca({ colorMarca: barberia.colorMarca, colorFondo: barberia.colorFondo })
+  }, [barberia, setMarca])
 
-  // Los cupos dependen de servicio + barbero: se piden al entrar al paso de agenda.
+  // Los cupos dependen de servicios + barbero: se piden al entrar al paso de agenda.
   useEffect(() => {
-    if (paso !== "agenda" || servicioId === null || barberoId === null) return
-    void fetchAgenda(servicioId, barberoId)
-  }, [paso, servicioId, barberoId, fetchAgenda])
+    if (paso !== "agenda" || servicioIds.length === 0 || barberoId === null) return
+    void fetchAgenda(servicioIds, barberoId)
+  }, [paso, servicioIds, barberoId, fetchAgenda])
 
-  const servicio = servicios.find((s) => s.id === servicioId) ?? null
+  const serviciosSeleccionados = servicios.filter((s) => servicioIds.includes(s.id))
   const barbero = barberos.find((b) => b.id === barberoId) ?? null
   const copia = copiaPorPaso[paso]
 
   const puedeContinuar =
-    (paso === "servicio" && !!servicio) ||
+    (paso === "servicio" && serviciosSeleccionados.length > 0) ||
     (paso === "barbero" && barberoId !== null) ||
     (paso === "agenda" && !!inicio)
 
@@ -118,10 +117,10 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
 
   const confirmarReserva = useCallback(
     async (codigo: DatosCodigo) => {
-      if (!contacto || servicioId === null || barberoId === null || !inicio) return
+      if (!contacto || servicioIds.length === 0 || barberoId === null || !inicio) return
       try {
         const mensaje = await handleConfirmarReservaPortal(
-          { ...contacto, servicioId, barberoId, inicio },
+          { ...contacto, servicioIds, barberoId, inicio },
           codigo
         )
         setPaso("listo")
@@ -130,12 +129,20 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
         notify.error(getErrorMessage(err))
       }
     },
-    [contacto, servicioId, barberoId, inicio, handleConfirmarReservaPortal]
+    [contacto, servicioIds, barberoId, inicio, handleConfirmarReservaPortal]
+  )
+
+  const alternarServicio = useCallback(
+    (id: number) =>
+      setServicioIds((actuales) =>
+        actuales.includes(id) ? actuales.filter((s) => s !== id) : [...actuales, id]
+      ),
+    []
   )
 
   const reiniciar = useCallback(() => {
     setPaso("servicio")
-    setServicioId(null)
+    setServicioIds([])
     setBarberoId(null)
     setFechaDia(null)
     setInicio(null)
@@ -214,9 +221,9 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                       {paso === "servicio" && (
                         <PortalServiciosList
                           servicios={servicios}
-                          servicioId={servicioId}
+                          servicioIds={servicioIds}
                           loading={false}
-                          onSeleccionar={(elegido) => setServicioId(elegido.id)}
+                          onAlternar={(elegido) => alternarServicio(elegido.id)}
                         />
                       )}
 
@@ -265,7 +272,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
               <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
                 <div className="hidden lg:block">
                   <PortalResumenDetail
-                    servicio={servicio}
+                    servicios={serviciosSeleccionados}
                     barbero={barbero}
                     inicio={inicio}
                     textoCta={copia.cta}
@@ -285,7 +292,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
       {paso !== "listo" && !!copia.cta && (
         <div className="fixed inset-x-0 bottom-0 z-20 lg:hidden">
           <PortalResumenDetail
-            servicio={servicio}
+            servicios={serviciosSeleccionados}
             barbero={barbero}
             inicio={inicio}
             textoCta={copia.cta}

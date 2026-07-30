@@ -5,10 +5,12 @@ import { Button } from "@shared/components/ui/button"
 import { useFormato } from "@shared/hooks/useFormato"
 import { cn } from "@shared/utils/cn"
 import { formatDuration } from "@shared/utils/datetime"
+import { resumenServicios } from "@features/citas/utils/servicios"
 import type { BarberoPortal, ServicioPortal } from "@features/portal/types/portal.types"
 
 interface PortalResumenDetailProps {
-  servicio: ServicioPortal | null
+  /** N servicios por cita: la lista completa que el cliente lleva elegida. */
+  servicios: ServicioPortal[]
   barbero: BarberoPortal | null
   /** Inicio de la cita en UTC (ISO) */
   inicio: string | null
@@ -24,7 +26,7 @@ interface PortalResumenDetailProps {
 
 // Resumen persistente de la reserva: el cliente ve siempre qué lleva elegido y cuánto cuesta.
 export function PortalResumenDetail({
-  servicio,
+  servicios,
   barbero,
   inicio,
   textoCta,
@@ -36,8 +38,13 @@ export function PortalResumenDetail({
 }: PortalResumenDetailProps) {
   const { dinero, fechaCorta, hora, diaSemanaCorto } = useFormato()
 
+  const hayServicios = servicios.length > 0
+  const precioTotal = servicios.reduce((total, s) => total + s.precio, 0)
+  const duracionTotal = servicios.reduce((total, s) => total + s.duracionMin, 0)
+  const nombresServicios = resumenServicios(servicios.map((s) => s.nombre))
+
   const filas = [
-    { icono: Scissors, etiqueta: "Servicio", valor: servicio?.nombre },
+    { icono: Scissors, etiqueta: "Servicios", valor: hayServicios ? nombresServicios : undefined },
     { icono: User, etiqueta: "Barbero", valor: barbero?.nombre },
     {
       icono: CalendarDays,
@@ -49,7 +56,7 @@ export function PortalResumenDetail({
     {
       icono: Clock,
       etiqueta: "Duración",
-      valor: servicio ? formatDuration(servicio.duracionMin) : undefined,
+      valor: hayServicios ? formatDuration(duracionTotal) : undefined,
     },
   ]
 
@@ -77,10 +84,10 @@ export function PortalResumenDetail({
       <div className="flex items-center gap-3 border-t border-border bg-card/95 p-3 backdrop-blur-md">
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs text-muted-foreground">
-            {servicio?.nombre ?? "Elige un servicio"}
+            {hayServicios ? nombresServicios : "Elige un servicio"}
           </p>
           <p className="text-lg font-bold text-foreground tabular-nums">
-            {servicio ? dinero(servicio.precio) : "—"}
+            {hayServicios ? dinero(precioTotal) : "—"}
           </p>
         </div>
         {boton}
@@ -116,7 +123,7 @@ export function PortalResumenDetail({
       <div className="mt-4 flex items-baseline justify-between border-t border-dashed border-border pt-4">
         <span className="text-xs tracking-wide text-muted-foreground uppercase">Total</span>
         <span className="text-xl font-bold text-primary tabular-nums">
-          {servicio ? dinero(servicio.precio) : "—"}
+          {hayServicios ? dinero(precioTotal) : "—"}
         </span>
       </div>
 

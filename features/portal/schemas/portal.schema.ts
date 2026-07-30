@@ -23,7 +23,8 @@ export const esquemaReserva = esquemaContacto.extend({
     .max(160, "Máximo 160 caracteres")
     .optional()
     .transform((valor) => valor || undefined),
-  servicioId: z.number("Selecciona un servicio").int().positive("Selecciona un servicio"),
+  // N servicios por cita, no uno: corte y barba en la misma visita son dos líneas.
+  servicioIds: z.array(z.number().int().positive()).min(1, "Selecciona al menos un servicio"),
   /** 0 = cualquier barbero disponible */
   barberoId: z.number("Selecciona un barbero").int().min(0, "Selecciona un barbero"),
   inicio: z.iso.datetime("Selecciona un horario"),

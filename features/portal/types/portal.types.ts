@@ -73,14 +73,20 @@ export interface DiaAgenda {
 /** Pasos del flujo público de reserva. */
 export type PasoReserva = "servicio" | "barbero" | "agenda" | "datos" | "codigo" | "listo"
 
+/** Una línea de la reserva: N servicios por cita, no uno — cada uno con su precio y duración. */
+export interface LineaServicioPortal {
+  servicioId: number
+  nombre: string
+  precio: number
+  duracionMin: number
+}
+
 export interface ReservaConfirmada {
   codigo: string
   /** Inicio de la cita en UTC (ISO 8601) */
   inicio: string
-  servicio: string
+  lineasServicio: LineaServicioPortal[]
   barbero: string
-  precio: number
-  duracionMin: number
   cliente: string
 }
 
@@ -89,9 +95,8 @@ export interface CitaCliente {
   id: number
   codigo: string
   inicio: string
-  servicio: string
+  lineasServicio: LineaServicioPortal[]
   barbero: string
-  precio: number
   estado: EstadoCita
 }
 

@@ -4,6 +4,7 @@ import { Modal } from "@shared/components/modals/Modal"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { resumenServicios } from "@features/citas/utils/servicios"
 import type { CitaCalendario, SemanaCalendario } from "@features/citas/types/citas.types"
 
 interface Props {
@@ -58,7 +59,7 @@ export function CitasDetail({
 
             <dl className="space-y-3">
               {[
-                { rotulo: "Servicio", valor: cita.servicio },
+                { rotulo: "Servicios", valor: resumenServicios(cita.servicios) },
                 { rotulo: "Barbero", valor: cita.barbero },
                 { rotulo: "Hora", valor: semana.horas[cita.horaInicio] },
                 {

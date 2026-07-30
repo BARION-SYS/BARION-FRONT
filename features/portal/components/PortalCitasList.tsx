@@ -5,7 +5,8 @@ import { Button } from "@shared/components/ui/button"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { useFormato } from "@shared/hooks/useFormato"
-import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { ESTADOS_NO_CANCELABLES, configEstadoCita } from "@features/citas/utils/estadoCita"
+import { resumenServicios } from "@features/citas/utils/servicios"
 import type { CitaCliente } from "@features/portal/types/portal.types"
 
 interface PortalCitasListProps {
@@ -40,13 +41,17 @@ export function PortalCitasList({ citas, loading, onCancelar }: PortalCitasListP
         {citas.map((cita) => {
           const estado = configEstadoCita[cita.estado]
           const cancelable =
-            cita.estado === "confirmada" && new Date(cita.inicio).getTime() > Date.now()
+            !ESTADOS_NO_CANCELABLES.includes(cita.estado) &&
+            new Date(cita.inicio).getTime() > Date.now()
+          const precioTotal = cita.lineasServicio.reduce((total, l) => total + l.precio, 0)
 
           return (
             <li key={cita.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-foreground">{cita.servicio}</p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {resumenServicios(cita.lineasServicio.map((l) => l.nombre))}
+                  </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     Con {cita.barbero} · {cita.codigo}
                   </p>
@@ -59,7 +64,7 @@ export function PortalCitasList({ citas, loading, onCancelar }: PortalCitasListP
                   {diaSemana(cita.inicio)} ·{" "}
                   <span className="tabular-nums">{hora(cita.inicio)}</span>
                 </p>
-                <p className="text-sm font-bold text-primary tabular-nums">{dinero(cita.precio)}</p>
+                <p className="text-sm font-bold text-primary tabular-nums">{dinero(precioTotal)}</p>
               </div>
 
               {cancelable && (

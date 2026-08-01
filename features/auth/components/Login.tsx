@@ -188,6 +188,16 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
             )}
           </AnimatePresence>
 
+          {/* Quien perdió su clave necesita salir de aquí, no volver a probar. */}
+          <motion.div variants={bloque} className="-mt-1 flex justify-end">
+            <Link
+              href={slug ? `/recuperar?slug=${encodeURIComponent(slug)}` : "/recuperar"}
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </motion.div>
+
           <motion.div variants={bloque}>
             <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.01 }}>
               <Button

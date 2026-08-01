@@ -1,7 +1,12 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import type { DatosLogin } from "@features/auth/schemas/auth.schema"
+import type {
+  DatosCambioContrasena,
+  DatosLogin,
+  DatosNuevaContrasena,
+  DatosSolicitudRecuperacion,
+} from "@features/auth/schemas/auth.schema"
 import type { BarberiaParaElegir, Sesion } from "@features/auth/types/auth.types"
 import { authService } from "@features/auth/services/auth.service"
 import { useAuthStore } from "@store/auth.store"
@@ -18,6 +23,7 @@ export function useAuth() {
   // la cuenta tiene más de una y no se dijo por cuál puerta se entraba.
   const [barberiasParaElegir, setBarberiasParaElegir] = useState<BarberiaParaElegir[]>([])
   const [loadingSesion, setLoadingSesion] = useState(false)
+  const [loadingContrasena, setLoadingContrasena] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   /**
@@ -97,13 +103,68 @@ export function useAuth() {
     }
   }, [limpiarSesion])
 
+  /**
+   * Cambia la contraseña y vuelve a resolver la sesión: es lo que apaga la
+   * pantalla bloqueante. Sin ese segundo paso la bandera seguiría en el store y
+   * la persona se quedaría mirando el mismo formulario que acaba de enviar.
+   */
+  const handleCambiarContrasenaAuth = useCallback(
+    async (datos: DatosCambioContrasena): Promise<string> => {
+      setLoadingContrasena(true)
+      try {
+        const res = await authService.cambiarContrasena(datos)
+        await fetchSesion()
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingContrasena(false)
+      }
+    },
+    [fetchSesion]
+  )
+
+  const handleSolicitarRecuperacionAuth = useCallback(
+    async (datos: DatosSolicitudRecuperacion): Promise<string> => {
+      setLoadingContrasena(true)
+      try {
+        const res = await authService.solicitarRecuperacion(datos)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingContrasena(false)
+      }
+    },
+    []
+  )
+
+  const handleConfirmarRecuperacionAuth = useCallback(
+    async (token: string, datos: DatosNuevaContrasena): Promise<string> => {
+      setLoadingContrasena(true)
+      try {
+        const res = await authService.confirmarRecuperacion(token, datos)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingContrasena(false)
+      }
+    },
+    []
+  )
+
   return {
     barberiasParaElegir,
     loadingLogin,
     loadingSesion,
+    loadingContrasena,
     error,
     handleLoginAuth,
     handleLogoutAuth,
+    handleCambiarContrasenaAuth,
+    handleSolicitarRecuperacionAuth,
+    handleConfirmarRecuperacionAuth,
     fetchSesion,
   }
 }

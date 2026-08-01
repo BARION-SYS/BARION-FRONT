@@ -15,8 +15,14 @@ export interface BarberiaSesion {
   nombreComercial: string
 }
 
-/** Los cuatro roles del sistema. Los define Barion; una barbería no crea los suyos. */
-export type CodigoRol = "propietario" | "administrador" | "recepcion" | "barbero"
+/**
+ * Los tres roles del sistema. Los define Barion; una barbería no crea los suyos.
+ *
+ * `recepcion` se retiró: la reserva va al barbero directamente, y quien atiende
+ * el mostrador entra como `administrador` con capacidades revocadas persona a
+ * persona.
+ */
+export type CodigoRol = "propietario" | "administrador" | "barbero"
 
 /**
  * `codigo` es estable y `nombre` es lo que se pinta.
@@ -62,6 +68,16 @@ export interface Sesion {
   permisos: string[]
   tipo: TipoSesion
   esStaffPlataforma: boolean
+  /**
+   * La contraseña con la que entró se la puso otra persona: su admin al darle de
+   * alta, o Barion en un alta asistida.
+   *
+   * Mientras sea cierto la API responde 403 a todo lo que no sea esta sesión,
+   * cambiar la contraseña o cerrarla. No es una sugerencia de la interfaz: si el
+   * panel se pintara igual, cada pantalla se llenaría de errores sin explicar
+   * por qué.
+   */
+  debeCambiarContrasena: boolean
 }
 
 /** Una de las barberías entre las que hay que elegir al entrar. */

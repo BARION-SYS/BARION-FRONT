@@ -1,4 +1,13 @@
-import { esquemaLogin, type DatosLogin } from "@features/auth/schemas/auth.schema"
+import {
+  esquemaCambioContrasena,
+  esquemaLogin,
+  esquemaNuevaContrasena,
+  esquemaSolicitudRecuperacion,
+  type DatosCambioContrasena,
+  type DatosLogin,
+  type DatosNuevaContrasena,
+  type DatosSolicitudRecuperacion,
+} from "@features/auth/schemas/auth.schema"
 import type { ResultadoLogin, Sesion } from "@features/auth/types/auth.types"
 import { api } from "@lib/http/instances"
 import type { ApiResult } from "@shared/types/api.types"
@@ -41,5 +50,35 @@ export const authService = {
 
   async logout(): Promise<ApiResult<null>> {
     return api.post<null>("/auth/logout")
+  },
+
+  /**
+   * Poner la propia contraseña. Es también la salida de la pantalla bloqueante:
+   * quien entró con la clave que le dictaron la usa aquí como actual, y con eso
+   * la API levanta el bloqueo en el acto.
+   *
+   * La confirmación no viaja: existe para que nadie se equivoque al teclear, y
+   * comprobarlo es cosa del formulario, no del servidor.
+   */
+  async cambiarContrasena(datos: DatosCambioContrasena): Promise<ApiResult<null>> {
+    const { contrasenaActual, contrasenaNueva } = esquemaCambioContrasena.parse(datos)
+    return api.post<null>("/auth/cambiar-contrasena", { contrasenaActual, contrasenaNueva })
+  },
+
+  /**
+   * Pedir el enlace para restablecerla. Responde 200 exista o no ese correo, así
+   * que la pantalla no puede prometer más que "si tiene cuenta, le llegará".
+   */
+  async solicitarRecuperacion(datos: DatosSolicitudRecuperacion): Promise<ApiResult<null>> {
+    return api.post<null>("/auth/restablecer-contrasena", esquemaSolicitudRecuperacion.parse(datos))
+  },
+
+  /** El token sale del enlace del correo, no del formulario. */
+  async confirmarRecuperacion(
+    token: string,
+    datos: DatosNuevaContrasena
+  ): Promise<ApiResult<null>> {
+    const { contrasenaNueva } = esquemaNuevaContrasena.parse(datos)
+    return api.post<null>("/auth/restablecer-contrasena/confirmar", { token, contrasenaNueva })
   },
 }

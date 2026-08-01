@@ -2,10 +2,12 @@
 
 import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { CambioObligatorio } from "@features/auth/components/CambioObligatorio"
 import { useAuth } from "@features/auth/hooks/useAuth"
 import { appDeSesion } from "@features/auth/utils/permisos"
 import { obtenerRutaActiva, rutasDe, rutasVisibles } from "@routes/rutasDashboard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+import { notify } from "@shared/services/notify"
 import { useAuthStore } from "@store/auth.store"
 
 /** A qué área pertenece el árbol que este provider protege. */
@@ -35,6 +37,12 @@ const RUTA_DE_AREA: Record<string, string> = {
  *    barbería y el panel se le pintaría vacío; un propietario en el área de
  *    plataforma recibiría un 403 en cada llamada.
  *  · hidratada y en su área → children.
+ *
+ * Y una quinta, que se comprueba antes que el área: la sesión que arrastra una
+ * contraseña puesta por otro. Ahí la API responde 403 a todo lo demás, así que
+ * en lugar de navegar a una ruta —que también sería una ruta bloqueada— se pinta
+ * la pantalla de cambio EN LUGAR del panel. La dirección no cambia; lo que no se
+ * pinta es nada más.
  */
 export function AuthProvider({
   children,
@@ -45,7 +53,8 @@ export function AuthProvider({
 }) {
   const router = useRouter()
   const pathname = usePathname()
-  const { fetchSesion } = useAuth()
+  const { fetchSesion, handleCambiarContrasenaAuth, handleLogoutAuth, loadingContrasena } =
+    useAuth()
   const sesion = useAuthStore((s) => s.sesion)
   const hidratada = useAuthStore((s) => s.hidratada)
 
@@ -67,7 +76,7 @@ export function AuthProvider({
   useEffect(() => {
     if (!hidratada) return
     if (!sesion) {
-      router.replace("/")
+      router.replace("/entrar")
       return
     }
     if (!enSuArea && areaDeLaSesion) {
@@ -87,6 +96,22 @@ export function AuthProvider({
         <DataSkeleton variant="stats" />
         <DataSkeleton variant="table" />
       </div>
+    )
+  }
+
+  if (sesion.debeCambiarContrasena) {
+    return (
+      <CambioObligatorio
+        nombre={sesion.usuario.nombre}
+        cargando={loadingContrasena}
+        onSubmit={async (datos) => {
+          const mensaje = await handleCambiarContrasenaAuth(datos)
+          notify.success(mensaje)
+        }}
+        onSalir={() => {
+          void handleLogoutAuth().then(() => router.replace("/entrar"))
+        }}
+      />
     )
   }
 

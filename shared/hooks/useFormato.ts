@@ -3,8 +3,9 @@
 import { monedas, type CodigoMoneda } from "@config/regiones"
 import { useTenant } from "@shared/providers/TenantProvider"
 import { useSedeActual } from "@store/sede.store"
-import { formatMoney } from "@shared/utils/currency"
+import { formatMoney, toMajorUnits, toMinorUnits } from "@shared/utils/currency"
 import {
+  fechaClave,
   formatDate,
   formatDateTime,
   formatRelative,
@@ -12,6 +13,7 @@ import {
   formatTime,
   formatWeekday,
   formatWeekdayShort,
+  minutosLocales,
 } from "@shared/utils/datetime"
 import { formatCompact, formatNumber, formatPercent } from "@shared/utils/numbers"
 
@@ -33,6 +35,11 @@ export function useFormato() {
 
   return {
     dinero: (centavos: number) => formatMoney(centavos, moneda, locale),
+    /** Lo que se escribe en un formulario → lo que la API acepta. */
+    aCentavos: (monto: number) => String(toMinorUnits(monto, moneda, locale)),
+    /** Centavos de la API → el número que se precarga en el formulario. */
+    deCentavos: (centavos: number) => toMajorUnits(centavos, moneda, locale),
+    moneda,
     hora: (valor: string | Date) => formatTime(valor, timezone, locale),
     fecha: (valor: string | Date) => formatDate(valor, timezone, locale),
     fechaCorta: (valor: string | Date) => formatShortDate(valor, timezone, locale),
@@ -40,6 +47,11 @@ export function useFormato() {
     diaSemana: (valor: string | Date) => formatWeekday(valor, timezone, locale),
     diaSemanaCorto: (valor: string | Date) => formatWeekdayShort(valor, timezone, locale),
     relativo: (valor: string | Date) => formatRelative(valor, locale),
+    /** `YYYY-MM-DD` en hora de la sede: la clave con la que se agrupa la agenda. */
+    fechaClave: (valor: string | Date) => fechaClave(valor, timezone),
+    /** Minutos desde medianoche local: lo que posiciona una cita en la grilla. */
+    minutosLocales: (valor: string | Date) => minutosLocales(valor, timezone),
+    timezone,
     numero: (valor: number) => formatNumber(valor, locale),
     porcentaje: (valor: number) => formatPercent(valor, locale),
     compacto: (valor: number) => formatCompact(valor, locale),

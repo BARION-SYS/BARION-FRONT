@@ -28,6 +28,18 @@ export function toMajorUnits(
   return amountMinor / 10 ** fractionDigits(currency, locale)
 }
 
+// Unidad mayor → unidad menor. Es la que necesita todo formulario que pide un
+// precio: quien lo escribe piensa en pesos, la API solo acepta centavos.
+// `Math.round` cierra el paso al 0.1+0.2 del binario, que en COP llegaría a la
+// base como un centavo de menos.
+export function toMinorUnits(
+  amountMajor: number,
+  currency: CodigoMoneda,
+  locale = DEFAULT_LOCALE
+): number {
+  return Math.round(amountMajor * 10 ** fractionDigits(currency, locale))
+}
+
 export function formatMoney(
   amountMinor: number,
   currency: CodigoMoneda,

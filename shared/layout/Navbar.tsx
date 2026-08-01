@@ -96,7 +96,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   const alCerrarSesion = async () => {
     const message = await handleLogoutAuth()
     notify.info(message)
-    router.replace("/")
+    router.replace("/entrar")
   }
 
   // El AuthProvider no pinta el chrome sin sesión resuelta, así que aquí siempre

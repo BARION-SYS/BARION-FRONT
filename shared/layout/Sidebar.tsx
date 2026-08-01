@@ -61,7 +61,7 @@ export function Sidebar({
   const alCerrarSesion = async () => {
     const message = await handleLogoutAuth()
     notify.info(message)
-    router.replace("/")
+    router.replace("/entrar")
   }
 
   // Cierra el drawer móvil al navegar

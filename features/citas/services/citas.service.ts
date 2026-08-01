@@ -1,79 +1,64 @@
-import type { ApiResult } from "@shared/types/api.types"
+import { api } from "@lib/http/instances"
+import { omitEmpty } from "@shared/utils/params"
+import {
+  esquemaCita,
+  esquemaEstadoCita,
+  esquemaReprogramar,
+  type DatosCita,
+  type DatosEstadoCita,
+  type DatosReprogramar,
+} from "@features/citas/schemas/citas.schema"
 import type {
-  CitaCalendario,
-  EstadoCita,
-  SemanaCalendario,
+  AsientoHistorialCita,
+  Cita,
+  Disponibilidad,
+  FiltrosCitas,
 } from "@features/citas/types/citas.types"
-import { esquemaCita, type DatosCita } from "@features/citas/schemas/citas.schema"
-import datos from "@features/citas/constants/citas.json"
+import type { ApiResult } from "@shared/types/api.types"
 
-// Capa mock — al integrar la API se reemplaza por llamadas con api de shared/http/api.
-
-function ok<T>(data: T, message = "ok"): ApiResult<T> {
-  return { data, status: 200, message, pagination: null }
-}
-
-// Mismo mapeo estado → token de gráfica que trae el mock. Solo 5 tokens para 8
-// estados: familias emparentadas comparten token (reservada/confirmada,
-// pendiente/retrasada, cancelada/no_asistio) — es el chip de la grilla, no el
-// badge; el badge (configEstadoCita) sí distingue los 8 por ícono y tono.
-const colorPorEstado: Record<EstadoCita, string> = {
-  reservada: "var(--chart-3)",
-  pendiente_confirmacion: "var(--chart-4)",
-  confirmada: "var(--chart-3)",
-  retrasada: "var(--chart-4)",
-  en_curso: "var(--chart-1)",
-  completada: "var(--chart-2)",
-  cancelada: "var(--chart-5)",
-  no_asistio: "var(--chart-5)",
-}
-
-// Copia en memoria del JSON — las mutaciones se ven al refetchear, mismo flujo que con la API real.
-let citas: CitaCalendario[] = (datos.citas as CitaCalendario[]).map((cita) => ({ ...cita }))
-
-function buscarCita(id: number): CitaCalendario {
-  const cita = citas.find((c) => c.id === id)
-  if (!cita) throw new Error("La cita no existe")
-  return cita
-}
-
-// Singleton del feat — única puerta de acceso a los datos de citas.
 export const citasService = {
-  async obtenerSemanaCalendario(): Promise<ApiResult<SemanaCalendario>> {
-    return ok(datos.semana as SemanaCalendario)
+  async obtenerCitas(filtros: FiltrosCitas = {}): Promise<ApiResult<Cita[]>> {
+    return api.get<Cita[]>("/citas", { params: omitEmpty({ ...filtros }) })
   },
 
-  async obtenerCitasCalendario(): Promise<ApiResult<CitaCalendario[]>> {
-    return ok([...citas])
+  async obtenerCita(id: string): Promise<ApiResult<Cita>> {
+    return api.get<Cita>(`/citas/${id}`)
   },
 
-  // Mock — al integrar: POST /v1/appointments.
-  async crearCita(payload: DatosCita): Promise<ApiResult<null>> {
-    const datosCita = esquemaCita.parse(payload)
-    const id = citas.reduce((max, c) => Math.max(max, c.id), 0) + 1
-    citas.push({ id, ...datosCita, estado: "confirmada", color: colorPorEstado.confirmada })
-    return ok(null, "Cita agendada")
+  async obtenerHistorial(id: string): Promise<ApiResult<AsientoHistorialCita[]>> {
+    return api.get<AsientoHistorialCita[]>(`/citas/${id}/historial`)
   },
 
-  // Mock — al integrar: PUT /v1/appointments/:id. Mantiene estado y color.
-  async reagendarCita(id: number, payload: DatosCita): Promise<ApiResult<null>> {
-    const datosCita = esquemaCita.parse(payload)
-    Object.assign(buscarCita(id), datosCita)
-    return ok(null, "Cita reagendada")
+  /**
+   * Qué huecos hay. **Propone, no garantiza**: entre esta consulta y la reserva
+   * cabe otra, así que un 409 al crear significa que alguien se adelantó y hay
+   * que volver a pedir disponibilidad.
+   */
+  async obtenerDisponibilidad(params: {
+    sedeId: string
+    ofertaIds: string[]
+    desde: string
+    barberoId?: string
+    dias?: number
+  }): Promise<ApiResult<Disponibilidad>> {
+    return api.get<Disponibilidad>("/agenda/disponibilidad", {
+      params: omitEmpty({ ...params }),
+    })
   },
 
-  // Mock — al integrar: PATCH /v1/appointments/:id/cancel.
-  async cancelarCita(id: number): Promise<ApiResult<null>> {
-    const cita = buscarCita(id)
-    cita.estado = "cancelada"
-    cita.color = colorPorEstado.cancelada
-    return ok(null, "Cita cancelada")
+  async crearCita(payload: DatosCita): Promise<ApiResult<Cita>> {
+    const validos = esquemaCita.parse(payload)
+    return api.post<Cita>("/citas", omitEmpty({ ...validos }))
   },
 
-  // Mock — al integrar: DELETE /v1/appointments/:id.
-  async eliminarCita(id: number): Promise<ApiResult<null>> {
-    buscarCita(id)
-    citas = citas.filter((c) => c.id !== id)
-    return ok(null, "Cita eliminada")
+  async reprogramarCita(id: string, payload: DatosReprogramar): Promise<ApiResult<Cita>> {
+    const validos = esquemaReprogramar.parse(payload)
+    return api.patch<Cita>(`/citas/${id}/reprogramar`, omitEmpty({ ...validos }))
+  },
+
+  /** Se envía el estado DESTINO; la api valida si el salto es legal. */
+  async cambiarEstadoCita(id: string, payload: DatosEstadoCita): Promise<ApiResult<Cita>> {
+    const validos = esquemaEstadoCita.parse(payload)
+    return api.post<Cita>(`/citas/${id}/estado`, omitEmpty({ ...validos }))
   },
 }

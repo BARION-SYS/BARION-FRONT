@@ -1,202 +1,271 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion } from "motion/react"
-import { CitasToolbar } from "@features/citas/components/CitasToolbar"
-import { CitasList } from "@features/citas/components/CitasList"
-import { GrillaSemana } from "@features/citas/components/GrillaSemana"
-import { PanelDia } from "@features/citas/components/PanelDia"
-import { CitasDetail } from "@features/citas/components/CitasDetail"
-import { CitasForm } from "@features/citas/components/CitasForm"
-import { useCitas } from "@features/citas/hooks/useCitas"
-import type { DatosCita } from "@features/citas/schemas/citas.schema"
-import type { CitaCalendario, VistaCalendario } from "@features/citas/types/citas.types"
-import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { Modal } from "@shared/components/modals/Modal"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
+import { useAuthStore } from "@store/auth.store"
+import { puede } from "@features/auth/utils/permisos"
+import { useFormato } from "@shared/hooks/useFormato"
+import { useSedeActual } from "@store/sede.store"
+import { useBarberos } from "@features/barberos/hooks/useBarberos"
+import { useCitas } from "@features/citas/hooks/useCitas"
+import { useClientes } from "@features/clientes/hooks/useClientes"
+import { useServicios } from "@features/servicios/hooks/useServicios"
+import { CitasDetail } from "@features/citas/components/CitasDetail"
+import { CitasForm } from "@features/citas/components/CitasForm"
+import { CitasList } from "@features/citas/components/CitasList"
+import { CitasToolbar } from "@features/citas/components/CitasToolbar"
+import { GrillaSemana } from "@features/citas/components/GrillaSemana"
+import { hoyLocal, semanaDe, sumarDias, ventanaDe } from "@features/citas/utils/semana"
+import type { DatosCita } from "@features/citas/schemas/citas.schema"
+import type { Cita, EstadoCita, VistaCalendario } from "@features/citas/types/citas.types"
 
-// Contenedor: única instancia de hooks; los hijos reciben datos + callbacks por props.
+/**
+ * La agenda.
+ *
+ * Tres cosas que esta pantalla da por buenas porque las decide la api:
+ *
+ * - **La disponibilidad propone, no aparta.** Un 409 al reservar significa que
+ *   alguien se adelantó: se vuelve a consultar, no se reintenta.
+ * - **Las transiciones las valida la api.** Aquí solo se ofrecen los saltos
+ *   probables, para no enseñar botones que van a devolver 422.
+ * - **Precio y duración quedan congelados** en la cita: lo que se pinta no es el
+ *   catálogo de hoy.
+ *
+ * Y un endpoint, dos alcances: con `agenda.ver_propia` la api ya devuelve solo
+ * las citas de ese barbero. Aquí no hay nada que filtrar.
+ */
 export default function CitasPage() {
   const {
-    semana,
     citas,
-    loadingCitas,
+    disponibilidad,
+    historial,
+    loadingLista,
+    loadingDisponibilidad,
     loadingAction,
     error,
     fetchCitas,
+    fetchDisponibilidad,
+    limpiarDisponibilidad,
+    fetchHistorial,
     handleCreateCita,
-    handleReagendarCita,
-    handleCancelarCita,
-    handleDeleteCita,
+    handleReprogramarCita,
+    handleCambiarEstadoCita,
   } = useCitas()
 
-  // Estado de UI — vive solo en el contenedor.
+  const { barberos, fetchBarberos } = useBarberos()
+  const { clientes, fetchClientes } = useClientes()
+  const { oferta, fetchOferta } = useServicios()
+
+  const sesion = useAuthStore((estado) => estado.sesion)
+  const gestiona = puede(sesion, "agenda.gestionar") || puede(sesion, "agenda.gestionar_propia")
+  const sedeActual = useSedeActual()
+  const { timezone } = useFormato()
+
+  // Estado de UI: vive en el contenedor.
   const [vista, setVista] = useState<VistaCalendario>("semana")
-  const [diaSeleccionado, setDiaSeleccionado] = useState(0)
-  const [citaSeleccionada, setCitaSeleccionada] = useState<CitaCalendario | null>(null)
-  const [busqueda, setBusqueda] = useState("")
-  const [formAbierto, setFormAbierto] = useState(false)
-  const [citaEnEdicion, setCitaEnEdicion] = useState<CitaCalendario | null>(null)
+  const [ancla, setAncla] = useState(() => hoyLocal(timezone))
+  const [barberoId, setBarberoId] = useState("")
+  const [estado, setEstado] = useState("")
+  const [seleccionada, setSeleccionada] = useState<Cita | null>(null)
+  const [creando, setCreando] = useState(false)
+  const [reprogramando, setReprogramando] = useState<Cita | null>(null)
+
+  const hoy = hoyLocal(timezone)
+
+  // La semana empieza donde diga la sede: verla arrancar en domingo desorienta
+  // a quien lleva veinte años mirándola empezar en lunes.
+  const fechas = useMemo(
+    () => (vista === "dia" ? [ancla] : semanaDe(ancla, sedeActual?.inicioSemana ?? 1)),
+    [vista, ancla, sedeActual?.inicioSemana]
+  )
+
+  const cargar = useCallback(() => {
+    void fetchCitas({
+      ...ventanaDe(fechas),
+      sedeId: sedeActual?.id,
+      barberoId: barberoId || undefined,
+      estado: (estado || undefined) as EstadoCita | undefined,
+    })
+  }, [fetchCitas, fechas, sedeActual?.id, barberoId, estado])
 
   useEffect(() => {
-    void fetchCitas()
-  }, [fetchCitas])
+    cargar()
+  }, [cargar])
 
-  const abrirCrearCita = () => {
-    setCitaEnEdicion(null)
-    setFormAbierto(true)
-  }
+  useEffect(() => {
+    void fetchBarberos({ sedeId: sedeActual?.id, soloActivos: true })
+  }, [fetchBarberos, sedeActual?.id])
 
-  // Cierra el detalle y abre el form precargado con la cita seleccionada.
-  const abrirReagendarCita = () => {
-    if (!citaSeleccionada) return
-    setCitaEnEdicion(citaSeleccionada)
-    setCitaSeleccionada(null)
-    setFormAbierto(true)
-  }
+  useEffect(() => {
+    if (seleccionada) void fetchHistorial(seleccionada.id)
+  }, [seleccionada?.id, fetchHistorial]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const enviarCita = async (datos: DatosCita) => {
+  const conAviso = async (accion: () => Promise<string>) => {
     try {
-      const message = citaEnEdicion
-        ? await handleReagendarCita(citaEnEdicion.id, datos)
-        : await handleCreateCita(datos)
-      notify.success(message)
-      setFormAbierto(false)
-      setCitaEnEdicion(null)
-      void fetchCitas()
+      notify.success(await accion())
+      return true
     } catch (err) {
       notify.error(getErrorMessage(err))
+      return false
     }
   }
 
-  const cancelarCitaSeleccionada = async () => {
-    if (!citaSeleccionada) return
-    try {
-      const message = await handleCancelarCita(citaSeleccionada.id)
-      notify.success(message)
-      setCitaSeleccionada(null)
-      void fetchCitas()
-    } catch (err) {
-      notify.error(getErrorMessage(err))
-    }
-  }
+  const onConsultar = useCallback(
+    (params: { barberoId: string; ofertaIds: string[]; desde: string }) => {
+      if (!sedeActual) return
+      void fetchDisponibilidad({ sedeId: sedeActual.id, dias: 1, ...params })
+    },
+    [fetchDisponibilidad, sedeActual]
+  )
 
-  const eliminarCitaSeleccionada = async () => {
-    if (!citaSeleccionada) return
-    try {
-      const message = await handleDeleteCita(citaSeleccionada.id)
-      notify.success(message)
-      setCitaSeleccionada(null)
-      void fetchCitas()
-    } catch (err) {
-      notify.error(getErrorMessage(err))
-    }
-  }
+  // Los clientes se piden al abrir el formulario y no al cargar la agenda: solo
+  // hacen falta dentro, y son una lista que crece sin techo.
+  const abrirFormulario = useCallback(
+    (cita: Cita | null) => {
+      limpiarDisponibilidad()
+      void fetchClientes({ paginar: false })
+      if (cita) setReprogramando(cita)
+      else setCreando(true)
+    },
+    [limpiarDisponibilidad, fetchClientes]
+  )
 
-  const termino = busqueda.trim().toLowerCase()
-  const citasFiltradas = termino
-    ? citas.filter((c) =>
-        [c.cliente, ...c.servicios, c.barbero].some((campo) =>
-          campo.toLowerCase().includes(termino)
-        )
+  const onCrear = useCallback(
+    async (datos: DatosCita) => {
+      try {
+        notify.success(await handleCreateCita(datos))
+        setCreando(false)
+        cargar()
+      } catch (err) {
+        // 409 = ese hueco se lo llevó otro. Se vuelve a preguntar en vez de
+        // reintentar a ciegas: la franja elegida ya no existe.
+        notify.error(getErrorMessage(err))
+        onConsultar({
+          barberoId: datos.barberoId,
+          ofertaIds: datos.ofertaIds,
+          desde: datos.iniciaEn.slice(0, 10),
+        })
+      }
+    },
+    [handleCreateCita, cargar, onConsultar]
+  )
+
+  const onEstado = useCallback(
+    async (destino: EstadoCita) => {
+      if (!seleccionada) return
+      const movida = await conAviso(() =>
+        handleCambiarEstadoCita(seleccionada.id, { estado: destino })
       )
-    : citas
-  const citasDelDia = citasFiltradas.filter((c) => c.dia === diaSeleccionado)
+      if (movida) {
+        setSeleccionada(null)
+        cargar()
+      }
+    },
+    [seleccionada, handleCambiarEstadoCita, cargar] // eslint-disable-line react-hooks/exhaustive-deps
+  )
 
-  const cargando = loadingCitas || !semana
+  const onReprogramar = useCallback(
+    async (datos: DatosCita) => {
+      if (!reprogramando) return
+      const movida = await conAviso(() =>
+        handleReprogramarCita(reprogramando.id, {
+          iniciaEn: datos.iniciaEn,
+          barberoId: datos.barberoId,
+        })
+      )
+      if (movida) {
+        setReprogramando(null)
+        setSeleccionada(null)
+        cargar()
+      }
+    },
+    [reprogramando, handleReprogramarCita, cargar] // eslint-disable-line react-hooks/exhaustive-deps
+  )
 
   return (
-    // Móvil: scroll de página. md+: app-like — el alto es fijo y scrollean las áreas internas.
-    <main className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 md:overflow-hidden md:p-6">
+    <main className="scroll-fino flex flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6">
       <CitasToolbar
-        rotulo={semana?.rotulo ?? ""}
         vista={vista}
-        alCambiarVista={setVista}
-        busqueda={busqueda}
-        alCambiarBusqueda={setBusqueda}
-        alNuevaCita={abrirCrearCita}
+        fechas={fechas}
+        barberoId={barberoId}
+        estado={estado}
+        barberos={barberos}
+        gestiona={gestiona}
+        onVista={setVista}
+        onMover={(dias) =>
+          setAncla((previa) => sumarDias(previa, vista === "dia" ? dias : dias * 7))
+        }
+        onHoy={() => setAncla(hoy)}
+        onBarbero={setBarberoId}
+        onEstado={setEstado}
+        onNueva={() => abrirFormulario(null)}
       />
 
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p className="text-sm text-destructive" role="alert">
           {error}
         </p>
       )}
 
-      {!error && cargando && (
-        <div className="space-y-4">
-          <DataSkeleton variant="text" count={1} className="max-w-md" />
-          <DataSkeleton variant="table" count={8} />
-        </div>
+      {vista === "lista" ? (
+        <CitasList citas={citas} loading={loadingLista} onSeleccionar={setSeleccionada} />
+      ) : (
+        <GrillaSemana fechas={fechas} citas={citas} hoy={hoy} onSeleccionar={setSeleccionada} />
       )}
 
-      {!error && !cargando && semana && (
-        <>
-          <div className="flex min-h-0 flex-1 flex-col gap-4 xl:flex-row">
-            <motion.div
-              key={vista}
-              className="flex min-h-0 min-w-0 flex-1"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.08 }}
-            >
-              {vista === "lista" ? (
-                <CitasList
-                  semana={semana}
-                  citas={citasFiltradas}
-                  alSeleccionarCita={setCitaSeleccionada}
-                />
-              ) : (
-                <GrillaSemana
-                  semana={semana}
-                  citas={citasFiltradas}
-                  diaSeleccionado={diaSeleccionado}
-                  alSeleccionarDia={setDiaSeleccionado}
-                  alSeleccionarCita={setCitaSeleccionada}
-                  vista={vista}
-                />
-              )}
-            </motion.div>
-            {/* Panel lateral solo en vista semana y xl+: el detalle del día vive al costado */}
-            {vista === "semana" && (
-              <motion.div
-                className="hidden min-h-0 shrink-0 xl:flex xl:w-72"
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.08 }}
-              >
-                <PanelDia
-                  dia={semana.dias[diaSeleccionado]}
-                  mes={semana.mes}
-                  horas={semana.horas}
-                  citas={citasDelDia}
-                  citaSeleccionada={citaSeleccionada}
-                  alSeleccionarCita={setCitaSeleccionada}
-                />
-              </motion.div>
-            )}
-          </div>
-
+      <Modal
+        open={seleccionada !== null}
+        onOpenChange={(abierto) => !abierto && setSeleccionada(null)}
+        titulo="Cita"
+        descripcion="Lo que se cobró queda congelado: no cambia aunque cambie la tarifa."
+        size="lg"
+      >
+        {seleccionada && (
           <CitasDetail
-            cita={citaSeleccionada}
-            semana={semana}
-            alCerrar={() => setCitaSeleccionada(null)}
-            alCancelar={() => void cancelarCitaSeleccionada()}
-            alReagendar={abrirReagendarCita}
-            alEliminar={() => void eliminarCitaSeleccionada()}
-            mutando={loadingAction}
+            cita={seleccionada}
+            historial={historial}
+            gestiona={gestiona}
+            cargando={loadingAction}
+            onEstado={(destino) => void onEstado(destino)}
+            onReprogramar={() => abrirFormulario(seleccionada)}
           />
-        </>
-      )}
+        )}
+      </Modal>
 
-      <CitasForm
-        open={formAbierto}
-        onOpenChange={setFormAbierto}
-        cita={citaEnEdicion}
-        semana={semana}
-        onSubmit={enviarCita}
-        guardando={loadingAction}
-      />
+      <Modal
+        open={creando || reprogramando !== null}
+        onOpenChange={(abierto) => {
+          if (!abierto) {
+            setCreando(false)
+            setReprogramando(null)
+          }
+        }}
+        titulo={reprogramando ? "Mover la cita" : "Nueva cita"}
+        descripcion={
+          reprogramando
+            ? "Vuelve a quedar sin confirmar: lo que el cliente confirmó era la otra hora."
+            : "Las horas que se ofrecen están libres ahora; no quedan apartadas hasta reservar."
+        }
+        size="lg"
+      >
+        {sedeActual && (
+          <CitasForm
+            key={reprogramando?.id ?? "nueva"}
+            sedeId={sedeActual.id}
+            clientes={clientes}
+            barberos={barberos}
+            oferta={oferta}
+            disponibilidad={disponibilidad}
+            cargandoDisponibilidad={loadingDisponibilidad}
+            cargando={loadingAction}
+            onBarbero={(id) => void fetchOferta(id)}
+            onConsultar={onConsultar}
+            onSubmit={reprogramando ? onReprogramar : onCrear}
+          />
+        )}
+      </Modal>
     </main>
   )
 }

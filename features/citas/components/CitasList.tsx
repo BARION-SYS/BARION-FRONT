@@ -1,100 +1,96 @@
-import { CalendarDays, Clock } from "lucide-react"
-import { cn } from "@shared/utils/cn"
+"use client"
+
+import { Loadable } from "@shared/components/feedback/Loadable"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
+import { useFormato } from "@shared/hooks/useFormato"
+import { cn } from "@shared/utils/cn"
 import { configEstadoCita } from "@features/citas/utils/estadoCita"
 import { resumenServicios } from "@features/citas/utils/servicios"
-import type { CitaCalendario, SemanaCalendario } from "@features/citas/types/citas.types"
+import type { Cita } from "@features/citas/types/citas.types"
 
 interface CitasListProps {
-  semana: SemanaCalendario
-  citas: CitaCalendario[]
-  alSeleccionarCita: (cita: CitaCalendario) => void
+  citas: Cita[]
+  loading: boolean
+  onSeleccionar: (cita: Cita) => void
 }
 
-// Vista "lista": todas las citas de la semana agrupadas por día, orden cronológico.
-export function CitasList({ semana, citas, alSeleccionarCita }: CitasListProps) {
-  const grupos = semana.dias
-    .map((dia, indice) => ({
-      dia,
-      indice,
-      citas: citas.filter((c) => c.dia === indice).sort((a, b) => a.horaInicio - b.horaInicio),
-    }))
-    .filter((grupo) => grupo.citas.length > 0)
+/**
+ * La agenda como lista, agrupada por día LOCAL de la sede.
+ *
+ * Es la vista que sirve en móvil y la que usa el barbero para su día: la grilla
+ * dice cuándo hay hueco, esta dice qué toca ahora.
+ */
+export function CitasList({ citas, loading, onSeleccionar }: CitasListProps) {
+  const { hora, fecha, dinero, fechaClave } = useFormato()
 
-  if (grupos.length === 0) {
-    return (
-      <div className="flex min-w-0 flex-1 flex-col items-center justify-center rounded-xl border border-border bg-card p-8 text-muted-foreground shadow-sm">
-        <CalendarDays className="size-10 opacity-30" aria-hidden />
-        <p className="mt-3 text-sm font-medium">Sin citas esta semana</p>
-        <p className="mt-1 text-xs">Crea una con «Nueva cita»</p>
-      </div>
-    )
+  const porDia = new Map<string, Cita[]>()
+  for (const cita of citas) {
+    const clave = fechaClave(cita.iniciaEn)
+    porDia.set(clave, [...(porDia.get(clave) ?? []), cita])
   }
 
   return (
-    <div className="scroll-fino min-w-0 flex-1 space-y-5 rounded-xl border border-border bg-card p-4 shadow-sm md:min-h-0 md:overflow-y-auto">
-      {grupos.map(({ dia, indice, citas: citasDelDia }) => (
-        <section key={indice} aria-label={`${dia.etiqueta} ${dia.fecha}`}>
-          <header className="mb-2 flex items-center gap-2.5">
-            <span
-              className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold tabular-nums",
-                dia.esHoy
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border bg-secondary/50 text-foreground"
-              )}
-            >
-              {dia.fecha}
-            </span>
-            <div>
-              <p className="text-sm leading-none font-semibold text-foreground capitalize">
-                {dia.etiqueta} de {semana.mes}
-                {dia.esHoy && <span className="ml-1.5 text-[10px] text-primary">· Hoy</span>}
-              </p>
-              <p className="mt-1 text-[11px] text-muted-foreground tabular-nums">
-                {citasDelDia.length} {citasDelDia.length === 1 ? "cita" : "citas"}
-              </p>
-            </div>
-          </header>
+    <Loadable
+      loading={loading}
+      isEmpty={citas.length === 0}
+      variant="list"
+      count={5}
+      emptyState={
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          No hay citas en este rango.
+        </p>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        {[...porDia.entries()].map(([dia, delDia]) => (
+          <section key={dia} className="flex flex-col gap-2">
+            <h3 className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+              {fecha(`${dia}T12:00:00Z`)}
+            </h3>
 
-          <ul className="space-y-1.5">
-            {citasDelDia.map((cita) => {
-              const estado = configEstadoCita[cita.estado]
-              return (
-                <li key={cita.id}>
-                  <button
-                    type="button"
-                    onClick={() => alSeleccionarCita(cita)}
-                    aria-label={`Cita de ${cita.cliente}, ${resumenServicios(cita.servicios)}, ${semana.horas[cita.horaInicio]}`}
-                    style={{ "--tono": cita.color } as React.CSSProperties}
-                    className="flex w-full cursor-pointer flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-l-2 border-border border-l-(--tono) bg-secondary/40 px-3 py-2.5 text-left transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none motion-reduce:transition-none"
-                  >
-                    <span className="flex items-center gap-1 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-foreground tabular-nums">
-                      <Clock className="size-2.5 text-muted-foreground" aria-hidden />
-                      {semana.horas[cita.horaInicio]}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-foreground">
-                        {cita.cliente}
+            <ul className="flex flex-col gap-2">
+              {delDia.map((cita) => {
+                const estado = configEstadoCita[cita.estado]
+                return (
+                  <li key={cita.id}>
+                    <button
+                      type="button"
+                      onClick={() => onSeleccionar(cita)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-secondary/60",
+                        (cita.estado === "cancelada" || cita.estado === "no_asistio") &&
+                          "opacity-60"
+                      )}
+                    >
+                      <span className="w-14 shrink-0 text-sm font-medium">
+                        {hora(cita.iniciaEn)}
                       </span>
-                      <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <span className="truncate">{resumenServicios(cita.servicios)}</span>
-                        <span className="h-1 w-1 shrink-0 rounded-full bg-(--tono)" aria-hidden />
-                        <span className="shrink-0">{cita.barbero}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">
+                          {cita.cliente?.nombre ?? "Sin cliente"} {cita.cliente?.apellido ?? ""}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {resumenServicios(cita.servicios.map((linea) => linea.nombre))}
+                          {cita.barbero ? ` · ${cita.barbero.nombrePublico}` : ""}
+                        </span>
                       </span>
-                    </span>
-                    <StatusBadge
-                      etiqueta={estado.etiqueta}
-                      tono={estado.tono}
-                      icono={estado.icono}
-                    />
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
-      ))}
-    </div>
+                      <span className="hidden text-sm sm:block">
+                        {dinero(Number(cita.precioCentavos))}
+                      </span>
+                      <StatusBadge
+                        tono={estado.tono}
+                        etiqueta={estado.etiqueta}
+                        icono={estado.icono}
+                        compacta
+                      />
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </Loadable>
   )
 }

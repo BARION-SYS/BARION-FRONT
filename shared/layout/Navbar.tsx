@@ -51,10 +51,17 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   const { handleLogoutAuth } = useAuth()
   const { relativo } = useFormato()
 
-  const { notificaciones, fetchNotificaciones, handleMarcarLeida, handleMarcarTodasLeidas } =
-    useNotificaciones()
+  const {
+    notificaciones,
+    noLeidas,
+    fetchNotificaciones,
+    handleMarcarLeidaNotificacion,
+    handleMarcarTodasLeidasNotificaciones,
+  } = useNotificaciones()
   useEffect(() => {
-    void fetchNotificaciones()
+    // La campana enseña las últimas, no la bandeja entera: la lista completa es
+    // de su pantalla.
+    void fetchNotificaciones({ limit: 10 })
   }, [fetchNotificaciones])
 
   // Transversal: la sede activa alimenta filtros de listados y timezone de
@@ -70,22 +77,20 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
     setSedes(sedes)
   }, [sedes, setSedes])
 
-  const noLeidas = notificaciones.filter((n) => !n.leida).length
-
   const alMarcarTodas = async () => {
     try {
-      const message = await handleMarcarTodasLeidas()
+      const message = await handleMarcarTodasLeidasNotificaciones()
       notify.success(message)
-      void fetchNotificaciones()
+      void fetchNotificaciones({ limit: 10 })
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
   }
 
-  const alAbrirNotificacion = async (id: number) => {
+  const alAbrirNotificacion = async (id: string) => {
     try {
-      await handleMarcarLeida(id)
-      void fetchNotificaciones()
+      await handleMarcarLeidaNotificacion(id)
+      void fetchNotificaciones({ limit: 10 })
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
@@ -252,9 +257,13 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
                 />
                 <span className="min-w-0">
                   <span className={cn("block truncate text-sm", !n.leida && "font-semibold")}>
-                    {n.titulo}
+                    {n.titulo ?? n.tipo}
                   </span>
-                  <span className="block truncate text-xs text-muted-foreground">{n.detalle}</span>
+                  {n.detalle && (
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {n.detalle}
+                    </span>
+                  )}
                   <span className="mt-0.5 block text-[10px] text-muted-foreground">
                     {relativo(n.creadaEn)}
                   </span>

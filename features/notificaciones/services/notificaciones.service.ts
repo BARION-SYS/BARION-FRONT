@@ -1,26 +1,36 @@
-import datos from "@features/notificaciones/constants/notificaciones.json"
+import { api } from "@lib/http/instances"
+import { omitEmpty } from "@shared/utils/params"
+import type {
+  FiltrosNotificaciones,
+  Notificacion,
+} from "@features/notificaciones/types/notificaciones.types"
 import type { ApiResult } from "@shared/types/api.types"
-import type { Notificacion } from "@features/notificaciones/types/notificaciones.types"
 
-// Copia en memoria — al integrar la API se reemplaza por api de @lib/http/instances.
-let notificaciones = [...(datos.notificaciones as Notificacion[])]
-
-function ok<T>(data: T, message = "ok"): ApiResult<T> {
-  return { data, status: 200, message, pagination: null }
-}
-
+/**
+ * La bandeja in-app. **Solo llega `canal = inapp`**: los envíos externos
+ * (WhatsApp, SMS, email, push) son del worker y no se leen desde el panel.
+ *
+ * No hay ruta para crear una: las escribe el worker al consumir el evento del
+ * outbox. Mientras ese consumidor no exista, la bandeja llega vacía — y eso no
+ * es un error que haya que distinguir de "no hay nada nuevo".
+ */
 export const notificacionesService = {
-  async obtenerNotificaciones(): Promise<ApiResult<Notificacion[]>> {
-    return ok([...notificaciones])
+  async obtenerNotificaciones(
+    filtros: FiltrosNotificaciones = {}
+  ): Promise<ApiResult<Notificacion[]>> {
+    return api.get<Notificacion[]>("/notificaciones", { params: omitEmpty({ ...filtros }) })
   },
 
-  async marcarLeida(id: number): Promise<ApiResult<null>> {
-    notificaciones = notificaciones.map((n) => (n.id === id ? { ...n, leida: true } : n))
-    return ok(null, "Notificación leída")
+  /** Lo que necesita el punto de la campana, sin traerse la lista. */
+  async obtenerNoLeidas(): Promise<ApiResult<{ noLeidas: number }>> {
+    return api.get<{ noLeidas: number }>("/notificaciones/no-leidas")
   },
 
-  async marcarTodasLeidas(): Promise<ApiResult<null>> {
-    notificaciones = notificaciones.map((n) => ({ ...n, leida: true }))
-    return ok(null, "Notificaciones al día")
+  async marcarLeida(id: string): Promise<ApiResult<Notificacion>> {
+    return api.post<Notificacion>(`/notificaciones/${id}/leer`)
+  },
+
+  async marcarTodasLeidas(): Promise<ApiResult<{ marcadas: number }>> {
+    return api.post<{ marcadas: number }>("/notificaciones/leer-todas")
   },
 }

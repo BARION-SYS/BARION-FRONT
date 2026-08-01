@@ -28,3 +28,10 @@ export const REGION_DEFAULT: CodigoRegion = "CO"
 export const monedas: CodigoMoneda[] = [
   ...new Set(Object.values(regiones).map((region) => region.moneda)),
 ]
+
+/** Nombre del país para enseñarlo en un selector — «Colombia», no «CO». */
+export const nombresDeRegion: Record<CodigoRegion, string> = {
+  CO: "Colombia",
+  US: "Estados Unidos",
+  ES: "España",
+}

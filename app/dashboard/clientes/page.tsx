@@ -1,120 +1,163 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { ClientesToolbar } from "@features/clientes/components/ClientesToolbar"
-import { ClientesList } from "@features/clientes/components/ClientesList"
-import { ClientesDetail } from "@features/clientes/components/ClientesDetail"
-import { ClientesForm } from "@features/clientes/components/ClientesForm"
-import { useClientes } from "@features/clientes/hooks/useClientes"
-import type { DatosCliente } from "@features/clientes/schemas/clientes.schema"
-import type { Cliente, FiltroEtiqueta } from "@features/clientes/types/clientes.types"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@shared/components/ui/button"
 import { Modal } from "@shared/components/modals/Modal"
-import { Loadable } from "@shared/components/feedback/Loadable"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
+import { useAuthStore } from "@store/auth.store"
+import { puede } from "@features/auth/utils/permisos"
+import { useSedeActual } from "@store/sede.store"
+import { useBarberos } from "@features/barberos/hooks/useBarberos"
+import { useClientes } from "@features/clientes/hooks/useClientes"
+import { ClientesDetail } from "@features/clientes/components/ClientesDetail"
+import { ClientesForm } from "@features/clientes/components/ClientesForm"
+import { ClientesList } from "@features/clientes/components/ClientesList"
+import { ClientesToolbar } from "@features/clientes/components/ClientesToolbar"
+import type { DatosCliente } from "@features/clientes/schemas/clientes.schema"
+import type { Cliente, TipoConsentimiento } from "@features/clientes/types/clientes.types"
 
-// Contenedor: ÚNICA instancia del hook del feat; los hijos reciben datos + callbacks por props.
+/** La versión de la política que se está aceptando hoy. Viaja con cada registro:
+ *  parte de la prueba es saber QUÉ aceptó, no solo que aceptó. */
+const VERSION_POLITICA = "2026-07-01"
+
+/**
+ * La base de clientes.
+ *
+ * Un endpoint, dos alcances: con `clientes.ver` se ve la barbería entera; con
+ * `clientes.ver_propios`, solo a quienes ese barbero atendió. El filtro lo aplica
+ * la api — aquí no hay nada que decidir.
+ */
 export default function ClientesPage() {
   const {
     clientes,
+    segmentos,
     historial,
-    resumen,
+    consentimientos,
     loadingLista,
     loadingHistorial,
     loadingAction,
     error,
     fetchClientes,
-    fetchHistorial,
+    fetchSegmentos,
+    fetchFicha,
     handleCreateCliente,
     handleUpdateCliente,
-    handleDeleteCliente,
+    handleRegistrarConsentimiento,
+    handleAnonimizarCliente,
   } = useClientes()
 
-  const [busqueda, setBusqueda] = useState("")
-  const [filtro, setFiltro] = useState<FiltroEtiqueta>("Todos")
-  const [seleccionadoId, setSeleccionadoId] = useState<Cliente["id"] | null>(null)
-  const [formOpen, setFormOpen] = useState(false)
+  const { barberos, fetchBarberos } = useBarberos()
+  const sedeActual = useSedeActual()
+
+  const sesion = useAuthStore((estado) => estado.sesion)
+  const gestiona = puede(sesion, "clientes.gestionar")
+  const puedeAnonimizar = puede(sesion, "clientes.anonimizar")
+
+  // Estado de UI: vive en el contenedor.
+  const [buscar, setBuscar] = useState("")
+  const [segmentoId, setSegmentoId] = useState("")
+  const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null)
+  const [creando, setCreando] = useState(false)
   const [clienteEnEdicion, setClienteEnEdicion] = useState<Cliente | null>(null)
-  const [clienteAEliminar, setClienteAEliminar] = useState<Cliente | null>(null)
+  const [clienteAAnonimizar, setClienteAAnonimizar] = useState<Cliente | null>(null)
 
-  useEffect(() => {
-    void fetchClientes()
-  }, [fetchClientes])
-
-  const seleccionado = clientes.find((c) => c.id === seleccionadoId) ?? clientes[0] ?? null
-  const idActual = seleccionado ? seleccionado.id : null
-
-  useEffect(() => {
-    if (idActual !== null) void fetchHistorial(idActual)
-  }, [idActual, fetchHistorial])
-
-  const filtrados = clientes.filter(
-    (c) =>
-      (filtro === "Todos" || c.etiqueta === filtro) &&
-      (c.nombre.toLowerCase().includes(busqueda.toLowerCase()) || c.telefono.includes(busqueda))
+  // La búsqueda y la etiqueta las filtra la API: la base de clientes crece sin
+  // techo y traerla entera para filtrarla aquí dejaría de funcionar sola.
+  const cargar = useCallback(
+    () => fetchClientes({ buscar: buscar || undefined, segmentoId: segmentoId || undefined }),
+    [fetchClientes, buscar, segmentoId]
   )
 
-  const abrirCrear = () => {
-    setClienteEnEdicion(null)
-    setFormOpen(true)
-  }
+  useEffect(() => {
+    void cargar()
+  }, [cargar])
 
-  const abrirEditar = (cliente: Cliente) => {
-    setClienteEnEdicion(cliente)
-    setFormOpen(true)
-  }
+  useEffect(() => {
+    void fetchSegmentos()
+    void fetchBarberos({ sedeId: sedeActual?.id, soloActivos: true })
+  }, [fetchSegmentos, fetchBarberos, sedeActual?.id])
 
-  // Crea o edita según haya cliente en edición; el message viene de la mutación.
-  const onSubmitCliente = async (datos: DatosCliente) => {
+  const seleccionado = clientes.find((c) => c.id === seleccionadoId) ?? clientes[0] ?? null
+  const idActual = seleccionado?.id ?? null
+
+  useEffect(() => {
+    if (idActual) void fetchFicha(idActual)
+  }, [idActual, fetchFicha])
+
+  const conAviso = async (accion: () => Promise<string>) => {
     try {
-      const message = clienteEnEdicion
-        ? await handleUpdateCliente(clienteEnEdicion.id, datos)
-        : await handleCreateCliente(datos)
-      notify.success(message)
-      setFormOpen(false)
-      setClienteEnEdicion(null)
-      void fetchClientes()
+      notify.success(await accion())
+      return true
     } catch (err) {
       notify.error(getErrorMessage(err))
+      return false
     }
   }
 
-  const onConfirmarEliminar = async () => {
-    if (!clienteAEliminar) return
-    try {
-      const message = await handleDeleteCliente(clienteAEliminar.id)
-      notify.success(message)
-      setClienteAEliminar(null)
-      setSeleccionadoId(null)
-      void fetchClientes()
-    } catch (err) {
-      notify.error(getErrorMessage(err))
+  const onGuardar = useCallback(
+    async (datos: DatosCliente) => {
+      const guardado = clienteEnEdicion
+        ? await conAviso(() => handleUpdateCliente(clienteEnEdicion.id, datos))
+        : await conAviso(() => handleCreateCliente(datos))
+
+      if (guardado) {
+        setClienteEnEdicion(null)
+        setCreando(false)
+        void cargar()
+      }
+    },
+    [clienteEnEdicion, handleUpdateCliente, handleCreateCliente, cargar] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
+  const onConsentimiento = useCallback(
+    (tipo: TipoConsentimiento, otorgado: boolean) => {
+      if (!seleccionado) return
+      void conAviso(() =>
+        handleRegistrarConsentimiento(seleccionado.id, {
+          tipo,
+          otorgado,
+          origen: "admin",
+          versionPolitica: VERSION_POLITICA,
+        })
+      )
+    },
+    [seleccionado, handleRegistrarConsentimiento] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
+  const onConfirmarAnonimizar = useCallback(async () => {
+    if (!clienteAAnonimizar) return
+    if (await conAviso(() => handleAnonimizarCliente(clienteAAnonimizar.id))) {
+      setClienteAAnonimizar(null)
+      void cargar()
     }
-  }
+  }, [clienteAAnonimizar, handleAnonimizarCliente, cargar]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    // Móvil: scroll de página. lg+: app-like — alto fijo, lista y detalle scrollean por dentro.
+    // Móvil: scroll de página. lg+: app-like — alto fijo, lista y detalle
+    // scrollean por dentro.
     <main className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6 lg:flex-row lg:overflow-hidden">
       <section
         className="flex shrink-0 flex-col gap-3 lg:min-h-0 lg:w-80"
         aria-label="Directorio de clientes"
       >
         <ClientesToolbar
-          busqueda={busqueda}
-          onBusquedaChange={setBusqueda}
-          filtro={filtro}
-          onFiltroChange={setFiltro}
-          resumen={resumen ?? { totalClientes: 0, nuevosHoy: 0 }}
+          buscar={buscar}
+          segmentoId={segmentoId}
+          segmentos={segmentos.filter((segmento) => segmento.esEtiqueta)}
+          total={clientes.length}
+          onBuscar={setBuscar}
+          onSegmento={setSegmentoId}
         />
-        <Loadable loading={loadingLista} variant="list" count={6}>
-          <ClientesList
-            clientes={filtrados}
-            seleccionadoId={idActual ?? 0}
-            onSeleccionar={setSeleccionadoId}
-            onNuevo={abrirCrear}
-          />
-        </Loadable>
+
+        <ClientesList
+          clientes={clientes}
+          loading={loadingLista}
+          seleccionadoId={idActual}
+          gestiona={gestiona}
+          onSeleccionar={setSeleccionadoId}
+          onNuevo={() => setCreando(true)}
+        />
       </section>
 
       <section
@@ -129,51 +172,67 @@ export default function ClientesPage() {
           <ClientesDetail
             cliente={seleccionado}
             historial={historial}
-            cargandoHistorial={loadingHistorial}
-            onEditar={abrirEditar}
-            onEliminar={setClienteAEliminar}
+            consentimientos={consentimientos}
+            cargandoFicha={loadingHistorial}
+            gestiona={gestiona}
+            puedeAnonimizar={puedeAnonimizar}
+            onEditar={() => setClienteEnEdicion(seleccionado)}
+            onAnonimizar={() => setClienteAAnonimizar(seleccionado)}
+            onConsentimiento={onConsentimiento}
           />
         ) : null}
       </section>
 
-      <ClientesForm
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        cliente={clienteEnEdicion}
-        onSubmit={onSubmitCliente}
-        guardando={loadingAction}
-      />
-
-      {/* Confirmación de eliminación */}
       <Modal
-        open={!!clienteAEliminar}
-        onOpenChange={(open) => !open && setClienteAEliminar(null)}
+        open={creando || clienteEnEdicion !== null}
+        onOpenChange={(abierto) => {
+          if (!abierto) {
+            setCreando(false)
+            setClienteEnEdicion(null)
+          }
+        }}
+        titulo={clienteEnEdicion ? clienteEnEdicion.nombre : "Nuevo cliente"}
+        descripcion="Teléfono y correo son únicos en la barbería: la misma persona dos veces parte su historial."
+        size="lg"
+      >
+        <ClientesForm
+          key={clienteEnEdicion?.id ?? "nuevo"}
+          cliente={clienteEnEdicion}
+          barberos={barberos}
+          cargando={loadingAction}
+          onSubmit={onGuardar}
+        />
+      </Modal>
+
+      <Modal
+        open={clienteAAnonimizar !== null}
+        onOpenChange={(abierto) => !abierto && setClienteAAnonimizar(null)}
         size="sm"
-        titulo="Eliminar cliente"
-        descripcion="Esta acción no se puede deshacer."
+        titulo="Anonimizar cliente"
+        descripcion="Es irreversible."
         footer={
           <>
             <Button
               variant="outline"
-              onClick={() => setClienteAEliminar(null)}
+              onClick={() => setClienteAAnonimizar(null)}
               disabled={loadingAction}
-              className="cursor-pointer"
             >
               Cancelar
             </Button>
             <Button
               variant="destructive"
-              onClick={() => void onConfirmarEliminar()}
+              onClick={() => void onConfirmarAnonimizar()}
               disabled={loadingAction}
-              className="cursor-pointer"
             >
-              Eliminar
+              Anonimizar
             </Button>
           </>
         }
       >
         <p className="text-sm text-muted-foreground">
-          Se eliminará a {clienteAEliminar?.nombre} junto con su información.
+          Se borran los datos personales de {clienteAAnonimizar?.nombre} y la ficha se queda: sus
+          citas y liquidaciones son registro contable del negocio. Después no se podrá modificar ni
+          recuperar.
         </p>
       </Modal>
     </main>

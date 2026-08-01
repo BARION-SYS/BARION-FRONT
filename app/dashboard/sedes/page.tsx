@@ -48,7 +48,7 @@ export default function SedesPage() {
   /**
    * Ocultar un botón no es seguridad —la api revalida el permiso en cada
    * petición—, pero evita ofrecer acciones que terminan en un 403: un
-   * recepcionista con `sedes.ver` entra aquí a consultar, no a configurar.
+   * administrador con `sedes.ver` y sin `sedes.gestionar` entra aquí a consultar, no a configurar.
    */
   const sesion = useAuthStore((estado) => estado.sesion)
   const gestiona = puede(sesion, "sedes.gestionar")

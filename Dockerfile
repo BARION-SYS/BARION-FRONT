@@ -18,6 +18,12 @@ COPY . .
 # Variables NEXT_PUBLIC_* se hornean en el build
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Dirección del sitio público (repo BARION-WEB): el 404 y el final del registro
+# salen hacia allá. `config/env.ts` la exige sin reserva, y al ser NEXT_PUBLIC_*
+# se hornea aquí: si falta, el bundle llega al navegador sin ella y la validación
+# del entorno revienta en la primera pantalla, no en el build.
+ARG NEXT_PUBLIC_LANDING_URL
+ENV NEXT_PUBLIC_LANDING_URL=$NEXT_PUBLIC_LANDING_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
 

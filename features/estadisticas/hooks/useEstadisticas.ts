@@ -1,52 +1,50 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import { estadisticasService } from "@features/estadisticas/services/estadisticas.service"
-import { getErrorMessage } from "@shared/utils/error"
+import { dashboardService } from "@features/dashboard/services/dashboard.service"
 import type {
-  KpiEstadistica,
-  PuntoCitasMensual,
-  PuntoEvolucionMensual,
+  RangoDias,
+  RangoInstantes,
+  Serie,
   ServicioTop,
-} from "@features/estadisticas/types/estadisticas.types"
+} from "@features/dashboard/types/dashboard.types"
+import { getErrorMessage } from "@shared/utils/error"
 
-// Único hook del feat — solo API state. Lo instancia el padre (page) una sola vez.
+/**
+ * Estado de API de las estadísticas. Consume el service de `dashboard`, que es
+ * el feat DUEÑO del dominio de reportes: son los mismos endpoints con una
+ * ventana más larga, y duplicar el service garantizaría que un día divergieran.
+ *
+ * `serie.disponible` arranca en `false`, igual que responde la api mientras el
+ * job nocturno del worker no exista.
+ */
+const SERIE_VACIA: Serie = { granularidad: "mes", puntos: [], disponible: false }
+
 export function useEstadisticas() {
-  const [kpis, setKpis] = useState<KpiEstadistica[]>([])
-  const [evolucionMensual, setEvolucionMensual] = useState<PuntoEvolucionMensual[]>([])
-  const [citasPorMes, setCitasPorMes] = useState<PuntoCitasMensual[]>([])
-  const [topServicios, setTopServicios] = useState<ServicioTop[]>([])
+  const [serie, setSerie] = useState<Serie>(SERIE_VACIA)
+  const [servicios, setServicios] = useState<ServicioTop[]>([])
   const [loadingEstadisticas, setLoadingEstadisticas] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchEstadisticas = useCallback(async () => {
-    setLoadingEstadisticas(true)
-    setError(null)
-    try {
-      const [kpisRes, evolucionRes, citasRes, serviciosRes] = await Promise.all([
-        estadisticasService.obtenerKpis(),
-        estadisticasService.obtenerEvolucionMensual(),
-        estadisticasService.obtenerCitasPorMes(),
-        estadisticasService.obtenerTopServicios(),
-      ])
-      setKpis(kpisRes.data)
-      setEvolucionMensual(evolucionRes.data)
-      setCitasPorMes(citasRes.data)
-      setTopServicios(serviciosRes.data)
-    } catch (err) {
-      setError(getErrorMessage(err))
-    } finally {
-      setLoadingEstadisticas(false)
-    }
-  }, [])
+  const fetchEstadisticas = useCallback(
+    async (rangoAgregado: RangoDias, rangoTransaccional: RangoInstantes) => {
+      setLoadingEstadisticas(true)
+      setError(null)
+      try {
+        const [resSerie, resServicios] = await Promise.all([
+          dashboardService.obtenerSerie(rangoAgregado),
+          dashboardService.obtenerServiciosTop({ ...rangoTransaccional, limite: 6 }),
+        ])
+        setSerie(resSerie.data)
+        setServicios(resServicios.data)
+      } catch (err) {
+        setError(getErrorMessage(err))
+      } finally {
+        setLoadingEstadisticas(false)
+      }
+    },
+    []
+  )
 
-  return {
-    kpis,
-    evolucionMensual,
-    citasPorMes,
-    topServicios,
-    loadingEstadisticas,
-    error,
-    fetchEstadisticas,
-  }
+  return { serie, servicios, loadingEstadisticas, error, fetchEstadisticas }
 }

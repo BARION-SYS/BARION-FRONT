@@ -1,23 +1,27 @@
+import { api } from "@lib/http/instances"
+import { omitEmpty } from "@shared/utils/params"
+import type { FiltrosGanancias, Ganancia, ResumenNomina } from "@features/nomina/types/nomina.types"
 import type { ApiResult } from "@shared/types/api.types"
-import type {
-  NominaBarbero,
-  OpcionPeriodoNomina,
-  PeriodoNomina,
-} from "@features/nomina/types/nomina.types"
-import datos from "@features/nomina/constants/nomina.json"
 
-// Mock — al integrar la API se reemplaza por llamadas con api de shared/http/api.
-
-function ok<T>(data: T): ApiResult<T> {
-  return { data, status: 200, message: "ok", pagination: null }
-}
-
+/**
+ * Ganancias del barbero. **Solo lectura**: los asientos los escribe la api al
+ * cerrar una cita, y no hay ruta que los cree ni los edite.
+ *
+ * Las dos rutas responden a dos preguntas con el mismo código: con
+ * `ganancias.ver` vuelve la barbería entera, con `ganancias.ver_propias` solo lo
+ * del barbero de la sesión —y el `barberoId` que se mande se ignora—. No hay
+ * `/mias` que llamar.
+ */
 export const nominaService = {
-  async obtenerPeriodos(): Promise<ApiResult<OpcionPeriodoNomina[]>> {
-    return ok(datos.periodos as OpcionPeriodoNomina[])
+  /** La nómina del rango: una fila por barbero y moneda, ya sumada. */
+  async obtenerResumen(filtros: FiltrosGanancias = {}): Promise<ApiResult<ResumenNomina[]>> {
+    return api.get<ResumenNomina[]>("/ganancias/resumen", {
+      params: omitEmpty({ ...filtros }),
+    })
   },
 
-  async obtenerNominaBarberos(_periodo: PeriodoNomina): Promise<ApiResult<NominaBarbero[]>> {
-    return ok(datos.nominaBarberos as NominaBarbero[])
+  /** Los asientos que sostienen cada cifra del resumen. */
+  async obtenerGanancias(filtros: FiltrosGanancias = {}): Promise<ApiResult<Ganancia[]>> {
+    return api.get<Ganancia[]>("/ganancias", { params: omitEmpty({ ...filtros }) })
   },
 }

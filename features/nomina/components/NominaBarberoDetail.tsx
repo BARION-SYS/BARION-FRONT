@@ -1,9 +1,6 @@
 "use client"
 
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
-import { ChartTooltip } from "@shared/components/charts/ChartTooltip"
-import { Button } from "@shared/components/ui/button"
 import { Card } from "@shared/components/ui/card"
 import {
   Table,
@@ -13,87 +10,86 @@ import {
   TableHeader,
   TableRow,
 } from "@shared/components/ui/table"
-import type { NominaBarbero } from "@features/nomina/types/nomina.types"
-import { formatNumber } from "@shared/utils/numbers"
+import { Loadable } from "@shared/components/feedback/Loadable"
+import { tokenDeColor } from "@shared/utils/color"
+import { inicialesDe } from "@shared/utils/iniciales"
+import type { Ganancia, ResumenNomina } from "@features/nomina/types/nomina.types"
+import { comisionEfectiva } from "@features/nomina/utils/periodo"
+import { useFormato } from "@shared/hooks/useFormato"
 
-interface Props {
-  barbero: NominaBarbero
+interface NominaBarberoDetailProps {
+  fila: ResumenNomina
+  /** Los asientos del MISMO rango que el resumen. */
+  asientos: Ganancia[]
+  loadingAsientos: boolean
   etiquetaPeriodo: string
 }
 
-export function NominaBarberoDetail({ barbero, etiquetaPeriodo }: Props) {
+const ETIQUETA_TIPO: Record<Ganancia["tipo"], string> = {
+  servicio: "Servicio",
+  extra: "Extra",
+  propina: "Propina",
+  ajuste: "Ajuste",
+}
+
+export function NominaBarberoDetail({
+  fila,
+  asientos,
+  loadingAsientos,
+  etiquetaPeriodo,
+}: NominaBarberoDetailProps) {
+  const { dinero, fechaHora, porcentaje } = useFormato()
+
+  const nombre = fila.barbero?.nombrePublico ?? "Barbero retirado"
+  const color = tokenDeColor(fila.barbero?.indiceColor ?? 0)
+  const comision = comisionEfectiva(fila.produccionCentavos, fila.comisionCentavos)
+
   const desglose = [
-    { concepto: "Producción", detalle: "100% ventas", monto: barbero.produccion },
     {
-      concepto: `Comisión (${barbero.porcentajeComision}%)`,
-      detalle: "A pagar",
-      monto: barbero.comision,
+      concepto: "Producción",
+      detalle: "Lo que se le cobró al cliente",
+      centavos: fila.produccionCentavos,
     },
-    { concepto: "Propinas", detalle: "Acumuladas", monto: barbero.propinas },
+    {
+      concepto: comision === null ? "Comisión" : `Comisión (${porcentaje(comision)})`,
+      detalle: "Su parte de esa producción",
+      centavos: fila.comisionCentavos,
+    },
+    { concepto: "Propinas", detalle: "Íntegras", centavos: fila.propinasCentavos },
+    // Solo si las hay: una fila en cero invita a preguntar qué se corrigió.
+    ...(fila.ajustesCentavos !== "0"
+      ? [{ concepto: "Ajustes", detalle: "Correcciones", centavos: fila.ajustesCentavos }]
+      : []),
   ]
 
   return (
     <Card className="gap-5 py-5">
       <div className="flex items-center gap-3 px-5">
-        <InitialsAvatar iniciales={barbero.iniciales} color={barbero.color} tamano="md" />
+        <InitialsAvatar iniciales={inicialesDe(nombre)} color={color} tamano="md" />
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-foreground">{barbero.nombre}</p>
-          <p className="text-xs text-muted-foreground">Producción diaria — {etiquetaPeriodo}</p>
+          <p className="truncate text-sm font-semibold text-foreground">{nombre}</p>
+          <p className="text-xs text-muted-foreground">{etiquetaPeriodo}</p>
         </div>
       </div>
 
       <div className="px-5">
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart
-            data={barbero.produccionDiaria}
-            margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
-            barSize={28}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-            <XAxis
-              dataKey="dia"
-              tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v) => `$${v}`}
-            />
-            <Tooltip
-              cursor={{ fill: "var(--border)", opacity: 0.35 }}
-              content={
-                <ChartTooltip formatear={(e) => `Producción: $${formatNumber(Number(e.value))}`} />
-              }
-            />
-            <Bar
-              dataKey="produccion"
-              fill={barbero.color}
-              radius={[6, 6, 0, 0]}
-              name="produccion"
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="border-t border-border px-5 pt-5">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Concepto</TableHead>
-              <TableHead>Detalle</TableHead>
+              <TableHead className="hidden sm:table-cell">Detalle</TableHead>
               <TableHead className="text-right">Monto</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {desglose.map((fila) => (
-              <TableRow key={fila.concepto}>
-                <TableCell className="font-medium">{fila.concepto}</TableCell>
-                <TableCell className="text-muted-foreground">{fila.detalle}</TableCell>
+            {desglose.map((linea) => (
+              <TableRow key={linea.concepto}>
+                <TableCell className="font-medium">{linea.concepto}</TableCell>
+                <TableCell className="hidden text-muted-foreground sm:table-cell">
+                  {linea.detalle}
+                </TableCell>
                 <TableCell className="text-right font-semibold tabular-nums">
-                  ${formatNumber(fila.monto)}
+                  {dinero(Number(linea.centavos))}
                 </TableCell>
               </TableRow>
             ))}
@@ -101,18 +97,68 @@ export function NominaBarberoDetail({ barbero, etiquetaPeriodo }: Props) {
         </Table>
       </div>
 
+      <div className="border-t border-border px-5 pt-5">
+        <h3 className="mb-3 text-sm font-semibold text-foreground">
+          Asientos del periodo
+          <span className="ml-2 text-xs font-normal text-muted-foreground">
+            lo que sostiene cada cifra
+          </span>
+        </h3>
+        <Loadable
+          loading={loadingAsientos}
+          isEmpty={asientos.length === 0}
+          variant="table"
+          emptyState={
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Este barbero no cerró ninguna cita en el periodo.
+            </p>
+          }
+        >
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cuándo</TableHead>
+                  <TableHead>Qué</TableHead>
+                  <TableHead className="hidden sm:table-cell">Cobrado</TableHead>
+                  <TableHead className="text-right">Para él</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {asientos.map((asiento) => (
+                  <TableRow key={asiento.id}>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                      {fechaHora(asiento.ganadoEn)}
+                    </TableCell>
+                    <TableCell>
+                      {asiento.descripcionCongelada ?? ETIQUETA_TIPO[asiento.tipo]}
+                    </TableCell>
+                    <TableCell className="hidden tabular-nums sm:table-cell">
+                      {dinero(Number(asiento.brutoCentavos))}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold tabular-nums">
+                      {dinero(Number(asiento.montoCentavos))}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Loadable>
+      </div>
+
       <div className="mx-5 flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4">
         <div>
-          <p className="text-xs text-muted-foreground">
-            Total a pagar a {barbero.nombre.split(" ")[0]}
-          </p>
+          <p className="text-xs text-muted-foreground">Total a pagar a {nombre.split(" ")[0]}</p>
           <p className="mt-0.5 text-2xl font-bold text-primary tabular-nums">
-            ${formatNumber(barbero.total)}
+            {dinero(Number(fila.totalCentavos))}
           </p>
         </div>
-        <Button size="lg" className="cursor-pointer">
-          Marcar como pagado
-        </Button>
+        {/* El pago es en efectivo y en persona: Barion no lo procesa ni lo
+            concilia, así que aquí no hay botón que marque nada. */}
+        <p className="max-w-40 text-right text-[11px] text-muted-foreground">
+          Se paga en efectivo y en persona
+        </p>
       </div>
     </Card>
   )

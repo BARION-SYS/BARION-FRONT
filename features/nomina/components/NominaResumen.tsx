@@ -1,39 +1,43 @@
+"use client"
+
 import { DollarSign, Gift, Scissors, TrendingUp } from "lucide-react"
 import { StatCard } from "@shared/components/stats/StatCard"
 import type { TotalesNomina } from "@features/nomina/types/nomina.types"
-import { formatNumber } from "@shared/utils/numbers"
+import { useFormato } from "@shared/hooks/useFormato"
 
-interface Props {
+interface NominaResumenProps {
   totales: TotalesNomina
 }
 
-export function NominaResumen({ totales }: Props) {
+export function NominaResumen({ totales }: NominaResumenProps) {
+  const { dinero } = useFormato()
+
   return (
     <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
       <StatCard
         titulo="Producción total"
-        valor={`$${formatNumber(totales.produccion)}`}
+        valor={dinero(Number(totales.produccionCentavos))}
         icono={TrendingUp}
-        subtitulo="Ventas del periodo"
+        subtitulo="Lo que se le cobró al cliente"
       />
       <StatCard
-        titulo="Comisiones totales"
-        valor={`$${formatNumber(totales.comisiones)}`}
+        titulo="Comisiones"
+        valor={dinero(Number(totales.comisionesCentavos))}
         icono={DollarSign}
-        subtitulo="Según % de cada barbero"
+        subtitulo="La parte de cada barbero"
       />
       <StatCard
-        titulo="Propinas totales"
-        valor={`$${formatNumber(totales.propinas)}`}
+        titulo="Propinas"
+        valor={dinero(Number(totales.propinasCentavos))}
         icono={Gift}
-        subtitulo="Acumuladas"
+        subtitulo="Van íntegras a quien atendió"
       />
       <StatCard
         titulo="Total a pagar"
-        valor={`$${formatNumber(totales.totalAPagar)}`}
+        valor={dinero(Number(totales.totalCentavos))}
         icono={Scissors}
         acento
-        subtitulo="Comisiones + propinas"
+        subtitulo="Comisiones + propinas + ajustes"
       />
     </div>
   )

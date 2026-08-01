@@ -2,36 +2,50 @@
 
 import { useCallback, useState } from "react"
 import { nominaService } from "@features/nomina/services/nomina.service"
-import type {
-  NominaBarbero,
-  OpcionPeriodoNomina,
-  PeriodoNomina,
-} from "@features/nomina/types/nomina.types"
+import type { FiltrosGanancias, Ganancia, ResumenNomina } from "@features/nomina/types/nomina.types"
 import { getErrorMessage } from "@shared/utils/error"
 
-// Solo estado de API — el estado de UI (periodo activo, selección) vive en el padre.
+// Solo estado de API — el periodo activo y la selección viven en el padre.
 export function useNomina() {
-  const [periodos, setPeriodos] = useState<OpcionPeriodoNomina[]>([])
-  const [nominaBarberos, setNominaBarberos] = useState<NominaBarbero[]>([])
-  const [loadingNomina, setLoadingNomina] = useState(false)
+  const [resumen, setResumen] = useState<ResumenNomina[]>([])
+  const [asientos, setAsientos] = useState<Ganancia[]>([])
+  const [loadingResumen, setLoadingResumen] = useState(false)
+  const [loadingAsientos, setLoadingAsientos] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchNomina = useCallback(async (periodo: PeriodoNomina) => {
-    setLoadingNomina(true)
+  const fetchResumen = useCallback(async (filtros: FiltrosGanancias) => {
+    setLoadingResumen(true)
     setError(null)
     try {
-      const [resPeriodos, resBarberos] = await Promise.all([
-        nominaService.obtenerPeriodos(),
-        nominaService.obtenerNominaBarberos(periodo),
-      ])
-      setPeriodos(resPeriodos.data)
-      setNominaBarberos(resBarberos.data)
+      const res = await nominaService.obtenerResumen(filtros)
+      setResumen(res.data)
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
-      setLoadingNomina(false)
+      setLoadingResumen(false)
     }
   }, [])
 
-  return { periodos, nominaBarberos, loadingNomina, error, fetchNomina }
+  /** El detalle del barbero elegido: los asientos del mismo rango. */
+  const fetchAsientos = useCallback(async (filtros: FiltrosGanancias) => {
+    setLoadingAsientos(true)
+    try {
+      const res = await nominaService.obtenerGanancias({ ...filtros, limit: 100 })
+      setAsientos(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingAsientos(false)
+    }
+  }, [])
+
+  return {
+    resumen,
+    asientos,
+    loadingResumen,
+    loadingAsientos,
+    error,
+    fetchResumen,
+    fetchAsientos,
+  }
 }

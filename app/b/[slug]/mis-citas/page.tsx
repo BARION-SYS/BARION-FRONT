@@ -1,14 +1,16 @@
 "use client"
 
-import { use, useCallback, useEffect, useState } from "react"
-import Link from "next/link"
+import { use, useCallback, useEffect, useMemo, useState } from "react"
 import { MotionConfig } from "motion/react"
+import { Gift, Star } from "lucide-react"
 import { PortalAccesoForm } from "@features/portal/components/PortalAccesoForm"
 import { PortalCabeceraNav } from "@features/portal/components/PortalCabeceraNav"
 import { PortalCitasList } from "@features/portal/components/PortalCitasList"
 import { PortalNegocioCard } from "@features/portal/components/PortalNegocioCard"
 import { PortalOtpForm } from "@features/portal/components/PortalOtpForm"
 import { usePortal } from "@features/portal/hooks/usePortal"
+import { type ContextoFormato } from "@features/portal/utils/formato"
+import { horarioDeHoy } from "@features/portal/utils/horarios"
 import { resumenServicios } from "@features/citas/utils/servicios"
 import { Button } from "@shared/components/ui/button"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
@@ -16,29 +18,44 @@ import { Modal } from "@shared/components/modals/Modal"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useMarcaStore } from "@store/marca.store"
-import type { DatosAcceso, DatosCodigo } from "@features/portal/schemas/portal.schema"
-import type { CitaCliente } from "@features/portal/types/portal.types"
+import type { DatosSolicitarCodigo } from "@features/portal/schemas/portal.schema"
+import type { Cita } from "@features/portal/types/portal.types"
 
+/** Qué se pinta: pedir el número, escribir el código, o ya lo suyo. */
 type FaseAcceso = "telefono" | "codigo" | "citas"
 
-// Área del cliente en el portal: consulta y cancela sus citas con el celular verificado.
+/**
+ * El área del cliente: sus citas, sus puntos y sus permisos de comunicación.
+ *
+ * **No hay pantalla de login**, y no la habrá: entrar es pedir el código y
+ * escribirlo, que es exactamente lo mismo que hace al reservar. La sesión vive en
+ * una cookie httpOnly de 30 días, así que quien ya entró llega directo a sus citas
+ * — se comprueba pidiéndolas: un 401 no es un error que enseñar, es "todavía no has
+ * entrado".
+ */
 export default function MisCitasPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
   const {
     barberia,
     citas,
+    fidelidad,
     loadingPortal,
     loadingCitas,
     loadingAction,
     fetchPortal,
-    fetchCitasCliente,
+    fetchMisCitas,
+    fetchFidelidad,
     handleSolicitarCodigoPortal,
+    handleVerificarCodigoPortal,
     handleCancelarCitaPortal,
+    handleCalificarCitaPortal,
   } = usePortal()
 
   const [fase, setFase] = useState<FaseAcceso>("telefono")
   const [telefono, setTelefono] = useState("")
-  const [citaACancelar, setCitaACancelar] = useState<CitaCliente | null>(null)
+  const [citaACancelar, setCitaACancelar] = useState<Cita | null>(null)
+  const [citaACalificar, setCitaACalificar] = useState<Cita | null>(null)
+  const [puntaje, setPuntaje] = useState(5)
 
   const setMarca = useMarcaStore((s) => s.setMarca)
 
@@ -48,43 +65,74 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
 
   useEffect(() => {
     if (!barberia) return
-    setMarca({ colorMarca: barberia.colorMarca, colorFondo: barberia.colorFondo })
+    setMarca({
+      colorMarca: barberia.marca.colorMarca,
+      colorFondo: barberia.marca.colorFondo,
+    })
   }, [barberia, setMarca])
 
+  /**
+   * Quien vuelve con la cookie viva no tiene que volver a identificarse: se
+   * intentan sus citas y, si la api las da, se salta el código.
+   */
+  useEffect(() => {
+    void fetchMisCitas().then((entro) => {
+      if (!entro) return
+      setFase("citas")
+      void fetchFidelidad()
+    })
+  }, [fetchMisCitas, fetchFidelidad])
+
+  const sede = barberia?.sedes[0] ?? null
+
+  const formato: ContextoFormato = useMemo(
+    () => ({
+      zonaHoraria: sede?.zonaHoraria ?? "UTC",
+      moneda: barberia?.moneda ?? "COP",
+      locale: barberia?.locale,
+    }),
+    [sede?.zonaHoraria, barberia?.moneda, barberia?.locale]
+  )
+
   const pedirCodigo = useCallback(
-    async (datos: DatosAcceso) => {
+    async (datos: DatosSolicitarCodigo) => {
       try {
-        const mensaje = await handleSolicitarCodigoPortal(datos)
-        setTelefono(datos.telefono)
+        const mensaje = await handleSolicitarCodigoPortal(slug, datos.telefonoE164)
+        setTelefono(datos.telefonoE164)
         setFase("codigo")
         notify.success(mensaje)
       } catch (err) {
         notify.error(getErrorMessage(err))
       }
     },
-    [handleSolicitarCodigoPortal]
+    [slug, handleSolicitarCodigoPortal]
   )
 
   const reenviarCodigo = useCallback(async () => {
     try {
-      const mensaje = await handleSolicitarCodigoPortal({ telefono })
-      notify.success(mensaje)
+      notify.success(await handleSolicitarCodigoPortal(slug, telefono))
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
-  }, [telefono, handleSolicitarCodigoPortal])
+  }, [slug, telefono, handleSolicitarCodigoPortal])
 
-  // El código ya validado abre la lista: la consulta viaja con el teléfono verificado.
+  /**
+   * Verificar deja la sesión. **Sin nombre ni correo**: quien entra por aquí ya es
+   * cliente de la barbería, y si no lo fuera la api pediría esos datos — que es lo
+   * que hace el flujo de reserva.
+   */
   const verificarCodigo = useCallback(
-    async (_codigo: DatosCodigo) => {
+    async (codigo: string) => {
       try {
-        await fetchCitasCliente({ telefono })
+        await handleVerificarCodigoPortal(slug, { telefonoE164: telefono, codigo })
+        await fetchMisCitas()
+        void fetchFidelidad()
         setFase("citas")
       } catch (err) {
         notify.error(getErrorMessage(err))
       }
     },
-    [telefono, fetchCitasCliente]
+    [slug, telefono, handleVerificarCodigoPortal, fetchMisCitas, fetchFidelidad]
   )
 
   const cancelarCita = useCallback(async () => {
@@ -92,14 +140,23 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
     try {
       const mensaje = await handleCancelarCitaPortal(citaACancelar.id)
       setCitaACancelar(null)
-      await fetchCitasCliente({ telefono })
+      await fetchMisCitas()
       notify.success(mensaje)
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
-  }, [citaACancelar, telefono, handleCancelarCitaPortal, fetchCitasCliente])
+  }, [citaACancelar, handleCancelarCitaPortal, fetchMisCitas])
 
-  const hrefRegistro = `/b/${slug}/registro`
+  const calificarCita = useCallback(async () => {
+    if (!citaACalificar) return
+    try {
+      const mensaje = await handleCalificarCitaPortal(citaACalificar.id, { puntaje })
+      setCitaACalificar(null)
+      notify.success(mensaje)
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }, [citaACalificar, puntaje, handleCalificarCitaPortal])
 
   if (loadingPortal || !barberia) {
     return (
@@ -112,12 +169,10 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
   return (
     <MotionConfig reducedMotion="user">
       <PortalCabeceraNav
-        nombre={barberia.nombre}
-        iniciales={barberia.iniciales}
-        abiertoAhora={barberia.abiertoAhora}
-        horarioHoy={barberia.horarioHoy}
+        nombre={barberia.nombreComercial}
+        abiertoAhora={sede?.abiertoAhora ?? false}
+        horarioHoy={sede ? horarioDeHoy(sede.horario, new Date().getDay()) : ""}
         hrefVolver={`/b/${slug}`}
-        hrefRegistro={hrefRegistro}
       />
 
       <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
@@ -125,14 +180,14 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
           <div className="min-w-0 space-y-5">
             <header>
               <p className="text-[11px] font-semibold tracking-[0.2em] text-primary uppercase">
-                {barberia.nombre}
+                {barberia.nombreComercial}
               </p>
               <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Mis citas
               </h1>
               <p className="mt-1.5 text-sm text-muted-foreground">
                 {fase === "citas"
-                  ? `Citas asociadas a ${telefono}`
+                  ? "Tus citas en esta barbería. Puedes cancelar y calificar lo atendido."
                   : "Entra con el celular con el que reservaste — sin contraseñas."}
               </p>
             </header>
@@ -144,7 +199,7 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
 
               {fase === "codigo" && (
                 <PortalOtpForm
-                  telefono={telefono}
+                  destino={telefono}
                   onSubmit={verificarCodigo}
                   onReenviar={reenviarCodigo}
                   cargando={loadingAction || loadingCitas}
@@ -155,28 +210,60 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
                 <PortalCitasList
                   citas={citas}
                   loading={loadingCitas}
+                  cargandoAccion={loadingAction}
+                  formato={formato}
                   onCancelar={setCitaACancelar}
+                  onCalificar={(cita) => {
+                    setPuntaje(5)
+                    setCitaACalificar(cita)
+                  }}
                 />
               )}
             </section>
 
-            {fase !== "citas" && (
-              <p className="text-center text-xs text-muted-foreground">
-                ¿Nunca has reservado aquí?{" "}
-                <Button
-                  render={<Link href={hrefRegistro} />}
-                  nativeButton={false}
-                  variant="link"
-                  className="h-auto p-0 text-xs font-semibold"
-                >
-                  Crea tu perfil
-                </Button>
-              </p>
+            {/* Fidelización: solo si la barbería tiene programa. Sin él no se pinta
+                nada — una sección vacía sugeriría que hay puntos que no existen. */}
+            {fase === "citas" && fidelidad?.programa && (
+              <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      {fidelidad.programa.nombre}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {fidelidad.puntosHistoricos} puntos acumulados desde que vienes
+                    </p>
+                  </div>
+                  <p className="text-2xl font-bold text-primary tabular-nums">
+                    {fidelidad.saldoPuntos}
+                  </p>
+                </div>
+
+                {fidelidad.premios.length > 0 && (
+                  <ul className="mt-4 space-y-2 border-t border-border pt-4">
+                    {fidelidad.premios.map((premio) => (
+                      <li
+                        key={premio.id}
+                        className="flex items-center justify-between gap-3 text-sm"
+                      >
+                        <span className="flex min-w-0 items-center gap-2">
+                          <Gift className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                          <span className="truncate text-foreground">{premio.nombre}</span>
+                        </span>
+                        <span className="shrink-0 text-xs font-semibold text-muted-foreground tabular-nums">
+                          {premio.costoPuntos} pts
+                          {!premio.alcanzable && " · te faltan"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
             )}
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <PortalNegocioCard barberia={barberia} />
+            <PortalNegocioCard sede={sede} />
           </aside>
         </div>
       </main>
@@ -201,7 +288,7 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
               type="button"
               variant="destructive"
               disabled={loadingAction}
-              onClick={cancelarCita}
+              onClick={() => void cancelarCita()}
               className="h-11 flex-1 cursor-pointer text-xs font-semibold"
             >
               Sí, cancelar
@@ -210,9 +297,51 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
         }
       >
         <p className="text-sm text-muted-foreground">
-          {citaACancelar && resumenServicios(citaACancelar.lineasServicio.map((l) => l.nombre))} con{" "}
-          {citaACancelar?.barbero} · {citaACancelar?.codigo}
+          {citaACancelar && resumenServicios(citaACancelar.servicios.map((l) => l.nombre))} con{" "}
+          {citaACancelar?.barbero?.nombrePublico ?? "tu barbero"} ·{" "}
+          {citaACancelar?.codigoSeguimiento}
         </p>
+      </Modal>
+
+      <Modal
+        open={!!citaACalificar}
+        onOpenChange={(abierto) => !abierto && setCitaACalificar(null)}
+        titulo="¿Cómo te fue?"
+        descripcion="Una calificación por cita. El comentario lo publica la barbería si lo aprueba."
+        size="sm"
+        footer={
+          <Button
+            type="button"
+            disabled={loadingAction}
+            onClick={() => void calificarCita()}
+            className="h-11 w-full cursor-pointer text-xs font-semibold"
+          >
+            Enviar calificación
+          </Button>
+        }
+      >
+        <div className="flex justify-center gap-2" role="radiogroup" aria-label="Puntaje">
+          {[1, 2, 3, 4, 5].map((valor) => (
+            <button
+              key={valor}
+              type="button"
+              role="radio"
+              aria-checked={puntaje === valor}
+              aria-label={`${valor} de 5`}
+              onClick={() => setPuntaje(valor)}
+              className="cursor-pointer rounded-full p-1 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+            >
+              <Star
+                className={
+                  valor <= puntaje
+                    ? "h-8 w-8 fill-primary text-primary"
+                    : "h-8 w-8 text-muted-foreground"
+                }
+                aria-hidden
+              />
+            </button>
+          ))}
+        </div>
       </Modal>
     </MotionConfig>
   )

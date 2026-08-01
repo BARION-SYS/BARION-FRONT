@@ -1,6 +1,7 @@
 "use client"
 
-import { use, useCallback, useEffect, useState } from "react"
+import { use, useCallback, useEffect, useMemo, useState } from "react"
+import { notFound } from "next/navigation"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import { PortalAgendaList } from "@features/portal/components/PortalAgendaList"
 import { PortalBarberosList } from "@features/portal/components/PortalBarberosList"
@@ -15,14 +16,35 @@ import { PortalResumenDetail } from "@features/portal/components/PortalResumenDe
 import { PortalServiciosList } from "@features/portal/components/PortalServiciosList"
 import { copiaPorPaso, numeroDePaso, TOTAL_PASOS } from "@features/portal/constants/pasos"
 import { usePortal } from "@features/portal/hooks/usePortal"
+import { claveDeDia, type ContextoFormato } from "@features/portal/utils/formato"
+import { horarioDeHoy } from "@features/portal/utils/horarios"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useMarcaStore } from "@store/marca.store"
-import type { DatosCodigo, DatosContacto } from "@features/portal/schemas/portal.schema"
+import type { DatosContacto } from "@features/portal/schemas/portal.schema"
 import type { PasoReserva } from "@features/portal/types/portal.types"
 
-// Portal público de la barbería: instancia el hook UNA vez y reparte datos + callbacks por props.
+/** Horas antes de la cita hasta las que el cliente cancela solo (default de la api). */
+const HORAS_CANCELACION = 4
+/** Cuántos días de agenda se piden de una vez. */
+const DIAS_AGENDA = 14
+
+/**
+ * El escaparate y la reserva. Instancia el hook UNA vez y reparte datos y
+ * callbacks por props.
+ *
+ * ── El orden de los pasos, y por qué ────────────────────────────────────────
+ * `servicio → barbero → agenda → datos → codigo → listo`. Los datos van DESPUÉS de
+ * elegir la hora porque verificar el teléfono **es** entrar y también registrarse:
+ * pedirlo antes obligaría a identificarse para mirar precios.
+ *
+ * ── Catálogo y oferta no son lo mismo ───────────────────────────────────────
+ * El cliente elige del CATÁLOGO (`servicioIds`), que es lo que se manda al
+ * reservar. Para preguntar por huecos hace falta la OFERTA de un barbero —de ahí
+ * salen la duración y el buffer—, así que se traduce con la oferta del barbero
+ * elegido o, con «cualquiera disponible», con la del primero que lo ofrezca todo.
+ */
 export default function PortalPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
   const {
@@ -34,17 +56,20 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     loadingPortal,
     loadingAgenda,
     loadingAction,
+    error,
     fetchPortal,
     fetchAgenda,
     handleSolicitarCodigoPortal,
-    handleConfirmarReservaPortal,
+    handleVerificarCodigoPortal,
+    handleReservarPortal,
   } = usePortal()
 
   // Estado de UI del flujo — el hook solo guarda estado de API.
   const [paso, setPaso] = useState<PasoReserva>("servicio")
-  // N servicios por cita, no uno: el cliente puede pedir corte y barba en la misma visita.
-  const [servicioIds, setServicioIds] = useState<number[]>([])
-  const [barberoId, setBarberoId] = useState<number | null>(null)
+  const [servicioIds, setServicioIds] = useState<string[]>([])
+  /** `null` con `cualquiera` = "el primero disponible". */
+  const [barberoId, setBarberoId] = useState<string | null>(null)
+  const [cualquiera, setCualquiera] = useState(false)
   const [fechaDia, setFechaDia] = useState<string | null>(null)
   const [inicio, setInicio] = useState<string | null>(null)
   const [contacto, setContacto] = useState<DatosContacto | null>(null)
@@ -55,25 +80,71 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     void fetchPortal(slug)
   }, [fetchPortal, slug])
 
-  // La marca la define el tenant y el portal SOLO la refleja (el cliente nunca la edita).
+  // La marca la define el tenant y el portal SOLO la refleja: el cliente jamás la
+  // edita, así que se aplica al montar y no se persiste como preferencia suya.
   useEffect(() => {
     if (!barberia) return
-    setMarca({ colorMarca: barberia.colorMarca, colorFondo: barberia.colorFondo })
+    setMarca({
+      colorMarca: barberia.marca.colorMarca,
+      colorFondo: barberia.marca.colorFondo,
+    })
   }, [barberia, setMarca])
 
-  // Los cupos dependen de servicios + barbero: se piden al entrar al paso de agenda.
-  useEffect(() => {
-    if (paso !== "agenda" || servicioIds.length === 0 || barberoId === null) return
-    void fetchAgenda(servicioIds, barberoId)
-  }, [paso, servicioIds, barberoId, fetchAgenda])
+  // La barbería opera por SEDES. Mientras haya una sola, es la de trabajo; el
+  // selector de sede llega cuando el escaparate tenga que ofrecer varias.
+  const sede = barberia?.sedes[0] ?? null
 
-  const serviciosSeleccionados = servicios.filter((s) => servicioIds.includes(s.id))
-  const barbero = barberos.find((b) => b.id === barberoId) ?? null
+  const formato: ContextoFormato = useMemo(
+    () => ({
+      zonaHoraria: sede?.zonaHoraria ?? "UTC",
+      moneda: barberia?.moneda ?? "COP",
+      locale: barberia?.locale,
+    }),
+    [sede?.zonaHoraria, barberia?.moneda, barberia?.locale]
+  )
+
+  const serviciosElegidos = servicios.filter((servicio) => servicioIds.includes(servicio.id))
+  const barbero = barberos.find((candidato) => candidato.id === barberoId) ?? null
+
+  /** Quién puede hacer TODO lo elegido: de ahí sale la oferta con la que se mide. */
+  const candidatos = useMemo(
+    () =>
+      barberos.filter((candidato) =>
+        servicioIds.every((servicioId) =>
+          candidato.oferta.some((linea) => linea.servicioId === servicioId)
+        )
+      ),
+    [barberos, servicioIds]
+  )
+
+  const ofertaParaMedir = useMemo(() => {
+    const referencia = cualquiera ? candidatos[0] : barbero
+    if (!referencia) return []
+    return servicioIds.flatMap((servicioId) => {
+      const linea = referencia.oferta.find((candidata) => candidata.servicioId === servicioId)
+      return linea ? [linea.id] : []
+    })
+  }, [cualquiera, candidatos, barbero, servicioIds])
+
+  const hoy = sede ? claveDeDia(new Date().toISOString(), formato) : ""
+
+  // Los cupos dependen de qué se reserva y con quién: se piden al entrar al paso.
+  useEffect(() => {
+    if (paso !== "agenda" || !sede || ofertaParaMedir.length === 0) return
+    void fetchAgenda(slug, {
+      sedeId: sede.id,
+      ofertaIds: ofertaParaMedir,
+      barberoId: cualquiera ? undefined : (barberoId ?? undefined),
+      desde: hoy,
+      dias: DIAS_AGENDA,
+    })
+  }, [paso, sede, ofertaParaMedir, cualquiera, barberoId, hoy, slug, fetchAgenda])
+
   const copia = copiaPorPaso[paso]
 
   const puedeContinuar =
-    (paso === "servicio" && serviciosSeleccionados.length > 0) ||
-    (paso === "barbero" && barberoId !== null) ||
+    (paso === "servicio" && serviciosElegidos.length > 0) ||
+    (paso === "barbero" && (cualquiera || barberoId !== null)) ||
     (paso === "agenda" && !!inicio)
 
   const avanzar = useCallback(() => {
@@ -82,19 +153,28 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     )
   }, [])
 
-  const irAPaso = useCallback((destino: PasoReserva) => setPaso(destino), [])
-
-  const elegirFranja = useCallback((valor: string) => setInicio(valor), [])
-
-  const elegirDia = useCallback((fecha: string) => {
-    setFechaDia(fecha)
+  const elegirBarbero = useCallback((elegido: string | null) => {
+    setCualquiera(elegido === null)
+    setBarberoId(elegido)
+    // Cambiar de barbero cambia los huecos: la hora anterior ya no vale.
     setInicio(null)
   }, [])
 
+  const alternarServicio = useCallback((id: string) => {
+    setServicioIds((actuales) =>
+      actuales.includes(id) ? actuales.filter((otro) => otro !== id) : [...actuales, id]
+    )
+    setInicio(null)
+  }, [])
+
+  /**
+   * Los datos + el código. Pedir el código no crea nada todavía: la ficha del
+   * cliente y la cita nacen al verificarlo, y en ese orden.
+   */
   const enviarContacto = useCallback(
     async (datos: DatosContacto) => {
       try {
-        const mensaje = await handleSolicitarCodigoPortal({ telefono: datos.telefono })
+        const mensaje = await handleSolicitarCodigoPortal(slug, datos.telefonoE164)
         setContacto(datos)
         setPaso("codigo")
         notify.success(mensaje)
@@ -102,57 +182,73 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
         notify.error(getErrorMessage(err))
       }
     },
-    [handleSolicitarCodigoPortal]
+    [slug, handleSolicitarCodigoPortal]
   )
 
   const reenviarCodigo = useCallback(async () => {
     if (!contacto) return
     try {
-      const mensaje = await handleSolicitarCodigoPortal({ telefono: contacto.telefono })
-      notify.success(mensaje)
+      notify.success(await handleSolicitarCodigoPortal(slug, contacto.telefonoE164))
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
-  }, [contacto, handleSolicitarCodigoPortal])
+  }, [contacto, slug, handleSolicitarCodigoPortal])
 
+  /**
+   * Verificar y reservar, en ese orden y por separado: la sesión primero —es lo que
+   * la deja registrada— y la cita después. Si la reserva falla, la sesión ya está
+   * hecha y solo hay que volver a elegir hora, no volver a pedir el código.
+   */
   const confirmarReserva = useCallback(
-    async (codigo: DatosCodigo) => {
-      if (!contacto || servicioIds.length === 0 || barberoId === null || !inicio) return
+    async (codigo: string) => {
+      if (!contacto || !sede || !inicio || servicioIds.length === 0) return
       try {
-        const mensaje = await handleConfirmarReservaPortal(
-          { ...contacto, servicioIds, barberoId, inicio },
-          codigo
-        )
+        await handleVerificarCodigoPortal(slug, {
+          telefonoE164: contacto.telefonoE164,
+          codigo,
+          nombre: contacto.nombre,
+          email: contacto.email,
+          aceptaPromos: contacto.aceptaPromos,
+        })
+        const mensaje = await handleReservarPortal({
+          sedeId: sede.id,
+          barberoId: cualquiera ? null : barberoId,
+          servicioIds,
+          iniciaEn: inicio,
+          notas: contacto.notas,
+        })
         setPaso("listo")
         notify.success(mensaje)
       } catch (err) {
         notify.error(getErrorMessage(err))
       }
     },
-    [contacto, servicioIds, barberoId, inicio, handleConfirmarReservaPortal]
-  )
-
-  const alternarServicio = useCallback(
-    (id: number) =>
-      setServicioIds((actuales) =>
-        actuales.includes(id) ? actuales.filter((s) => s !== id) : [...actuales, id]
-      ),
-    []
+    [
+      contacto,
+      sede,
+      inicio,
+      servicioIds,
+      cualquiera,
+      barberoId,
+      slug,
+      handleVerificarCodigoPortal,
+      handleReservarPortal,
+    ]
   )
 
   const reiniciar = useCallback(() => {
     setPaso("servicio")
     setServicioIds([])
     setBarberoId(null)
+    setCualquiera(false)
     setFechaDia(null)
     setInicio(null)
     setContacto(null)
   }, [])
 
   const hrefCitas = `/b/${slug}/mis-citas`
-  const hrefRegistro = `/b/${slug}/registro`
 
-  if (loadingPortal || !barberia) {
+  if (loadingPortal) {
     return (
       <main className="mx-auto w-full max-w-[1200px] space-y-6 p-4 sm:p-6 lg:px-8">
         <DataSkeleton variant="text" count={2} />
@@ -161,14 +257,20 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     )
   }
 
+  // Sin ficha no hay escaparate: la dirección no existe, la barbería está
+  // suspendida o todavía no verificó su correo. Los tres son un 404 para quien
+  // llega, y distinguirlos contaría de quién es cada identificador.
+  if (!barberia) {
+    if (error) notFound()
+    return null
+  }
+
   return (
     <MotionConfig reducedMotion="user">
       <PortalCabeceraNav
-        nombre={barberia.nombre}
-        iniciales={barberia.iniciales}
-        abiertoAhora={barberia.abiertoAhora}
-        horarioHoy={barberia.horarioHoy}
-        hrefRegistro={hrefRegistro}
+        nombre={barberia.nombreComercial}
+        abiertoAhora={sede?.abiertoAhora ?? false}
+        horarioHoy={sede ? horarioDeHoy(sede.horario, new Date().getDay()) : ""}
         hrefCitas={hrefCitas}
       />
 
@@ -177,9 +279,10 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
           <div className="flex justify-center py-8">
             <div className="w-full max-w-xl">
               <PortalConfirmacion
-                reserva={reserva}
-                barberia={barberia}
+                cita={reserva}
+                sede={sede}
                 hrefCitas={hrefCitas}
+                formato={formato}
                 onReservarOtra={reiniciar}
               />
             </div>
@@ -188,7 +291,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
           <>
             {paso === "servicio" && (
               <div className="py-8 sm:py-10">
-                <PortalPortada barberia={barberia} />
+                <PortalPortada barberia={barberia} sede={sede} />
               </div>
             )}
 
@@ -196,7 +299,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
               className={`grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 ${paso === "servicio" ? "" : "pt-8"}`}
             >
               <div className="min-w-0">
-                <PortalPasosNav pasoActual={paso} onIrAPaso={irAPaso} />
+                <PortalPasosNav pasoActual={paso} onIrAPaso={setPaso} />
 
                 <section className="mt-6" aria-labelledby="titulo-paso">
                   <p className="text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
@@ -223,6 +326,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                           servicios={servicios}
                           servicioIds={servicioIds}
                           loading={false}
+                          formato={formato}
                           onAlternar={(elegido) => alternarServicio(elegido.id)}
                         />
                       )}
@@ -231,8 +335,10 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                         <PortalBarberosList
                           barberos={barberos}
                           barberoId={barberoId}
+                          cualquiera={cualquiera}
+                          servicioIds={servicioIds}
                           loading={false}
-                          onSeleccionar={(elegido) => setBarberoId(elegido.id)}
+                          onSeleccionar={elegirBarbero}
                         />
                       )}
 
@@ -241,9 +347,14 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                           agenda={agenda}
                           fechaDia={fechaDia}
                           inicio={inicio}
+                          hoy={hoy}
                           loading={loadingAgenda}
-                          onSeleccionarDia={elegirDia}
-                          onSeleccionarFranja={elegirFranja}
+                          formato={formato}
+                          onSeleccionarDia={(fecha) => {
+                            setFechaDia(fecha)
+                            setInicio(null)
+                          }}
+                          onSeleccionarFranja={setInicio}
                         />
                       )}
 
@@ -256,7 +367,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                       {paso === "codigo" && contacto && (
                         <div className="max-w-lg">
                           <PortalOtpForm
-                            telefono={contacto.telefono}
+                            destino={contacto.telefonoE164}
                             onSubmit={confirmarReserva}
                             onReenviar={reenviarCodigo}
                             cargando={loadingAction}
@@ -272,16 +383,18 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
               <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
                 <div className="hidden lg:block">
                   <PortalResumenDetail
-                    servicios={serviciosSeleccionados}
-                    barbero={barbero}
+                    servicios={serviciosElegidos}
+                    nombreBarbero={barbero?.nombrePublico ?? null}
                     inicio={inicio}
+                    horasCancelacion={HORAS_CANCELACION}
                     textoCta={copia.cta}
                     puedeContinuar={puedeContinuar}
+                    formato={formato}
                     onContinuar={avanzar}
                     sinCta={!copia.cta}
                   />
                 </div>
-                <PortalNegocioCard barberia={barberia} />
+                <PortalNegocioCard sede={sede} />
               </aside>
             </div>
           </>
@@ -292,11 +405,13 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
       {paso !== "listo" && !!copia.cta && (
         <div className="fixed inset-x-0 bottom-0 z-20 lg:hidden">
           <PortalResumenDetail
-            servicios={serviciosSeleccionados}
-            barbero={barbero}
+            servicios={serviciosElegidos}
+            nombreBarbero={barbero?.nombrePublico ?? null}
             inicio={inicio}
+            horasCancelacion={HORAS_CANCELACION}
             textoCta={copia.cta}
             puedeContinuar={puedeContinuar}
+            formato={formato}
             onContinuar={avanzar}
             compacta
           />

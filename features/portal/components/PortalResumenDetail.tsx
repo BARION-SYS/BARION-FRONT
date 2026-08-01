@@ -2,55 +2,80 @@
 
 import { ArrowRight, CalendarDays, Clock, Loader2, Scissors, User } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
-import { useFormato } from "@shared/hooks/useFormato"
 import { cn } from "@shared/utils/cn"
 import { formatDuration } from "@shared/utils/datetime"
 import { resumenServicios } from "@features/citas/utils/servicios"
-import type { BarberoPortal, ServicioPortal } from "@features/portal/types/portal.types"
+import {
+  dineroDe,
+  diaSemanaDe,
+  fechaCortaDe,
+  horaDe,
+  sumaCentavos,
+  type ContextoFormato,
+} from "@features/portal/utils/formato"
+import type { ServicioPortal } from "@features/portal/types/portal.types"
 
 interface PortalResumenDetailProps {
   /** N servicios por cita: la lista completa que el cliente lleva elegida. */
   servicios: ServicioPortal[]
-  barbero: BarberoPortal | null
-  /** Inicio de la cita en UTC (ISO) */
+  /** Nombre del barbero elegido, o null con «cualquiera disponible». */
+  nombreBarbero: string | null
+  /** Inicio de la cita: instante UTC. */
   inicio: string | null
+  /** Horas antes de la cita hasta las que el cliente puede cancelar él mismo. */
+  horasCancelacion: number
   textoCta: string
   puedeContinuar: boolean
   cargando?: boolean
+  formato: ContextoFormato
   onContinuar: () => void
-  /** Barra inferior de móvil: solo total y CTA */
+  /** Barra inferior de móvil: solo total y CTA. */
   compacta?: boolean
-  /** En los pasos con formulario el avance lo dispara el propio formulario */
+  /** En los pasos con formulario el avance lo dispara el propio formulario. */
   sinCta?: boolean
 }
 
-// Resumen persistente de la reserva: el cliente ve siempre qué lleva elegido y cuánto cuesta.
+/**
+ * Resumen persistente de la reserva: el cliente ve siempre qué lleva y cuánto
+ * cuesta.
+ *
+ * El total se suma **en centavos y como entero** (`BigInt`), no en pesos con
+ * decimales: sumar dinero en coma flotante acaba enseñando un total que no cuadra
+ * con la suma de sus líneas.
+ *
+ * Y es un total **«desde»**: el precio definitivo es el de la oferta del barbero
+ * que atienda, y con «cualquiera disponible» todavía no se sabe quién es.
+ */
 export function PortalResumenDetail({
   servicios,
-  barbero,
+  nombreBarbero,
   inicio,
+  horasCancelacion,
   textoCta,
   puedeContinuar,
   cargando,
+  formato,
   onContinuar,
   compacta,
   sinCta,
 }: PortalResumenDetailProps) {
-  const { dinero, fechaCorta, hora, diaSemanaCorto } = useFormato()
-
   const hayServicios = servicios.length > 0
-  const precioTotal = servicios.reduce((total, s) => total + s.precio, 0)
-  const duracionTotal = servicios.reduce((total, s) => total + s.duracionMin, 0)
-  const nombresServicios = resumenServicios(servicios.map((s) => s.nombre))
+  const total = sumaCentavos(servicios.map((servicio) => servicio.precioDesdeCentavos ?? "0"))
+  const duracionTotal = servicios.reduce((suma, servicio) => suma + servicio.duracionMin, 0)
+  const nombresServicios = resumenServicios(servicios.map((servicio) => servicio.nombre))
 
   const filas = [
     { icono: Scissors, etiqueta: "Servicios", valor: hayServicios ? nombresServicios : undefined },
-    { icono: User, etiqueta: "Barbero", valor: barbero?.nombre },
+    {
+      icono: User,
+      etiqueta: "Barbero",
+      valor: nombreBarbero ?? (puedeContinuar ? "Cualquiera disponible" : undefined),
+    },
     {
       icono: CalendarDays,
       etiqueta: "Fecha",
       valor: inicio
-        ? `${diaSemanaCorto(inicio).replace(".", "")} ${fechaCorta(inicio)} · ${hora(inicio)}`
+        ? `${diaSemanaDe(inicio, formato)} ${fechaCortaDe(inicio, formato)} · ${horaDe(inicio, formato)}`
         : undefined,
     },
     {
@@ -87,7 +112,7 @@ export function PortalResumenDetail({
             {hayServicios ? nombresServicios : "Elige un servicio"}
           </p>
           <p className="text-lg font-bold text-foreground tabular-nums">
-            {hayServicios ? dinero(precioTotal) : "—"}
+            {hayServicios ? dineroDe(total, formato) : "—"}
           </p>
         </div>
         {boton}
@@ -121,16 +146,16 @@ export function PortalResumenDetail({
       </dl>
 
       <div className="mt-4 flex items-baseline justify-between border-t border-dashed border-border pt-4">
-        <span className="text-xs tracking-wide text-muted-foreground uppercase">Total</span>
+        <span className="text-xs tracking-wide text-muted-foreground uppercase">Total desde</span>
         <span className="text-xl font-bold text-primary tabular-nums">
-          {hayServicios ? dinero(precioTotal) : "—"}
+          {hayServicios ? dineroDe(total, formato) : "—"}
         </span>
       </div>
 
       {!sinCta && <div className="mt-4">{boton}</div>}
 
       <p className="mt-3 text-center text-[11px] text-muted-foreground">
-        Se paga en la barbería. Cancela gratis hasta 2 horas antes.
+        Se paga en la barbería. Puedes cancelar hasta {horasCancelacion} horas antes.
       </p>
     </div>
   )

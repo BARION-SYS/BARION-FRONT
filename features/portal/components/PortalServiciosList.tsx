@@ -2,28 +2,34 @@
 
 import { Clock, Sparkles } from "lucide-react"
 import { Loadable } from "@shared/components/feedback/Loadable"
-import { useFormato } from "@shared/hooks/useFormato"
 import { cn } from "@shared/utils/cn"
 import { formatDuration } from "@shared/utils/datetime"
+import { dineroDe, type ContextoFormato } from "@features/portal/utils/formato"
 import type { ServicioPortal } from "@features/portal/types/portal.types"
 
 interface PortalServiciosListProps {
   servicios: ServicioPortal[]
-  servicioIds: number[]
+  servicioIds: string[]
   loading: boolean
+  formato: ContextoFormato
   /** N servicios por cita: cada click alterna, no reemplaza la elección. */
   onAlternar: (servicio: ServicioPortal) => void
 }
 
-// Paso 1: catálogo del negocio. Presentacional puro — la selección la maneja la página.
+/**
+ * Paso 1: la carta. Presentacional puro — la selección la maneja la página.
+ *
+ * El precio se pinta como **«desde»**: es el de referencia del catálogo, y el que
+ * se cobra es el de la oferta del barbero que atienda. Enseñarlo como definitivo
+ * sería prometer un precio que puede no ser el de quien corte.
+ */
 export function PortalServiciosList({
   servicios,
   servicioIds,
   loading,
+  formato,
   onAlternar,
 }: PortalServiciosListProps) {
-  const { dinero } = useFormato()
-
   return (
     <Loadable loading={loading} variant="list" count={4} isEmpty={servicios.length === 0}>
       <ul className="grid gap-3 xl:grid-cols-2">
@@ -48,12 +54,21 @@ export function PortalServiciosList({
                     <span className="block truncate text-base font-semibold text-foreground">
                       {servicio.nombre}
                     </span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">
-                      {servicio.descripcion}
-                    </span>
+                    {servicio.descripcion && (
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        {servicio.descripcion}
+                      </span>
+                    )}
                   </span>
-                  <span className="shrink-0 text-base font-bold text-primary tabular-nums">
-                    {dinero(servicio.precio)}
+                  <span className="shrink-0 text-right">
+                    {servicio.precioDesdeCentavos && (
+                      <span className="block text-[10px] tracking-wide text-muted-foreground uppercase">
+                        Desde
+                      </span>
+                    )}
+                    <span className="block text-base font-bold text-primary tabular-nums">
+                      {dineroDe(servicio.precioDesdeCentavos, formato)}
+                    </span>
                   </span>
                 </span>
 
@@ -62,10 +77,10 @@ export function PortalServiciosList({
                     <Clock className="h-3 w-3" aria-hidden />
                     {formatDuration(servicio.duracionMin)}
                   </span>
-                  {servicio.popular && (
+                  {servicio.destacado && (
                     <span className="flex items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--primary)_14%,transparent)] px-2 py-0.5 text-[11px] font-medium text-primary">
                       <Sparkles className="h-3 w-3" aria-hidden />
-                      El más pedido
+                      Recomendado
                     </span>
                   )}
                 </span>

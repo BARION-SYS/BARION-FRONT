@@ -1,40 +1,46 @@
 "use client"
 
-import { MapPin, Phone } from "lucide-react"
-import { agruparHorarios } from "@features/portal/utils/horarios"
-import type { BarberiaPortal } from "@features/portal/types/portal.types"
+import { MapPin } from "lucide-react"
+import { agruparHorarios, direccionLegible } from "@features/portal/utils/horarios"
+import type { SedePortal } from "@features/portal/types/portal.types"
 
 interface PortalNegocioCardProps {
-  barberia: BarberiaPortal
+  /** La SEDE, no la barbería: el horario y la dirección son de cada local. */
+  sede: SedePortal | null
 }
 
-// Ficha mínima del negocio: dónde queda, cómo llamar y cuándo abre. Nada más.
-export function PortalNegocioCard({ barberia }: PortalNegocioCardProps) {
-  const rangos = agruparHorarios(barberia.horarios)
+/**
+ * Dónde queda y cuándo abre. **El teléfono ya no se publica aquí**: la api no lo
+ * expone en el escaparate, y sacarlo del panel obligaría a decidir cuál de las
+ * sedes es "la" que contesta.
+ */
+export function PortalNegocioCard({ sede }: PortalNegocioCardProps) {
+  if (!sede) return null
+
+  const rangos = agruparHorarios(sede.horario)
+  const { calle, ciudad } = direccionLegible(sede.direccion)
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
-      <a
-        href={`tel:${barberia.telefono.replace(/\s/g, "")}`}
-        className="flex items-center gap-2.5 text-sm font-medium text-foreground underline-offset-4 hover:underline"
-      >
-        <Phone className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-        {barberia.telefono}
-      </a>
+      <p className="text-sm font-semibold text-foreground">{sede.nombre}</p>
 
-      <p className="mt-3 flex items-start gap-2.5 text-sm text-muted-foreground">
-        <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-        <span>
-          {barberia.direccion}
-          <span className="block text-xs">{barberia.ciudad}</span>
-        </span>
-      </p>
+      {(calle ?? ciudad) && (
+        <p className="mt-3 flex items-start gap-2.5 text-sm text-muted-foreground">
+          <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <span>
+            {calle}
+            {ciudad && <span className="block text-xs">{ciudad}</span>}
+          </span>
+        </p>
+      )}
 
       <ul className="mt-4 space-y-1.5 border-t border-border pt-4">
         {rangos.map((rango) => (
-          <li key={rango.dias} className="flex items-center justify-between text-xs">
+          <li key={rango.dias} className="flex items-center justify-between gap-3 text-xs">
             <span className="text-muted-foreground">{rango.dias}</span>
-            <span className="font-medium text-foreground tabular-nums">{rango.horario}</span>
+            <span className="text-right font-medium text-foreground tabular-nums">
+              {rango.horario}
+            </span>
           </li>
         ))}
       </ul>

@@ -3,38 +3,56 @@
 import { useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Loader2, MessageCircle } from "lucide-react"
+import { z } from "zod"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
-import { esquemaCodigo, type DatosCodigo } from "@features/portal/schemas/portal.schema"
+
+/** Solo el código: el canal y los datos los tiene ya la página. */
+const esquemaSoloCodigo = z.object({
+  codigo: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "El código es de 6 dígitos"),
+})
+
+type DatosSoloCodigo = z.infer<typeof esquemaSoloCodigo>
 
 interface PortalOtpFormProps {
-  telefono: string
-  onSubmit: (datos: DatosCodigo) => Promise<void>
+  /** A dónde se envió, para que quien lo escribe sepa dónde mirar. */
+  destino: string
+  onSubmit: (codigo: string) => Promise<void>
   onReenviar: () => void
   cargando?: boolean
 }
 
-// Paso 5: verificación del teléfono. Mismo formulario para reservar y para entrar a "Mis citas".
-export function PortalOtpForm({ telefono, onSubmit, onReenviar, cargando }: PortalOtpFormProps) {
+/**
+ * El código de 6 dígitos. Es el mismo formulario para reservar y para entrar a
+ * «Mis citas», porque es la misma cosa: **verificar el canal ES la sesión**.
+ */
+export function PortalOtpForm({ destino, onSubmit, onReenviar, cargando }: PortalOtpFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<DatosCodigo>({
-    resolver: standardSchemaResolver(esquemaCodigo),
+  } = useForm<DatosSoloCodigo>({
+    resolver: standardSchemaResolver(esquemaSoloCodigo),
     defaultValues: { codigo: "" },
   })
 
   const deshabilitado = isSubmitting || !!cargando
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form
+      className="space-y-4"
+      onSubmit={(e) => void handleSubmit(({ codigo }) => onSubmit(codigo))(e)}
+      noValidate
+    >
       <div className="flex items-start gap-2 rounded-xl bg-secondary/60 p-3">
         <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
         <p className="text-xs text-muted-foreground">
-          Enviamos un código de 6 dígitos a <span className="font-semibold">{telefono}</span>. En la
-          demo sirve cualquier combinación de 6 números.
+          Enviamos un código de 6 dígitos a <span className="font-semibold">{destino}</span>. Vence
+          en 10 minutos.
         </p>
       </div>
 

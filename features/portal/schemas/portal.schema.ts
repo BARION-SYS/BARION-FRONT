@@ -1,60 +1,115 @@
 import { z } from "zod"
 
-// Teléfono del cliente: dígitos, espacios, guiones y prefijo internacional.
+/**
+ * Lo que el portal ENVÍA. Dos cambios respecto del mock, y los dos vienen de la
+ * api:
+ *
+ *  · El teléfono va en **E.164** (`+573001112233`), sin espacios ni guiones: es
+ *    la llave con la que se reconoce al cliente, y `+57 300 111 22 33` y
+ *    `+573001112233` no pueden ser dos personas.
+ *  · El **correo es obligatorio** al registrarse. No es un dato de contacto
+ *    opcional: es un canal del producto, y dejarlo vacío crea clientes a los que
+ *    es imposible escribir.
+ */
+const E164 = /^\+[1-9]\d{7,14}$/
+
 const telefono = z
   .string()
   .trim()
-  .min(7, "Ingresa tu número de celular")
-  .regex(/^\+?[\d\s-]{7,18}$/, "Número inválido, ej. +57 300 123 4567")
+  // Se aceptan espacios y guiones al escribir y se limpian antes de enviar: nadie
+  // teclea su número pegado, y rechazarlo por eso es maltratar a quien reserva.
+  .transform((valor) => valor.replace(/[\s-]/g, ""))
+  .refine((valor) => E164.test(valor), "Formato internacional: +573001112233")
 
-/** Datos de contacto que el cliente escribe en el formulario de reserva. */
-export const esquemaContacto = z.object({
-  nombre: z.string().trim().min(2, "Ingresa tu nombre"),
-  telefono,
-  notas: z.string().trim().max(160, "Máximo 160 caracteres").optional(),
+/** Pedir el código: un canal y nada más. */
+export const esquemaSolicitarCodigo = z.object({ telefonoE164: telefono })
+
+/**
+ * Verificar el código. `nombre` y `email` solo hacen falta la primera vez, pero el
+ * formulario los pide siempre: quien reserva escribe sus datos en el mismo paso en
+ * el que pide el código, y volver a preguntarlos después sería un paso más.
+ */
+export const esquemaVerificarCodigo = z.object({
+  telefonoE164: telefono,
+  codigo: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "El código es de 6 dígitos"),
+  nombre: z.string().trim().min(2, "Ingresa tu nombre").optional(),
+  email: z.email("Ingresa un correo válido").optional(),
+  aceptaPromos: z.boolean().optional(),
 })
 
-/** Reserva completa: la selección del flujo + los datos de contacto. */
-export const esquemaReserva = esquemaContacto.extend({
-  // El campo vacío no viaja a la API.
+/** Los datos que el cliente escribe antes de recibir el código. */
+export const esquemaContacto = z.object({
+  nombre: z.string().trim().min(2, "Ingresa tu nombre"),
+  telefonoE164: telefono,
+  email: z.email("Ingresa un correo válido"),
   notas: z
     .string()
     .trim()
     .max(160, "Máximo 160 caracteres")
     .optional()
     .transform((valor) => valor || undefined),
-  // N servicios por cita, no uno: corte y barba en la misma visita son dos líneas.
-  servicioIds: z.array(z.number().int().positive()).min(1, "Selecciona al menos un servicio"),
-  /** 0 = cualquier barbero disponible */
-  barberoId: z.number("Selecciona un barbero").int().min(0, "Selecciona un barbero"),
-  inicio: z.iso.datetime("Selecciona un horario"),
-})
-
-/** Verificación del teléfono por código de un solo uso. */
-export const esquemaCodigo = z.object({
-  codigo: z
-    .string()
-    .trim()
-    .regex(/^\d{6}$/, "El código es de 6 dígitos"),
-})
-
-/** Alta del cliente en la barbería desde el portal público. */
-export const esquemaRegistro = z.object({
-  nombre: z.string().trim().min(2, "Ingresa tu nombre"),
-  telefono,
-  // El correo es opcional: el canal obligatorio del negocio es el celular.
-  correo: z.union([z.email("Ingresa un correo válido"), z.literal("")]).optional(),
-  barberoFavorito: z.string().optional(),
   aceptaPromos: z.boolean(),
 })
 
-/** Acceso del cliente a "Mis citas" — solo con su celular. */
-export const esquemaAcceso = z.object({ telefono })
+/**
+ * La reserva. `servicioIds` son ids del CATÁLOGO y no de la oferta: la oferta es
+ * de un barbero, y con «cualquiera disponible» no se sabe cuál hasta que la api lo
+ * resuelve.
+ */
+export const esquemaReserva = z.object({
+  sedeId: z.uuid(),
+  /** `null` = cualquiera disponible. */
+  barberoId: z.uuid().nullable().optional(),
+  servicioIds: z.array(z.uuid()).min(1, "Selecciona al menos un servicio"),
+  iniciaEn: z.iso.datetime("Selecciona un horario"),
+  notas: z.string().trim().max(1000).optional(),
+  claveIdempotencia: z.string().min(8).max(128).optional(),
+})
 
-// Lo que se envía a la API es SIEMPRE el tipo inferido del schema.
-export type DatosContacto = z.infer<typeof esquemaContacto>
-// Reserva: se tipa la ENTRADA del schema — es lo que la página arma y el service parsea.
+export const esquemaReagendar = z.object({
+  iniciaEn: z.iso.datetime("Selecciona un horario"),
+})
+
+export const esquemaCancelar = z.object({
+  motivo: z.string().trim().max(500).optional(),
+})
+
+export const esquemaCalificar = z.object({
+  puntaje: z.number().int().min(1, "Del 1 al 5").max(5, "Del 1 al 5"),
+  comentario: z.string().trim().max(1000, "Máximo 1000 caracteres").optional(),
+})
+
+/** El teléfono NO está: es la llave con la que entra y no se cambia desde aquí. */
+export const esquemaPerfilCliente = z.object({
+  nombre: z.string().trim().min(2, "Ingresa tu nombre").optional(),
+  apellido: z.string().trim().max(120).nullable().optional(),
+  email: z.email("Ingresa un correo válido").optional(),
+  fechaNacimiento: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato AAAA-MM-DD")
+    .nullable()
+    .optional(),
+  barberoFavoritoId: z.uuid().nullable().optional(),
+})
+
+/** Un permiso de comunicación. Revocar es una fila nueva, nunca una edición. */
+export const esquemaPreferencia = z.object({
+  tipo: z.enum(["marketing_whatsapp", "marketing_sms", "marketing_email", "tratamiento_datos"]),
+  otorgado: z.boolean(),
+})
+
+export const esquemaCanje = z.object({ premioId: z.uuid() })
+
+export type DatosSolicitarCodigo = z.input<typeof esquemaSolicitarCodigo>
+export type DatosVerificarCodigo = z.input<typeof esquemaVerificarCodigo>
+export type DatosContacto = z.input<typeof esquemaContacto>
 export type DatosReserva = z.input<typeof esquemaReserva>
-export type DatosCodigo = z.infer<typeof esquemaCodigo>
-export type DatosAcceso = z.infer<typeof esquemaAcceso>
-export type DatosRegistro = z.infer<typeof esquemaRegistro>
+export type DatosReagendar = z.infer<typeof esquemaReagendar>
+export type DatosCancelar = z.infer<typeof esquemaCancelar>
+export type DatosCalificar = z.infer<typeof esquemaCalificar>
+export type DatosPerfilCliente = z.infer<typeof esquemaPerfilCliente>
+export type DatosPreferencia = z.infer<typeof esquemaPreferencia>
+export type DatosCanje = z.infer<typeof esquemaCanje>

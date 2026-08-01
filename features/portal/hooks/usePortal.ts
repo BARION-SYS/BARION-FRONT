@@ -2,46 +2,69 @@
 
 import { useCallback, useState } from "react"
 import { portalService } from "@features/portal/services/portal.service"
+import { getErrorMessage } from "@shared/utils/error"
 import type {
-  DatosAcceso,
-  DatosCodigo,
-  DatosRegistro,
+  DatosCalificar,
+  DatosPreferencia,
+  DatosReagendar,
   DatosReserva,
+  DatosVerificarCodigo,
 } from "@features/portal/schemas/portal.schema"
+import type { Cliente, Consentimientos } from "@features/clientes/types/clientes.types"
 import type {
   BarberiaPortal,
   BarberoPortal,
-  CitaCliente,
-  ClientePortal,
+  Cita,
   DiaAgenda,
-  ReservaConfirmada,
+  FidelidadPortal,
+  FiltrosCitasCliente,
+  PromocionPortal,
   ServicioPortal,
+  SesionCliente,
 } from "@features/portal/types/portal.types"
-import { getErrorMessage } from "@shared/utils/error"
 
-// Único hook del portal público — solo estado de API; el flujo (paso, selección) vive en la página.
+/**
+ * Único hook del portal, para las dos superficies: el escaparate sin sesión y el
+ * área del cliente. Son la misma feature —el cliente entra desde el escaparate y
+ * vuelve a él— y separarlas obligaría a la página a orquestar dos hooks que
+ * comparten la barbería.
+ *
+ * Solo estado de API. El paso del flujo, la selección y los modales viven en la
+ * página, que es el padre.
+ */
 export function usePortal() {
   const [barberia, setBarberia] = useState<BarberiaPortal | null>(null)
   const [servicios, setServicios] = useState<ServicioPortal[]>([])
   const [barberos, setBarberos] = useState<BarberoPortal[]>([])
   const [agenda, setAgenda] = useState<DiaAgenda[]>([])
-  const [reserva, setReserva] = useState<ReservaConfirmada | null>(null)
-  const [citas, setCitas] = useState<CitaCliente[]>([])
-  const [cliente, setCliente] = useState<ClientePortal | null>(null)
+  const [reserva, setReserva] = useState<Cita | null>(null)
+  const [sesion, setSesion] = useState<SesionCliente | null>(null)
+  const [citas, setCitas] = useState<Cita[]>([])
+  const [perfil, setPerfil] = useState<Cliente | null>(null)
+  const [consentimientos, setConsentimientos] = useState<Consentimientos | null>(null)
+  const [fidelidad, setFidelidad] = useState<FidelidadPortal | null>(null)
+  const [promociones, setPromociones] = useState<PromocionPortal[]>([])
   const [loadingPortal, setLoadingPortal] = useState(false)
   const [loadingAgenda, setLoadingAgenda] = useState(false)
   const [loadingCitas, setLoadingCitas] = useState(false)
   const [loadingAction, setLoadingAction] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  /**
+   * Ficha, carta y equipo en una sola carga: el escaparate no sirve de nada a
+   * medio pintar, y son tres lecturas cacheables de la misma barbería.
+   *
+   * Un 404 aquí significa que esa dirección no tiene escaparate —no existe, está
+   * suspendida o no verificó su correo—, y la página lo trata como "no encontrada".
+   */
   const fetchPortal = useCallback(async (slug: string) => {
     setLoadingPortal(true)
     setError(null)
     try {
       const [resBarberia, resServicios, resBarberos] = await Promise.all([
         portalService.obtenerBarberia(slug),
-        portalService.obtenerServicios(),
-        portalService.obtenerBarberos(),
+        portalService.obtenerServicios(slug),
+        portalService.obtenerBarberos(slug),
       ])
       setBarberia(resBarberia.data)
       setServicios(resServicios.data)
@@ -53,89 +76,202 @@ export function usePortal() {
     }
   }, [])
 
-  const fetchAgenda = useCallback(async (servicioIds: number[], barberoId: number) => {
-    setLoadingAgenda(true)
-    setError(null)
-    try {
-      const res = await portalService.obtenerAgenda(servicioIds, barberoId)
-      setAgenda(res.data)
-    } catch (err) {
-      setError(getErrorMessage(err))
-    } finally {
-      setLoadingAgenda(false)
-    }
-  }, [])
+  /**
+   * Los huecos de un servicio y (opcionalmente) un barbero. Las franjas **no
+   * apartan nada**: si al reservar hay 409, se vuelve a pedir esto.
+   */
+  const fetchAgenda = useCallback(
+    async (
+      slug: string,
+      consulta: {
+        sedeId: string
+        ofertaIds: string[]
+        barberoId?: string
+        desde: string
+        dias?: number
+      }
+    ) => {
+      setLoadingAgenda(true)
+      setError(null)
+      try {
+        const res = await portalService.obtenerDisponibilidad(slug, consulta)
+        setAgenda(res.data.dias)
+      } catch (err) {
+        setError(getErrorMessage(err))
+      } finally {
+        setLoadingAgenda(false)
+      }
+    },
+    []
+  )
 
-  const handleSolicitarCodigoPortal = useCallback(async (payload: DatosAcceso): Promise<string> => {
+  const handleSolicitarCodigoPortal = useCallback(
+    async (slug: string, telefonoE164: string): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await portalService.solicitarCodigo(slug, { telefonoE164 })
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  /** Verificar es entrar: la cookie la deja la api y aquí solo se guarda quién es. */
+  const handleVerificarCodigoPortal = useCallback(
+    async (slug: string, payload: DatosVerificarCodigo): Promise<SesionCliente> => {
+      setLoadingAction(true)
+      try {
+        const res = await portalService.verificarCodigo(slug, payload)
+        setSesion(res.data)
+        return res.data
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  const handleReservarPortal = useCallback(async (payload: DatosReserva): Promise<string> => {
     setLoadingAction(true)
     try {
-      const res = await portalService.solicitarCodigo(payload)
+      const res = await portalService.reservar(payload)
+      setReserva(res.data)
       return res.message
     } catch (err) {
-      setError(getErrorMessage(err))
-      throw err
+      throw new Error(getErrorMessage(err))
     } finally {
       setLoadingAction(false)
     }
   }, [])
 
-  const handleConfirmarReservaPortal = useCallback(
-    async (payload: DatosReserva, codigo: DatosCodigo): Promise<string> => {
-      setLoadingAction(true)
-      try {
-        const res = await portalService.confirmarReserva(payload, codigo)
-        setReserva(res.data)
-        return res.message
-      } catch (err) {
-        setError(getErrorMessage(err))
-        throw err
-      } finally {
-        setLoadingAction(false)
-      }
-    },
-    []
-  )
-
-  const handleRegistrarClientePortal = useCallback(
-    async (payload: DatosRegistro): Promise<string> => {
-      setLoadingAction(true)
-      try {
-        const res = await portalService.registrarCliente(payload)
-        setCliente(res.data)
-        return res.message
-      } catch (err) {
-        setError(getErrorMessage(err))
-        throw err
-      } finally {
-        setLoadingAction(false)
-      }
-    },
-    []
-  )
-
-  // Consulta con cuerpo (el teléfono verificado) — es lectura, no mutación.
-  const fetchCitasCliente = useCallback(async (payload: DatosAcceso) => {
+  /**
+   * Sus citas. Sin sesión responde 401, y eso NO es un error que enseñar: es la
+   * respuesta normal de quien todavía no ha entrado, así que la página pide el
+   * código en vez de pintar un fallo.
+   */
+  const fetchMisCitas = useCallback(async (filtros: FiltrosCitasCliente = {}) => {
     setLoadingCitas(true)
     setError(null)
     try {
-      const res = await portalService.obtenerCitasCliente(payload)
+      const res = await portalService.obtenerMisCitas({ ...filtros, paginar: false })
       setCitas(res.data)
+      return true
     } catch (err) {
       setError(getErrorMessage(err))
-      throw err
+      return false
     } finally {
       setLoadingCitas(false)
     }
   }, [])
 
-  const handleCancelarCitaPortal = useCallback(async (id: number): Promise<string> => {
-    setLoadingAction(true)
+  const fetchMiPerfil = useCallback(async () => {
+    setLoadingCitas(true)
+    setError(null)
     try {
-      const res = await portalService.cancelarCitaCliente(id)
-      return res.message
+      const [resPerfil, resConsentimientos] = await Promise.all([
+        portalService.obtenerMiPerfil(),
+        portalService.obtenerMisConsentimientos(),
+      ])
+      setPerfil(resPerfil.data)
+      setConsentimientos(resConsentimientos.data)
+      return true
     } catch (err) {
       setError(getErrorMessage(err))
-      throw err
+      return false
+    } finally {
+      setLoadingCitas(false)
+    }
+  }, [])
+
+  const fetchFidelidad = useCallback(async () => {
+    setLoadingCitas(true)
+    setError(null)
+    try {
+      const [resFidelidad, resPromociones] = await Promise.all([
+        portalService.obtenerFidelidad(),
+        portalService.obtenerPromociones(),
+      ])
+      setFidelidad(resFidelidad.data)
+      setPromociones(resPromociones.data)
+      return true
+    } catch (err) {
+      setError(getErrorMessage(err))
+      return false
+    } finally {
+      setLoadingCitas(false)
+    }
+  }, [])
+
+  const handleCancelarCitaPortal = useCallback(async (citaId: string): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await portalService.cancelarCita(citaId)
+      return res.message
+    } catch (err) {
+      throw new Error(getErrorMessage(err))
+    } finally {
+      setLoadingAction(false)
+    }
+  }, [])
+
+  const handleReagendarCitaPortal = useCallback(
+    async (citaId: string, payload: DatosReagendar): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await portalService.reagendarCita(citaId, payload)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  const handleCalificarCitaPortal = useCallback(
+    async (citaId: string, payload: DatosCalificar): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await portalService.calificarCita(citaId, payload)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  const handleGuardarPreferenciaPortal = useCallback(
+    async (payload: DatosPreferencia): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await portalService.guardarPreferencia(payload)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  const handleCanjearPremioPortal = useCallback(async (premioId: string): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await portalService.canjearPremio({ premioId })
+      return res.message
+    } catch (err) {
+      throw new Error(getErrorMessage(err))
     } finally {
       setLoadingAction(false)
     }
@@ -147,8 +283,12 @@ export function usePortal() {
     barberos,
     agenda,
     reserva,
+    sesion,
     citas,
-    cliente,
+    perfil,
+    consentimientos,
+    fidelidad,
+    promociones,
     loadingPortal,
     loadingAgenda,
     loadingCitas,
@@ -156,10 +296,16 @@ export function usePortal() {
     error,
     fetchPortal,
     fetchAgenda,
-    fetchCitasCliente,
+    fetchMisCitas,
+    fetchMiPerfil,
+    fetchFidelidad,
     handleSolicitarCodigoPortal,
-    handleRegistrarClientePortal,
-    handleConfirmarReservaPortal,
+    handleVerificarCodigoPortal,
+    handleReservarPortal,
     handleCancelarCitaPortal,
+    handleReagendarCitaPortal,
+    handleCalificarCitaPortal,
+    handleGuardarPreferenciaPortal,
+    handleCanjearPremioPortal,
   }
 }

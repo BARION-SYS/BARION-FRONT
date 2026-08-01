@@ -1,29 +1,32 @@
 "use client"
 
 import Link from "next/link"
-import { CalendarCheck, ChevronLeft, UserPlus } from "lucide-react"
+import { CalendarCheck, ChevronLeft } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { cn } from "@shared/utils/cn"
+import { inicialesDe } from "@features/portal/utils/formato"
 
 interface PortalCabeceraNavProps {
   nombre: string
-  iniciales: string
+  /** Ya resuelto por la api en la zona de la SEDE: aquí no se calcula nada. */
   abiertoAhora: boolean
   horarioHoy: string
-  hrefRegistro?: string
   hrefCitas?: string
   hrefVolver?: string
 }
 
-// Barra superior del portal público — misma en reservar, registro y "Mis citas".
+/**
+ * Barra superior del portal público — la misma al reservar y en «Mis citas».
+ *
+ * **Ya no hay «Crear perfil»**: el registro es el propio código de verificación, y
+ * un botón aparte llevaría a un formulario que no existe.
+ */
 export function PortalCabeceraNav({
   nombre,
-  iniciales,
   abiertoAhora,
   horarioHoy,
-  hrefRegistro,
   hrefCitas,
   hrefVolver,
 }: PortalCabeceraNavProps) {
@@ -33,7 +36,6 @@ export function PortalCabeceraNav({
         {hrefVolver && (
           <Button
             render={<Link href={hrefVolver} />}
-            nativeButton={false}
             variant="ghost"
             size="icon"
             aria-label="Volver al portal"
@@ -42,7 +44,7 @@ export function PortalCabeceraNav({
           </Button>
         )}
 
-        <InitialsAvatar iniciales={iniciales} tamano="sm" />
+        <InitialsAvatar iniciales={inicialesDe(nombre)} tamano="sm" />
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-foreground">{nombre}</p>
@@ -62,23 +64,9 @@ export function PortalCabeceraNav({
 
         <ThemeToggle />
 
-        {hrefRegistro && (
-          <Button
-            render={<Link href={hrefRegistro} />}
-            nativeButton={false}
-            variant="ghost"
-            className="h-9 gap-1.5 px-2 sm:px-3"
-          >
-            <UserPlus aria-hidden />
-            <span className="hidden text-xs font-semibold sm:inline">Crear perfil</span>
-            <span className="sr-only sm:hidden">Crear perfil</span>
-          </Button>
-        )}
-
         {hrefCitas && (
           <Button
             render={<Link href={hrefCitas} />}
-            nativeButton={false}
             variant="outline"
             className="h-9 gap-1.5 px-2 sm:px-3"
           >

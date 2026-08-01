@@ -1,122 +1,222 @@
-import type { EstadoCita } from "@features/citas/types/citas.types"
-import type { EtiquetaCliente } from "@features/clientes/types/clientes.types"
+// Tipos ESPEJO del contrato de la API (`/publico/**` y `/mi/**`), mantenidos a
+// mano contra su Swagger — no se comparte código entre repos.
+//
+// Dos cosas que cambian respecto del mock y afectan a todo el feat:
+//
+//  · **Los ids son uuid**, no números. `id: 0` como "cualquiera disponible"
+//    desaparece: es `barberoId: null`, que es lo que significa.
+//  · **El dinero son centavos como cadena** + su moneda. Nunca un número suelto:
+//    en COP un entero de 32 bits se desborda.
+//
+// La cita del cliente es la MISMA que la del panel, así que se importa de `citas`,
+// que es su feat dueño. Duplicar el tipo garantizaría que un día divergieran.
+import type { Cita, DiaAgenda, EstadoCita } from "@features/citas/types/citas.types"
 
-/** Horario de apertura de un día, hora local de la sede (HH:mm). */
-export interface HorarioPortal {
-  dia: string
-  abierto: boolean
-  apertura: string
-  cierre: string
-}
+export type { Cita, DiaAgenda, EstadoCita }
 
-/** Ficha pública de la barbería que se muestra en /b/[slug]. */
-export interface BarberiaPortal {
-  slug: string
-  nombre: string
-  eslogan: string
-  descripcion: string
-  iniciales: string
-  direccion: string
-  ciudad: string
-  telefono: string
-  calificacion: number
-  resenas: number
-  /** Color primario del tenant (hex) — el portal lo aplica al montar */
-  colorMarca: string
-  /** Color de fondo del tenant (hex) */
-  colorFondo: string
-  abiertoAhora: boolean
-  /** Horario de hoy ya resumido, ej. "09:00 – 20:00" */
-  horarioHoy: string
-  horarios: HorarioPortal[]
-  ventajas: string[]
-}
-
-export interface ServicioPortal {
-  id: number
-  nombre: string
-  descripcion: string
-  /** Precio en unidad menor de la moneda del tenant */
-  precio: number
-  duracionMin: number
-  popular?: boolean
-}
-
-/** Barbero elegible en el portal. `id: 0` = cualquiera disponible. */
-export interface BarberoPortal {
-  id: number
-  nombre: string
-  rol: string
-  iniciales: string
-  /** Token de gráfica, ej. `var(--chart-1)` */
-  color: string
-  calificacion: number
-  resenas: number
-  especialidades: string[]
-  /** Próximo cupo ya resumido, ej. "Hoy 15:30" */
-  proximoCupo: string
-}
-
-export interface FranjaAgenda {
-  /** Inicio de la franja en UTC (ISO 8601) */
-  inicio: string
-  disponible: boolean
-}
-
-export interface DiaAgenda {
-  /** Medianoche local de la sede, expresada en UTC (ISO 8601) */
-  fecha: string
-  cupos: number
-  franjas: FranjaAgenda[]
-}
-
-/** Pasos del flujo público de reserva. */
-export type PasoReserva = "servicio" | "barbero" | "agenda" | "datos" | "codigo" | "listo"
-
-/** Una línea de la reserva: N servicios por cita, no uno — cada uno con su precio y duración. */
-export interface LineaServicioPortal {
-  servicioId: number
-  nombre: string
-  precio: number
-  duracionMin: number
-}
-
-export interface ReservaConfirmada {
-  codigo: string
-  /** Inicio de la cita en UTC (ISO 8601) */
-  inicio: string
-  lineasServicio: LineaServicioPortal[]
-  barbero: string
-  cliente: string
-}
-
-/** Cita del cliente en su área "Mis citas" — reusa los estados del feat citas. */
-export interface CitaCliente {
-  id: number
-  codigo: string
-  inicio: string
-  lineasServicio: LineaServicioPortal[]
-  barbero: string
-  estado: EstadoCita
+/** Un tramo del horario comercial, en hora local de SU sede. */
+export interface TramoHorario {
+  /** 0 domingo … 6 sábado. */
+  diaSemana: number
+  abre: string
+  cierra: string
 }
 
 /**
- * Cliente registrado en la barbería desde el portal. El alta pública es la que
- * alimenta el módulo de clientes del panel: sin ella el dashboard no tiene base.
+ * Una sede del escaparate. `abiertoAhora` lo resuelve la API en la zona de ESTA
+ * sede: calcularlo en el navegador acabaría mintiendo en el huso que no es el suyo.
  */
-export interface ClientePortal {
-  id: number
+export interface SedePortal {
+  id: string
   nombre: string
-  iniciales: string
-  telefono: string
-  correo?: string
-  barberoFavorito?: string
-  etiqueta: EtiquetaCliente
-  /** Fecha de alta en UTC (ISO 8601) */
-  desde: string
+  zonaHoraria: string
+  direccion: Record<string, unknown> | null
+  horario: TramoHorario[]
+  abiertoAhora: boolean
 }
 
-/** Filtros del listado de citas del cliente. */
+export interface FichaBarberia {
+  eslogan: string | null
+  descripcion: string | null
+  ventajas: string[]
+}
+
+export interface MarcaBarberia {
+  colorMarca: string | null
+  colorFondo: string | null
+  logoUrl: string | null
+  actualizadaEn: string | null
+}
+
+/** Lo que devuelve `GET /publico/barberias/:slug`. */
+export interface BarberiaPortal {
+  id: string
+  slug: string
+  nombreComercial: string
+  pais: string
+  moneda: string
+  locale: string
+  ficha: FichaBarberia
+  marca: MarcaBarberia
+  sedes: SedePortal[]
+}
+
+/**
+ * Un servicio de la carta. `precioDesdeCentavos` es de REFERENCIA: lo que se
+ * cobra es el precio de la oferta del barbero que atienda.
+ */
+export interface ServicioPortal {
+  id: string
+  nombre: string
+  descripcion: string | null
+  categoria: string | null
+  imagenUrl: string | null
+  precioDesdeCentavos: string | null
+  moneda: string
+  duracionMin: number
+  destacado: boolean
+}
+
+/** Lo que ESE barbero cobra por ESE servicio: es lo que se reserva de verdad. */
+export interface OfertaPortal {
+  id: string
+  servicioId: string
+  nombre: string
+  categoria: string | null
+  precioCentavos: string
+  moneda: string
+  duracionMin: number
+}
+
+export interface BarberoPortal {
+  id: string
+  nombrePublico: string
+  slug: string | null
+  avatarUrl: string | null
+  titulo: string | null
+  bio: string | null
+  /** Índice del token `--chart-N`, no un hex: la paleta se re-tiñe con la marca. */
+  indiceColor: number
+  calificacion: number | null
+  resenas: number
+  sedeId: string | null
+  enVacaciones: boolean
+  oferta: OfertaPortal[]
+}
+
+/** Lo que devuelve `GET /publico/barberias/:slug/disponibilidad`. */
+export interface DisponibilidadPortal {
+  sedeId: string
+  zonaHoraria: string
+  duracionMin: number
+  /** Limpieza: entra en el hueco y NO se le enseña al cliente. */
+  bufferMin: number
+  dias: DiaAgenda[]
+}
+
+/** Seguimiento por código, sin sesión. Corto a propósito: un enlace se reenvía. */
+export interface SeguimientoPortal {
+  codigoSeguimiento: string
+  estado: EstadoCita
+  iniciaEn: string
+  terminaEn: string
+  barbero: { nombrePublico: string } | null
+  cliente: { nombre: string } | null
+  servicios: { nombre: string; duracionMin: number }[]
+  precioCentavos: string
+  moneda: string
+  canceladaEn: string | null
+}
+
+/** Pasos del flujo público de reserva. El OTP es el paso `codigo`. */
+export type PasoReserva = "servicio" | "barbero" | "agenda" | "datos" | "codigo" | "listo"
+
+export interface CodigoEmitido {
+  enviado: boolean
+  venceEn: string
+  canal: "telefono" | "email"
+}
+
+/**
+ * Lo que devuelve verificar el código. La sesión vive en la cookie httpOnly: esto
+ * es solo lo que la pantalla necesita saber de quién entró.
+ */
+export interface SesionCliente {
+  barberiaId: string
+  clienteId: string
+  nombre: string
+  /** `true` si lo que se acaba de probar fue su teléfono. */
+  telefonoVerificado: boolean
+  /** `true` = era su primera vez y quedó registrado. */
+  registrado: boolean
+}
+
+export interface MovimientoFidelidad {
+  id: string
+  /** acumulacion | canje | caducidad | ajuste */
+  tipo: string
+  puntos: number
+  motivo: string | null
+  venceEn: string | null
+  creadoEn: string
+}
+
+export interface PremioPortal {
+  id: string
+  nombre: string
+  descripcion: string | null
+  costoPuntos: number
+  /** servicio_gratis | descuento_monto | descuento_porcentaje | regalo */
+  tipo: string
+  descuentoCentavos: string | null
+  descuentoBps: number | null
+  /** `null` = sin límite de existencias. */
+  stock: number | null
+  /** Si con su saldo ya puede pedirlo. Lo resuelve la API, no el front. */
+  alcanzable: boolean
+}
+
+export interface CanjePortal {
+  id: string
+  premioId: string
+  premioNombre: string
+  puntosGastados: number
+  /** pendiente | aplicado | cancelado | vencido */
+  estado: string
+  /** Lo que enseña en el sillón. */
+  codigo: string | null
+  venceEn: string | null
+  creadoEn: string
+}
+
+/** `programa: null` = esa barbería no tiene fidelización. Es lo normal al empezar. */
+export interface FidelidadPortal {
+  programa: { id: string; nombre: string } | null
+  saldoPuntos: number
+  puntosHistoricos: number
+  movimientos: MovimientoFidelidad[]
+  premios: PremioPortal[]
+  canjes: CanjePortal[]
+}
+
+export interface PromocionPortal {
+  id: string
+  codigo: string
+  nombre: string
+  /** porcentaje | monto | servicio_gratis */
+  tipo: string
+  descuentoBps: number | null
+  descuentoCentavos: string | null
+  moneda: string | null
+  terminaEn: string | null
+}
+
+/** Filtros de las citas del cliente. Su id sale del token, nunca de la query. */
 export interface FiltrosCitasCliente {
-  telefono: string
+  desde?: string
+  hasta?: string
+  estado?: EstadoCita
+  paginar?: boolean
+  page?: number
+  limit?: number
 }

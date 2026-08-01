@@ -2,33 +2,50 @@
 
 import { CalendarX2 } from "lucide-react"
 import { Loadable } from "@shared/components/feedback/Loadable"
-import { useFormato } from "@shared/hooks/useFormato"
 import { cn } from "@shared/utils/cn"
+import {
+  diaCortoDeFecha,
+  diaSemanaDeFecha,
+  horaDe,
+  type ContextoFormato,
+} from "@features/portal/utils/formato"
 import type { DiaAgenda } from "@features/portal/types/portal.types"
 
 interface PortalAgendaListProps {
   agenda: DiaAgenda[]
-  /** Fecha (ISO) del día abierto en la tira de días */
+  /** Día abierto en la tira: `YYYY-MM-DD` local de la sede, no un instante. */
   fechaDia: string | null
-  /** Franja elegida (ISO en UTC) */
+  /** Franja elegida: instante UTC. */
   inicio: string | null
+  /** Hoy en la sede, para etiquetar el primer día sin comparar husos en el render. */
+  hoy: string
   loading: boolean
+  formato: ContextoFormato
   onSeleccionarDia: (fecha: string) => void
   onSeleccionarFranja: (inicio: string) => void
 }
 
-// Paso 3: días con cupo (tira horizontal) + franjas del día abierto.
+/**
+ * Paso 3: días con cupo y franjas del día abierto.
+ *
+ * **La fecha del día es local de la sede y la franja es un instante UTC**: son dos
+ * cosas distintas y por eso se formatean distinto. Tratar la fecha como instante la
+ * correría un día entero en cuanto la sede esté al oeste de UTC.
+ *
+ * Las franjas **no apartan nada**: si al reservar la api responde 409, se vuelve a
+ * consultar en vez de reintentar.
+ */
 export function PortalAgendaList({
   agenda,
   fechaDia,
   inicio,
+  hoy,
   loading,
+  formato,
   onSeleccionarDia,
   onSeleccionarFranja,
 }: PortalAgendaListProps) {
-  const { hora, fechaCorta, diaSemanaCorto } = useFormato()
-  const hoy = fechaCorta(new Date())
-  const dia = agenda.find((d) => d.fecha === fechaDia) ?? agenda[0]
+  const dia = agenda.find((candidato) => candidato.fecha === fechaDia) ?? agenda[0]
   const franjas = dia?.franjas.filter((franja) => franja.disponible) ?? []
 
   return (
@@ -56,9 +73,7 @@ export function PortalAgendaList({
                   )}
                 >
                   <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-                    {fechaCorta(diaAgenda.fecha) === hoy
-                      ? "Hoy"
-                      : diaSemanaCorto(diaAgenda.fecha).replace(".", "")}
+                    {diaAgenda.fecha === hoy ? "Hoy" : diaSemanaDeFecha(diaAgenda.fecha)}
                   </span>
                   <span
                     className={cn(
@@ -66,10 +81,10 @@ export function PortalAgendaList({
                       activo ? "text-primary" : "text-foreground"
                     )}
                   >
-                    {fechaCorta(diaAgenda.fecha)}
+                    {diaCortoDeFecha(diaAgenda.fecha)}
                   </span>
                   <span className="text-[10px] text-muted-foreground tabular-nums">
-                    {sinCupos ? "Cerrado" : `${diaAgenda.cupos} cupos`}
+                    {sinCupos ? "Sin cupo" : `${diaAgenda.cupos} cupos`}
                   </span>
                 </button>
               </li>
@@ -82,7 +97,7 @@ export function PortalAgendaList({
             <CalendarX2 className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden />
             <p className="mt-2 text-sm font-medium text-foreground">Sin cupos este día</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Elige otro día en la tira de arriba — se actualiza en tiempo real.
+              Elige otro día en la tira de arriba.
             </p>
           </div>
         ) : (
@@ -103,7 +118,7 @@ export function PortalAgendaList({
                         : "border-border bg-card text-foreground hover:border-primary/40"
                     )}
                   >
-                    {hora(franja.inicio)}
+                    {horaDe(franja.inicio, formato)}
                   </button>
                 </li>
               )

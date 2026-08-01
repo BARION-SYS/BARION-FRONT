@@ -1,6 +1,10 @@
 // Tipos ESPEJO del contrato de la API (`/equipo`).
 
-export type EstadoMembresia = "invitada" | "activa" | "revocada"
+/**
+ * Dos estados y ninguno intermedio: no existe la invitación. Si alguien de
+ * dentro está creando la cuenta es porque esa persona va a entrar.
+ */
+export type EstadoMembresia = "activa" | "revocada"
 
 export interface UsuarioResumen {
   id: string
@@ -28,9 +32,25 @@ export interface Miembro {
   rol: string
   sedeId: string | null
   estado: EstadoMembresia
-  /** Instantes UTC ISO-8601. */
-  invitadaEn: string
-  aceptadaEn: string | null
+  /** Instantes UTC ISO-8601: desde cuándo tiene acceso y cuándo se le quitó. */
+  creadaEn: string
+  revocadaEn: string | null
+}
+
+/**
+ * Lo que devuelve el alta.
+ *
+ * `contrasenaInicial` llega UNA sola vez y solo cuando el sistema la puso: se
+ * guarda hasheada y no hay endpoint que la consulte después. Si esa persona ya
+ * tenía cuenta en Barion viene nula y `cuentaExistente` explica por qué — entra
+ * con la suya, que nadie de esta barbería puede cambiar.
+ */
+export interface AltaMiembro {
+  miembro: Miembro
+  /** La ficha que se abrió si atiende; `null` si solo administra. */
+  barberoId: string | null
+  contrasenaInicial: string | null
+  cuentaExistente: boolean
 }
 
 export interface FiltrosEquipo {

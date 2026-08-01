@@ -1,10 +1,12 @@
 import { api } from "@lib/http/instances"
 import { omitEmpty } from "@shared/utils/params"
 import {
+  esquemaAtiendoYo,
   esquemaAusencia,
   esquemaBarbero,
   esquemaExcepcion,
   esquemaJornada,
+  type DatosAtiendoYo,
   type DatosAusencia,
   type DatosBarbero,
   type DatosExcepcion,
@@ -32,6 +34,23 @@ export const barberosService = {
    */
   async obtenerMiPerfil(): Promise<ApiResult<Barbero | null>> {
     return api.get<Barbero | null>("/barberos/mio")
+  },
+
+  /**
+   * «Yo también atiendo». Abre la ficha de quien está en sesión: el propietario
+   * que corta no puede darse de alta por Equipo —su membresía ya existe— ni
+   * vincularse desde `POST /barberos`, que no acepta la membresía.
+   *
+   * Repetirlo no crea una segunda ficha: la API reactiva la que ya tenía.
+   */
+  async atenderYo(payload: DatosAtiendoYo): Promise<ApiResult<Barbero>> {
+    const validos = esquemaAtiendoYo.parse(payload)
+    return api.post<Barbero>("/barberos/mio", omitEmpty({ ...validos }))
+  },
+
+  /** Deja de atender sin perder la ficha: no cancela las citas que ya tenga. */
+  async dejarDeAtender(): Promise<ApiResult<Barbero>> {
+    return api.delete<Barbero>("/barberos/mio")
   },
 
   async crearBarbero(payload: DatosBarbero): Promise<ApiResult<Barbero>> {

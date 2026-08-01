@@ -25,7 +25,7 @@ const BPS_POR_PUNTO = 100
  *
  * El título es de **vitrina** ("Barbero Senior"), no el rol de autorización: lo
  * lee el cliente al reservar y no abre ni cierra ninguna pantalla. Quién entra al
- * sistema y con qué capacidades se decide en Equipo.
+ * sistema y con qué capacidades se decide en Personas › Acceso.
  *
  * No se pide el color: lo asigna la api con el índice menos usado de la
  * barbería. Obligar a elegirlo sería pedirle a alguien que lleve la cuenta de
@@ -139,8 +139,8 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
 
       {!editando && (
         <p className="rounded-lg border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
-          Se crea sin cuenta: aparece en la agenda y liquida comisiones, pero no entra a la
-          aplicación. Para darle acceso, invítalo desde Equipo.
+          Se crea sin cuenta: aparece en la agenda y liquida comisiones, pero no inicia sesión.
+          Darle acceso es la otra pregunta del alta, en Personas › Acceso.
         </p>
       )}
 

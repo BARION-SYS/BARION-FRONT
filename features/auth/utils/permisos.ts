@@ -7,7 +7,7 @@ import type { Sesion } from "@features/auth/types/auth.types"
  * y jamás `sesion.rol?.codigo === "propietario"`. Los roles son fijos, pero lo
  * que puede una persona no sale solo de su rol: encima van sus concesiones y sus
  * revocaciones. Comparar el código dejaría fuera al administrador al que le
- * quitaron algo y al recepcionista al que le dieron de más.
+ * quitaron algo y a quien atiende el mostrador y recibió una capacidad de más.
  *
  * Ocultar un botón NO es seguridad: la API vuelve a comprobar el permiso en cada
  * petición y es ella quien manda. Esto solo evita ofrecer acciones que van a

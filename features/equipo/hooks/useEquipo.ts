@@ -3,8 +3,8 @@
 import { useCallback, useState } from "react"
 import { equipoService } from "@features/equipo/services/equipo.service"
 import { getErrorMessage } from "@shared/utils/error"
-import type { DatosCambioRol, DatosInvitacion } from "@features/equipo/schemas/equipo.schema"
-import type { FiltrosEquipo, Miembro } from "@features/equipo/types/equipo.types"
+import type { DatosAltaMiembro, DatosCambioRol } from "@features/equipo/schemas/equipo.schema"
+import type { AltaMiembro, FiltrosEquipo, Miembro } from "@features/equipo/types/equipo.types"
 
 export function useEquipo() {
   const [miembros, setMiembros] = useState<Miembro[]>([])
@@ -25,17 +25,41 @@ export function useEquipo() {
     }
   }, [])
 
-  const handleInviteMiembro = useCallback(async (payload: DatosInvitacion): Promise<string> => {
-    setLoadingAction(true)
-    try {
-      const res = await equipoService.invitarMiembro(payload)
-      return res.message
-    } catch (err) {
-      throw new Error(getErrorMessage(err))
-    } finally {
-      setLoadingAction(false)
-    }
-  }, [])
+  /**
+   * Devuelve el alta ENTERA y no solo el mensaje, a diferencia del resto de
+   * mutaciones: la contraseña inicial viaja ahí y viaja una sola vez. Perderla
+   * aquí obligaría a regenerarla antes de que nadie la haya usado.
+   */
+  const handleCreateMiembro = useCallback(
+    async (payload: DatosAltaMiembro): Promise<AltaMiembro> => {
+      setLoadingAction(true)
+      try {
+        const res = await equipoService.crearMiembro(payload)
+        return res.data
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  /** Misma razón: lo que hay que enseñar es la contraseña, no el mensaje. */
+  const handleRegenerateContrasenaMiembro = useCallback(
+    async (membresiaId: string): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await equipoService.regenerarContrasena(membresiaId)
+        return res.data.contrasenaInicial
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
 
   const handleChangeRolMiembro = useCallback(
     async (membresiaId: string, payload: DatosCambioRol): Promise<string> => {
@@ -70,7 +94,8 @@ export function useEquipo() {
     loadingAction,
     error,
     fetchMiembros,
-    handleInviteMiembro,
+    handleCreateMiembro,
+    handleRegenerateContrasenaMiembro,
     handleChangeRolMiembro,
     handleRevokeMiembro,
   }

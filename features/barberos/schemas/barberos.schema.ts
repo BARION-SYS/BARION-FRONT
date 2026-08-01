@@ -29,6 +29,21 @@ export const esquemaBarbero = z.object({
 
 export type DatosBarbero = z.infer<typeof esquemaBarbero>
 
+/**
+ * «Yo también atiendo»: quien ya entra al sistema se abre su propia ficha.
+ *
+ * No lleva `membresiaId` — la de la sesión es la única que la API acepta ahí — ni
+ * contacto: para quien tiene cuenta, el teléfono y el correo se leen de la suya.
+ */
+export const esquemaAtiendoYo = z.object({
+  nombrePublico: z.string().min(2, "Mínimo 2 caracteres").max(120, "Máximo 120"),
+  titulo: z.string().max(120, "Máximo 120").optional(),
+  comisionBps: z.number().int().min(0).max(MAX_COMISION_BPS).optional(),
+  sedeId: z.uuid().optional(),
+})
+
+export type DatosAtiendoYo = z.infer<typeof esquemaAtiendoYo>
+
 const tramo = z.object({
   diaSemana: z.number().int().min(0).max(6),
   inicio: z.string().regex(HORA, "Formato HH:mm"),

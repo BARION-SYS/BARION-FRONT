@@ -12,7 +12,9 @@ import { useAuthStore } from "@store/auth.store"
 import { puede } from "@features/auth/utils/permisos"
 import { useCatalogos } from "@features/catalogos/hooks/useCatalogos"
 import { useBarberos } from "@features/barberos/hooks/useBarberos"
+import { useServicios } from "@features/servicios/hooks/useServicios"
 import { useSedeActual } from "@store/sede.store"
+import { ServiciosOfertaForm } from "@features/servicios/components/ServiciosOfertaForm"
 import { BarberosAusenciaForm } from "@features/barberos/components/BarberosAusenciaForm"
 import { BarberosAusenciasList } from "@features/barberos/components/BarberosAusenciasList"
 import { BarberosCard } from "@features/barberos/components/BarberosCard"
@@ -26,16 +28,18 @@ import type {
   DatosBarbero,
   DatosExcepcion,
 } from "@features/barberos/schemas/barberos.schema"
+import type { DatosOferta } from "@features/servicios/schemas/servicios.schema"
 import type { Ausencia, Barbero, ExcepcionJornada } from "@features/barberos/types/barberos.types"
 
 /**
  * Quién ATIENDE, y cuándo.
  *
- * No confundir con Equipo, que es quién ENTRA al sistema: el barbero sin cuenta
- * existe aquí y no allá. Por eso el alta no pide credenciales — dar acceso es
- * otra decisión, y se toma en Equipo.
+ * Segunda vista de Personas. Aquí está también el barbero que no usa la
+ * aplicación —existe en la agenda y no en Acceso—, y por eso el alta de esta
+ * pantalla no pide credenciales: quien además entra se da de alta en Acceso, que
+ * resuelve cuenta y ficha en una sola operación.
  */
-export default function BarberosPage() {
+export default function PersonasBarberosPage() {
   const {
     barberos,
     jornada,
@@ -59,6 +63,22 @@ export default function BarberosPage() {
   } = useBarberos()
 
   const { catalogos, fetchCatalogos } = useCatalogos()
+
+  /**
+   * La oferta es del catálogo, no de personal: el precio es de un SERVICIO. Se
+   * edita aquí porque es donde se administra a la persona, y la mutación vive en
+   * esta página, que es el padre.
+   */
+  const {
+    servicios,
+    oferta,
+    loadingOferta,
+    loadingAction: guardandoOferta,
+    fetchServicios,
+    fetchOferta,
+    handleReplaceOferta,
+  } = useServicios()
+
   const sedeActual = useSedeActual()
 
   /**
@@ -73,6 +93,7 @@ export default function BarberosPage() {
   const [creando, setCreando] = useState(false)
   const [barberoEnEdicion, setBarberoEnEdicion] = useState<Barbero | null>(null)
   const [barberoEnDisponibilidad, setBarberoEnDisponibilidad] = useState<Barbero | null>(null)
+  const [barberoEnOferta, setBarberoEnOferta] = useState<Barbero | null>(null)
   const [creandoAusencia, setCreandoAusencia] = useState(false)
   const [excepcionEnEdicion, setExcepcionEnEdicion] = useState<ExcepcionJornada | null>(null)
   const [creandoExcepcion, setCreandoExcepcion] = useState(false)
@@ -134,6 +155,32 @@ export default function BarberosPage() {
     [fetchDisponibilidad]
   )
 
+  /**
+   * El catálogo se pide al abrir la oferta y no al cargar la pantalla: solo hace
+   * falta dentro del modal, y traerlo antes sería un viaje por cada visita a una
+   * lista donde casi nunca se toca la oferta.
+   */
+  const abrirOferta = useCallback(
+    (barbero: Barbero) => {
+      setBarberoEnOferta(barbero)
+      void fetchServicios({ paginar: false, soloActivos: true })
+      void fetchOferta(barbero.id)
+    },
+    [fetchServicios, fetchOferta]
+  )
+
+  const onGuardarOferta = useCallback(
+    async (datos: DatosOferta) => {
+      if (!barberoEnOferta) return
+      if (await conAviso(() => handleReplaceOferta(barberoEnOferta.id, datos))) {
+        setBarberoEnOferta(null)
+        // La tarjeta enseña qué ofrece: cambia con la oferta.
+        void recargarBarberos()
+      }
+    },
+    [barberoEnOferta, handleReplaceOferta, recargarBarberos] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
   const onGuardarJornada = useCallback(
     async (tramos: { diaSemana: number; inicio: string; fin: string }[]) => {
       if (!barberoEnDisponibilidad) return
@@ -191,7 +238,7 @@ export default function BarberosPage() {
   )
 
   return (
-    <main className="scroll-fino flex-1 overflow-y-auto p-4 sm:p-6">
+    <>
       {loadingLista && (
         <div className="flex flex-col gap-4 lg:flex-row">
           <DataSkeleton variant="list" count={3} className="shrink-0 lg:w-80" />
@@ -253,6 +300,7 @@ export default function BarberosPage() {
                 gestiona={gestiona}
                 onEditar={() => setBarberoEnEdicion(seleccionado)}
                 onDisponibilidad={() => abrirDisponibilidad(seleccionado)}
+                onOferta={() => abrirOferta(seleccionado)}
                 onAlternarActivo={() => void onAlternarActivo(seleccionado)}
               />
             </section>
@@ -269,7 +317,7 @@ export default function BarberosPage() {
           }
         }}
         titulo={barberoEnEdicion ? barberoEnEdicion.nombrePublico : "Nuevo barbero"}
-        descripcion="El perfil de quien atiende. Dar acceso al sistema se decide en Equipo."
+        descripcion="El perfil de quien atiende. Si además entra a la aplicación, dalo de alta en Acceso."
         size="lg"
       >
         <BarberosForm
@@ -364,6 +412,25 @@ export default function BarberosPage() {
       </Modal>
 
       <Modal
+        open={barberoEnOferta !== null}
+        onOpenChange={(abierto) => !abierto && setBarberoEnOferta(null)}
+        titulo={`Oferta de ${barberoEnOferta?.nombrePublico ?? ""}`}
+        descripcion="Qué hace, a qué precio y en cuánto tiempo. Es lo que el cliente reserva."
+        size="lg"
+      >
+        {barberoEnOferta && (
+          <ServiciosOfertaForm
+            key={barberoEnOferta.id}
+            servicios={servicios}
+            oferta={oferta}
+            cargando={guardandoOferta || loadingOferta}
+            soloLectura={!gestiona}
+            onSubmit={onGuardarOferta}
+          />
+        )}
+      </Modal>
+
+      <Modal
         open={creandoAusencia}
         onOpenChange={setCreandoAusencia}
         titulo="Programar ausencia"
@@ -396,6 +463,6 @@ export default function BarberosPage() {
           onSubmit={onGuardarExcepcion}
         />
       </Modal>
-    </main>
+    </>
   )
 }

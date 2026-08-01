@@ -1,12 +1,12 @@
 import { api } from "@lib/http/instances"
 import { omitEmpty } from "@shared/utils/params"
 import {
+  esquemaAltaMiembro,
   esquemaCambioRol,
-  esquemaInvitacion,
+  type DatosAltaMiembro,
   type DatosCambioRol,
-  type DatosInvitacion,
 } from "@features/equipo/schemas/equipo.schema"
-import type { FiltrosEquipo, Miembro } from "@features/equipo/types/equipo.types"
+import type { AltaMiembro, FiltrosEquipo, Miembro } from "@features/equipo/types/equipo.types"
 import type { ApiResult } from "@shared/types/api.types"
 
 export const equipoService = {
@@ -14,9 +14,25 @@ export const equipoService = {
     return api.get<Miembro[]>("/equipo", { params: omitEmpty({ ...filtros }) })
   },
 
-  async invitarMiembro(payload: DatosInvitacion): Promise<ApiResult<Miembro>> {
-    const validos = esquemaInvitacion.parse(payload)
-    return api.post<Miembro>("/equipo", validos)
+  /**
+   * Alta directa: nace lista para entrar. La respuesta trae la contraseña
+   * inicial UNA vez —no hay forma de volver a consultarla— y el identificador de
+   * la ficha de barbero si esa persona atiende.
+   */
+  async crearMiembro(payload: DatosAltaMiembro): Promise<ApiResult<AltaMiembro>> {
+    const validos = esquemaAltaMiembro.parse(payload)
+    return api.post<AltaMiembro>("/equipo", validos)
+  },
+
+  /**
+   * Volver a darle una clave a quien la perdió. La api la rechaza si esa cuenta
+   * trabaja en otra barbería: ahí la contraseña es de la persona, no de quien la
+   * dio de alta aquí.
+   */
+  async regenerarContrasena(
+    membresiaId: string
+  ): Promise<ApiResult<{ contrasenaInicial: string }>> {
+    return api.post<{ contrasenaInicial: string }>(`/equipo/${membresiaId}/contrasena`, {})
   },
 
   async cambiarRolMiembro(
@@ -27,7 +43,10 @@ export const equipoService = {
     return api.patch<Miembro>(`/equipo/${membresiaId}/rol`, validos)
   },
 
-  /** Revoca el acceso; no borra. Un revocado puede volver a ser invitado. */
+  /**
+   * Revoca el acceso; no borra. Y no lo saca de la agenda: si atendía, su ficha
+   * de barbero sigue en pie y pasa a ser un barbero sin cuenta.
+   */
   async revocarMiembro(membresiaId: string): Promise<ApiResult<Miembro>> {
     return api.delete<Miembro>(`/equipo/${membresiaId}`)
   },

@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Bell,
   Building2,
   CalendarDays,
   DollarSign,
@@ -7,8 +8,8 @@ import {
   QrCode,
   Scissors,
   Settings,
-  ShieldCheck,
   Users,
+  UsersRound,
 } from "lucide-react"
 import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
 import { rutasAdmin, seccionesAdmin } from "@routes/rutasAdmin"
@@ -38,26 +39,31 @@ export const rutasDashboard: RutaApp[] = [
     entrada: "subir",
   },
   {
-    clave: "barberos",
-    permisos: ["barberos.ver"],
+    clave: "personas",
+    // Una entrada para las dos superficies: quien ENTRA (`equipo.ver`) y quien
+    // ATIENDE (`barberos.ver`). Son dos tablas y una sola pregunta para quien usa
+    // el panel; el barbero, que solo tiene la segunda, entra por la misma puerta.
+    permisos: ["equipo.ver", "barberos.ver"],
     seccion: "operacion",
-    href: "/dashboard/barberos",
-    etiqueta: "Barberos",
-    titulo: "Barberos",
-    subtitulo: "Equipo de trabajo y rendimiento",
-    icono: Scissors,
-    entrada: "izquierda",
+    href: "/dashboard/personas",
+    etiqueta: "Personas",
+    titulo: "Personas",
+    subtitulo: "Quién trabaja en la barbería: quién entra, quién atiende y con qué permisos",
+    icono: UsersRound,
+    entrada: "derecha",
   },
   {
-    clave: "equipo",
-    permisos: ["equipo.ver"],
+    clave: "servicios",
+    // El barbero también entra: consulta la carta con `catalogo.ver` y, si
+    // reparte su propia oferta, propone servicios desde aquí.
+    permisos: ["catalogo.ver"],
     seccion: "operacion",
-    href: "/dashboard/equipo",
-    etiqueta: "Equipo",
-    titulo: "Equipo",
-    subtitulo: "Quién entra al sistema y con qué capacidades",
-    icono: ShieldCheck,
-    entrada: "derecha",
+    href: "/dashboard/servicios",
+    etiqueta: "Servicios",
+    titulo: "Servicios",
+    subtitulo: "El catálogo de la barbería: qué se ofrece, cuánto dura y entre qué precios",
+    icono: Scissors,
+    entrada: "izquierda",
   },
   {
     clave: "sedes",
@@ -72,7 +78,10 @@ export const rutasDashboard: RutaApp[] = [
   },
   {
     clave: "clientes",
-    permisos: ["clientes.ver"],
+    // Dos alcances, una entrada: la barbería entera con `clientes.ver`, y los
+    // que él atendió con `clientes.ver_propios`. Sin el segundo, la pantalla
+    // existe y el barbero no la ve.
+    permisos: ["clientes.ver", "clientes.ver_propios"],
     seccion: "operacion",
     href: "/dashboard/clientes",
     etiqueta: "Clientes",
@@ -112,6 +121,19 @@ export const rutasDashboard: RutaApp[] = [
     titulo: "Código QR",
     subtitulo: "Registro y acceso de clientes",
     icono: QrCode,
+    entrada: "fundido",
+  },
+  {
+    // Sin `permisos`: la bandeja es de cada quien y la api la acota al usuario
+    // de la sesión. Pedir una capacidad aquí se la escondería a quien SÍ tiene
+    // avisos que leer.
+    clave: "notificaciones",
+    seccion: "herramientas",
+    href: "/dashboard/notificaciones",
+    etiqueta: "Notificaciones",
+    titulo: "Notificaciones",
+    subtitulo: "Lo que ha pasado en tu barbería",
+    icono: Bell,
     entrada: "fundido",
   },
   {

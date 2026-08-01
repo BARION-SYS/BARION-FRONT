@@ -29,12 +29,12 @@ interface EquipoListProps {
   gestionaPermisos: boolean
   onCambiarRol: (miembro: Miembro, codigoRol: string) => void
   onPermisos: (miembro: Miembro) => void
+  onRegenerarContrasena: (miembro: Miembro) => void
   onRevocar: (miembro: Miembro) => void
 }
 
 const TONO_ESTADO: Record<EstadoMembresia, { tono: TonoEstado; etiqueta: string }> = {
   activa: { tono: "exito", etiqueta: "Activa" },
-  invitada: { tono: "advertencia", etiqueta: "Invitada" },
   revocada: { tono: "neutro", etiqueta: "Revocada" },
 }
 
@@ -46,6 +46,7 @@ export function EquipoList({
   gestionaPermisos,
   onCambiarRol,
   onPermisos,
+  onRegenerarContrasena,
   onRevocar,
 }: EquipoListProps) {
   // El rol viaja como código; el nombre se pinta desde el catálogo de roles.
@@ -58,7 +59,7 @@ export function EquipoList({
       variant="list"
       emptyState={
         <p className="py-10 text-center text-sm text-muted-foreground">
-          Todavía no hay nadie con acceso. Invita a la primera persona.
+          Todavía no hay nadie con acceso. Da de alta a la primera persona.
         </p>
       }
     >
@@ -115,6 +116,10 @@ export function EquipoList({
                     {gestionaEquipo && miembro.estado !== "revocada" && (
                       <>
                         <DropdownMenuSeparator />
+                        {/* La contraseña no se consulta: si se perdió, se da otra. */}
+                        <DropdownMenuItem onClick={() => onRegenerarContrasena(miembro)}>
+                          Regenerar contraseña
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onRevocar(miembro)}>
                           Revocar acceso
                         </DropdownMenuItem>

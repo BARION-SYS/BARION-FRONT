@@ -4,6 +4,7 @@ import { useCallback, useState } from "react"
 import { barberosService } from "@features/barberos/services/barberos.service"
 import { getErrorMessage } from "@shared/utils/error"
 import type {
+  DatosAtiendoYo,
   DatosAusencia,
   DatosBarbero,
   DatosExcepcion,
@@ -29,6 +30,9 @@ export function useBarberos() {
   const [jornada, setJornada] = useState<JornadaSemanal | null>(null)
   const [ausencias, setAusencias] = useState<Ausencia[]>([])
   const [excepciones, setExcepciones] = useState<ExcepcionJornada[]>([])
+  /** La ficha de quien está en sesión. `null` = no atiende, y es un caso normal. */
+  const [miPerfil, setMiPerfil] = useState<Barbero | null>(null)
+  const [loadingMiPerfil, setLoadingMiPerfil] = useState(false)
   const [loadingLista, setLoadingLista] = useState(false)
   const [loadingDisponibilidad, setLoadingDisponibilidad] = useState(false)
   const [loadingAction, setLoadingAction] = useState(false)
@@ -68,6 +72,50 @@ export function useBarberos() {
       setError(getErrorMessage(err))
     } finally {
       setLoadingDisponibilidad(false)
+    }
+  }, [])
+
+  /**
+   * La ficha de barbero de quien está en sesión, o `null` si no atiende. `null`
+   * no es un error: el administrador que no corta es el caso normal.
+   */
+  const fetchMiPerfil = useCallback(async () => {
+    setLoadingMiPerfil(true)
+    setError(null)
+    try {
+      const res = await barberosService.obtenerMiPerfil()
+      setMiPerfil(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingMiPerfil(false)
+    }
+  }, [])
+
+  /** «Yo también atiendo». Repetirlo reactiva la ficha, no abre una segunda. */
+  const handleAtenderYo = useCallback(async (payload: DatosAtiendoYo): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await barberosService.atenderYo(payload)
+      setMiPerfil(res.data)
+      return res.message
+    } catch (err) {
+      throw new Error(getErrorMessage(err))
+    } finally {
+      setLoadingAction(false)
+    }
+  }, [])
+
+  const handleDejarDeAtender = useCallback(async (): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await barberosService.dejarDeAtender()
+      setMiPerfil(res.data)
+      return res.message
+    } catch (err) {
+      throw new Error(getErrorMessage(err))
+    } finally {
+      setLoadingAction(false)
     }
   }, [])
 
@@ -216,12 +264,17 @@ export function useBarberos() {
     jornada,
     ausencias,
     excepciones,
+    miPerfil,
     loadingLista,
     loadingDisponibilidad,
+    loadingMiPerfil,
     loadingAction,
     error,
     fetchBarberos,
     fetchDisponibilidad,
+    fetchMiPerfil,
+    handleAtenderYo,
+    handleDejarDeAtender,
     handleCreateBarbero,
     handleUpdateBarbero,
     handleToggleBarbero,

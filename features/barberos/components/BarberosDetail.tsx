@@ -19,6 +19,8 @@ interface BarberosDetailProps {
   gestiona: boolean
   onEditar: () => void
   onDisponibilidad: () => void
+  /** Su oferta: qué servicios hace, a qué precio. Es lo que se reserva. */
+  onOferta: () => void
   onAlternarActivo: () => void
 }
 
@@ -35,6 +37,7 @@ export function BarberosDetail({
   gestiona,
   onEditar,
   onDisponibilidad,
+  onOferta,
   onAlternarActivo,
 }: BarberosDetailProps) {
   const { dinero } = useFormato()
@@ -56,6 +59,10 @@ export function BarberosDetail({
               <Button type="button" size="sm" variant="outline" onClick={onDisponibilidad}>
                 <CalendarClock className="size-4" aria-hidden />
                 Disponibilidad
+              </Button>
+              <Button type="button" size="sm" variant="outline" onClick={onOferta}>
+                <Scissors className="size-4" aria-hidden />
+                Oferta
               </Button>
               <Button type="button" size="sm" onClick={onEditar}>
                 Editar

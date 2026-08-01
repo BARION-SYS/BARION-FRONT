@@ -1,58 +1,49 @@
-import { CalendarCheck, Clock, DollarSign, Scissors, TrendingUp, Users } from "lucide-react"
-import type { LucideIcon } from "lucide-react"
-import type { CitaHoy } from "@features/citas/types/citas.types"
-import datos from "@features/dashboard/constants/dashboard.json"
+import { api } from "@lib/http/instances"
+import { omitEmpty } from "@shared/utils/params"
 import type {
-  KpiDashboard,
-  PuntoIngresoDiario,
-  PuntoIngresoMensual,
-  ResumenBarbero,
-  ServicioPopular,
+  FiltrosMetas,
+  Meta,
+  RangoDias,
+  RangoInstantes,
+  RendimientoBarbero,
+  ReporteDashboard,
+  Serie,
+  ServicioTop,
 } from "@features/dashboard/types/dashboard.types"
 import type { ApiResult } from "@shared/types/api.types"
 
-// Capa mock — al integrar, cada método reemplaza su cuerpo por api.get(...) de @lib/http/instances.
-
-function ok<T>(data: T): ApiResult<T> {
-  return { data, status: 200, message: "ok", pagination: null }
-}
-
-// Los íconos no son serializables: en el JSON viajan como nombre string y aquí se resuelven al componente real.
-const iconosKpi: Record<string, LucideIcon> = {
-  CalendarCheck,
-  Clock,
-  DollarSign,
-  Scissors,
-  TrendingUp,
-  Users,
-}
-
+/**
+ * Reportería. **La api entrega números crudos**: el título, el ícono y la
+ * comparación contra el período anterior los compone el front.
+ *
+ * Dos superficies con fuentes distintas, y el tipo del rango lo declara:
+ * `dashboard` y `servicios` leen lo transaccional y se piden en INSTANTES;
+ * `series` y `barberos` leen el agregado nocturno y se piden en DÍAS.
+ */
 export const dashboardService = {
-  async obtenerKpisDashboard(): Promise<ApiResult<KpiDashboard[]>> {
-    return ok(
-      datos.kpis.map(
-        (kpi): KpiDashboard => ({ ...kpi, icono: iconosKpi[kpi.icono] }) as KpiDashboard
-      )
-    )
+  /** El pulso del rango — normalmente hoy. Siempre está al día. */
+  async obtenerDashboard(rango: RangoInstantes): Promise<ApiResult<ReporteDashboard>> {
+    return api.get<ReporteDashboard>("/reportes/dashboard", { params: omitEmpty({ ...rango }) })
   },
 
-  async obtenerIngresosSemana(): Promise<ApiResult<PuntoIngresoDiario[]>> {
-    return ok(datos.ingresosSemana as PuntoIngresoDiario[])
+  /** La tendencia. Vuelve `disponible: false` mientras no exista el job del worker. */
+  async obtenerSerie(rango: RangoDias): Promise<ApiResult<Serie>> {
+    return api.get<Serie>("/reportes/series", { params: omitEmpty({ ...rango }) })
   },
 
-  async obtenerIngresosMensuales(): Promise<ApiResult<PuntoIngresoMensual[]>> {
-    return ok(datos.ingresosMensuales as PuntoIngresoMensual[])
+  /** Rendimiento por barbero. Misma dependencia del job nocturno. */
+  async obtenerRendimiento(rango: RangoDias): Promise<ApiResult<RendimientoBarbero[]>> {
+    return api.get<RendimientoBarbero[]>("/reportes/barberos", { params: omitEmpty({ ...rango }) })
   },
 
-  async obtenerCitasDeHoy(): Promise<ApiResult<CitaHoy[]>> {
-    return ok(datos.citasHoy as CitaHoy[])
+  /** Los más vendidos del rango. Transaccional. */
+  async obtenerServiciosTop(
+    rango: RangoInstantes & { limite?: number }
+  ): Promise<ApiResult<ServicioTop[]>> {
+    return api.get<ServicioTop[]>("/reportes/servicios", { params: omitEmpty({ ...rango }) })
   },
 
-  async obtenerResumenBarberos(): Promise<ApiResult<ResumenBarbero[]>> {
-    return ok(datos.resumenBarberos as ResumenBarbero[])
-  },
-
-  async obtenerServiciosPopulares(): Promise<ApiResult<ServicioPopular[]>> {
-    return ok(datos.serviciosPopulares as ServicioPopular[])
+  async obtenerMetas(filtros: FiltrosMetas = {}): Promise<ApiResult<Meta[]>> {
+    return api.get<Meta[]>("/metas", { params: omitEmpty({ ...filtros }) })
   },
 }

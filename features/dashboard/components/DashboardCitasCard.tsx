@@ -1,25 +1,31 @@
+"use client"
+
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@shared/utils/cn"
 import { SectionCard } from "@shared/components/cards/SectionCard"
+import { SinDatos } from "@shared/components/feedback/SinDatos"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
+import { tokenDeColor } from "@shared/utils/color"
+import { inicialesDe } from "@shared/utils/iniciales"
 import { useFormato } from "@shared/hooks/useFormato"
 import { configEstadoCita } from "@features/citas/utils/estadoCita"
-import { resumenServicios } from "@features/citas/utils/servicios"
-import type { CitaHoy } from "@features/citas/types/citas.types"
+import type { Cita } from "@features/citas/types/citas.types"
 
-const coloresAvatar = ["var(--chart-1)", "var(--chart-3)", "var(--chart-2)", "var(--chart-4)"]
-
-interface Props {
-  citas: CitaHoy[]
+interface DashboardCitasCardProps {
+  /** Las citas de hoy, tal como las devuelve `GET /citas`. */
+  citas: Cita[]
 }
 
-export function DashboardCitasCard({ citas }: Props) {
-  const { diaSemana } = useFormato()
-  const completadas = citas.filter((c) => c.estado === "completada").length
-  const enCurso = citas.filter((c) => c.estado === "en_curso").length
-  const canceladas = citas.filter((c) => c.estado === "cancelada").length
+export function DashboardCitasCard({ citas }: DashboardCitasCardProps) {
+  const { diaSemana, hora } = useFormato()
+
+  const completadas = citas.filter((cita) => cita.estado === "completada").length
+  const enCurso = citas.filter((cita) => cita.estado === "en_curso").length
+  const canceladas = citas.filter(
+    (cita) => cita.estado === "cancelada" || cita.estado === "no_asistio"
+  ).length
 
   return (
     <SectionCard
@@ -35,43 +41,51 @@ export function DashboardCitasCard({ citas }: Props) {
         </Link>
       }
     >
-      <ul className="scroll-fino max-h-80 flex-1 space-y-1.5 overflow-y-auto pr-1">
-        {citas.map((cita, i) => {
-          const estado = configEstadoCita[cita.estado]
-          return (
-            <li
-              key={cita.id}
-              className={cn(
-                "flex items-center gap-3 rounded-lg border p-3 transition-colors",
-                cita.estado === "en_curso"
-                  ? "border-primary/30 bg-primary/5"
-                  : "border-transparent bg-secondary/50 hover:bg-secondary"
-              )}
-            >
-              <InitialsAvatar
-                iniciales={cita.iniciales}
-                color={coloresAvatar[i % coloresAvatar.length]}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-foreground">{cita.cliente}</p>
-                <p className="truncate text-[11px] text-muted-foreground">
-                  {resumenServicios(cita.servicios)} · {cita.barbero}
-                </p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-xs font-semibold text-foreground tabular-nums">{cita.hora}</p>
-                <p className="text-[11px] text-muted-foreground">{cita.duracionMin} min</p>
-              </div>
-              <StatusBadge
-                etiqueta={estado.etiqueta}
-                tono={estado.tono}
-                icono={estado.icono}
-                compacta
-              />
-            </li>
-          )
-        })}
-      </ul>
+      {citas.length === 0 ? (
+        <SinDatos titulo="Hoy no hay nada agendado" alto={120} />
+      ) : (
+        <ul className="scroll-fino max-h-80 flex-1 space-y-1.5 overflow-y-auto pr-1">
+          {citas.map((cita) => {
+            const estado = configEstadoCita[cita.estado]
+            const nombreCliente = cita.cliente?.nombre ?? "Cliente"
+
+            return (
+              <li
+                key={cita.id}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg border p-3 transition-colors",
+                  cita.estado === "en_curso"
+                    ? "border-primary/30 bg-primary/5"
+                    : "border-transparent bg-secondary/50 hover:bg-secondary"
+                )}
+              >
+                <InitialsAvatar
+                  iniciales={inicialesDe(nombreCliente)}
+                  color={tokenDeColor(cita.barbero?.indiceColor ?? 0)}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-semibold text-foreground">{nombreCliente}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {cita.servicios.map((linea) => linea.nombre).join(" + ")}
+                    {cita.barbero && ` · ${cita.barbero.nombrePublico}`}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-xs font-semibold text-foreground tabular-nums">
+                    {hora(cita.iniciaEn)}
+                  </p>
+                </div>
+                <StatusBadge
+                  etiqueta={estado.etiqueta}
+                  tono={estado.tono}
+                  icono={estado.icono}
+                  compacta
+                />
+              </li>
+            )
+          })}
+        </ul>
+      )}
 
       <div className="mt-4 flex items-center justify-between border-t border-border pt-4 text-xs">
         <p className="text-muted-foreground">
@@ -85,7 +99,7 @@ export function DashboardCitasCard({ citas }: Props) {
             <span className="font-semibold">{enCurso}</span> en curso
           </span>
           <span className="text-destructive">
-            <span className="font-semibold">{canceladas}</span> canceladas
+            <span className="font-semibold">{canceladas}</span> perdidas
           </span>
         </div>
       </div>

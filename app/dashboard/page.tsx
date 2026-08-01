@@ -1,33 +1,96 @@
 "use client"
 
-import { useEffect } from "react"
-import { DashboardMetaChart } from "@features/dashboard/components/DashboardMetaChart"
-import { DashboardIngresosChart } from "@features/dashboard/components/DashboardIngresosChart"
-import { DashboardCitasCard } from "@features/dashboard/components/DashboardCitasCard"
+import { useEffect, useMemo } from "react"
+import { CalendarDays, CheckCircle2, Coins, DollarSign, Gift, UserPlus } from "lucide-react"
 import { DashboardBarberosCard } from "@features/dashboard/components/DashboardBarberosCard"
+import { DashboardCitasCard } from "@features/dashboard/components/DashboardCitasCard"
+import { DashboardIngresosChart } from "@features/dashboard/components/DashboardIngresosChart"
+import { DashboardMetaChart } from "@features/dashboard/components/DashboardMetaChart"
 import { DashboardServiciosCard } from "@features/dashboard/components/DashboardServiciosCard"
 import { useDashboard } from "@features/dashboard/hooks/useDashboard"
+import {
+  anioEnCurso,
+  aPuntosGrafica,
+  rangoDeHoy,
+  ultimosDias,
+} from "@features/dashboard/utils/serie"
+import { useCitas } from "@features/citas/hooks/useCitas"
+import { useNomina } from "@features/nomina/hooks/useNomina"
+import { puede } from "@features/auth/utils/permisos"
 import { StatCard } from "@shared/components/stats/StatCard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+import { useFormato } from "@shared/hooks/useFormato"
+import { useAuthStore } from "@store/auth.store"
+import { useSedeActual } from "@store/sede.store"
 
-// Contenedor: instancia el hook UNA vez y reparte datos por props.
+/**
+ * El resumen del negocio.
+ *
+ * Cuatro cosas que esta pantalla da por buenas porque las decide la api:
+ *
+ * - **Hoy y la tendencia salen de sitios distintos.** Lo de hoy es
+ *   transaccional y siempre está al día; la tendencia la materializa un job
+ *   nocturno del worker que **todavía no existe**, así que llega con
+ *   `disponible: false` y aquí se dice "aún no se sabe" en vez de pintar ceros.
+ * - **La producción por barbero sale del ledger** (`/ganancias/resumen`), no del
+ *   agregado: es transaccional y responde hoy mismo.
+ * - **La api entrega números crudos.** El título, el ícono y la unidad los pone
+ *   esta pantalla.
+ * - **Un endpoint, dos alcances.** Con `agenda.ver_propia` y
+ *   `ganancias.ver_propias` la api ya devuelve solo lo del barbero, así que esta
+ *   MISMA pantalla es su resumen del día. Lo único que cambia es que **no pide
+ *   lo que su sesión no puede ver**: `reportes.ver` no está en el rol `barbero`,
+ *   y pedirlo igual llenaría su pantalla de aterrizaje de errores 403.
+ */
 export default function DashboardPage() {
-  const {
-    kpis,
-    ingresosSemana,
-    ingresosMensuales,
-    citasHoy,
-    resumenBarberos,
-    serviciosPopulares,
-    loadingResumen,
-    fetchResumen,
-  } = useDashboard()
+  const { pulso, serie, metas, loadingPulso, error, fetchPulso, fetchSerie, fetchMetas } =
+    useDashboard()
+  const { citas, fetchCitas } = useCitas()
+  const { resumen, fetchResumen } = useNomina()
+
+  const sesion = useAuthStore((estado) => estado.sesion)
+  const veReportes = puede(sesion, "reportes.ver")
+
+  const sedeActual = useSedeActual()
+  const { dinero, numero, timezone, fecha, fechaCorta } = useFormato()
+
+  const hoy = useMemo(() => rangoDeHoy(timezone), [timezone])
+  const ultimoMes = useMemo(() => ultimosDias(timezone, 30, "dia"), [timezone])
+  const anio = useMemo(() => anioEnCurso(timezone), [timezone])
 
   useEffect(() => {
-    void fetchResumen()
-  }, [fetchResumen])
+    // Lo que TODO el mundo que entra aquí puede ver: su agenda de hoy y lo que
+    // lleva ganado — la api ya acota ambas por `*_propia`.
+    void fetchCitas({ ...hoy, sedeId: sedeActual?.id })
+    void fetchResumen(hoy)
 
-  if (loadingResumen) {
+    if (!veReportes) return
+
+    void fetchPulso({ ...hoy, sedeId: sedeActual?.id })
+    void fetchSerie({ ...ultimoMes, sedeId: sedeActual?.id })
+    void fetchMetas({ sedeId: sedeActual?.id, vigentesEn: anio.hasta })
+  }, [
+    fetchPulso,
+    fetchCitas,
+    fetchResumen,
+    fetchSerie,
+    fetchMetas,
+    veReportes,
+    hoy,
+    ultimoMes,
+    anio.hasta,
+    sedeActual?.id,
+  ])
+
+  const puntos = useMemo(
+    () => aPuntosGrafica(serie.puntos, (periodo) => fechaCorta(`${periodo}T12:00:00Z`), metas),
+    [serie.puntos, metas, fechaCorta]
+  )
+
+  // Con `ganancias.ver_propias` el resumen trae UNA fila: la suya.
+  const propio = resumen[0] ?? null
+
+  if (loadingPulso && !pulso) {
     return (
       <main className="flex-1 space-y-6 overflow-y-auto p-4 md:p-6">
         <DataSkeleton
@@ -49,38 +112,115 @@ export default function DashboardPage() {
 
   return (
     <main className="flex-1 space-y-6 overflow-y-auto p-4 md:p-6">
-      <section aria-label="Indicadores clave">
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
-          {kpis.map((kpi) => (
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+
+      <section aria-label="Indicadores de hoy">
+        {veReportes ? (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
             <StatCard
-              key={kpi.clave}
-              titulo={kpi.titulo}
-              valor={kpi.valor}
-              cambio={kpi.cambio}
-              tendencia={kpi.tendencia}
-              icono={kpi.icono}
-              acento={kpi.acento}
-              subtitulo={kpi.subtitulo}
+              titulo="Citas hoy"
+              valor={numero(pulso?.citas.total ?? 0)}
+              icono={CalendarDays}
+              subtitulo={fecha(new Date())}
             />
-          ))}
-        </div>
+            <StatCard
+              titulo="Completadas"
+              valor={numero(pulso?.citas.completadas ?? 0)}
+              icono={CheckCircle2}
+              subtitulo={`${numero(pulso?.citas.canceladas ?? 0)} canceladas`}
+            />
+            <StatCard
+              titulo="Ingresos"
+              valor={dinero(Number(pulso?.ingresosCentavos ?? 0))}
+              icono={DollarSign}
+              acento
+              subtitulo="Solo lo completado"
+            />
+            <StatCard
+              titulo="Ticket promedio"
+              valor={dinero(Number(pulso?.ticketPromedioCentavos ?? 0))}
+              icono={Coins}
+              subtitulo="Por cita cerrada"
+            />
+            <StatCard
+              titulo="Propinas"
+              valor={dinero(Number(pulso?.propinasCentavos ?? 0))}
+              icono={Gift}
+              subtitulo="Van al barbero"
+            />
+            <StatCard
+              titulo="Clientes nuevos"
+              valor={numero(pulso?.clientesNuevos ?? 0)}
+              icono={UserPlus}
+              subtitulo="Fichas creadas hoy"
+            />
+          </div>
+        ) : (
+          // Lo mismo, pero de lo suyo: la api ya acotó ambas lecturas por
+          // `*_propia`, así que estas cifras SON las de quien mira.
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StatCard
+              titulo="Mis citas hoy"
+              valor={numero(citas.length)}
+              icono={CalendarDays}
+              subtitulo={fecha(new Date())}
+            />
+            <StatCard
+              titulo="Completadas"
+              valor={numero(citas.filter((cita) => cita.estado === "completada").length)}
+              icono={CheckCircle2}
+              subtitulo="De las de hoy"
+            />
+            <StatCard
+              titulo="Llevo ganado"
+              valor={dinero(Number(propio?.totalCentavos ?? 0))}
+              icono={DollarSign}
+              acento
+              subtitulo="Comisión + propinas de hoy"
+            />
+            <StatCard
+              titulo="Propinas"
+              valor={dinero(Number(propio?.propinasCentavos ?? 0))}
+              icono={Gift}
+              subtitulo="Íntegras para ti"
+            />
+          </div>
+        )}
       </section>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-3" aria-label="Ingresos">
-        <div className="xl:col-span-2">
-          <DashboardIngresosChart datos={ingresosSemana} />
-        </div>
-        <DashboardMetaChart datos={ingresosMensuales} />
-      </section>
+      {/* La tendencia y el ranking son de quien lee reportes. Al barbero no se
+          le ocultan por sensibles: es que su api no se los daría. */}
+      {veReportes && (
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-3" aria-label="Ingresos">
+          <div className="xl:col-span-2">
+            <DashboardIngresosChart
+              datos={puntos}
+              subtitulo="Últimos 30 días"
+              disponible={serie.disponible}
+            />
+          </div>
+          <DashboardMetaChart
+            datos={puntos}
+            disponible={serie.disponible}
+            hayMetas={metas.length > 0}
+          />
+        </section>
+      )}
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-5" aria-label="Actividad">
-        <div className="lg:col-span-3">
-          <DashboardCitasCard citas={citasHoy} />
+        <div className={veReportes ? "lg:col-span-3" : "lg:col-span-5"}>
+          <DashboardCitasCard citas={citas} />
         </div>
-        <div className="flex flex-col gap-4 lg:col-span-2">
-          <DashboardBarberosCard barberos={resumenBarberos} />
-          <DashboardServiciosCard servicios={serviciosPopulares} />
-        </div>
+        {veReportes && (
+          <div className="flex flex-col gap-4 lg:col-span-2">
+            <DashboardBarberosCard filas={resumen} subtitulo="Hoy" />
+            <DashboardServiciosCard servicios={pulso?.serviciosTop ?? []} subtitulo="Hoy" />
+          </div>
+        )}
       </section>
     </main>
   )

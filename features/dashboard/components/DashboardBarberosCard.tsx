@@ -1,65 +1,85 @@
+"use client"
+
+import type { CSSProperties } from "react"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
-import type { ResumenBarbero } from "@features/dashboard/types/dashboard.types"
-import { formatNumber } from "@shared/utils/numbers"
+import { SinDatos } from "@shared/components/feedback/SinDatos"
+import { tokenDeColor } from "@shared/utils/color"
+import { inicialesDe } from "@shared/utils/iniciales"
+import type { ResumenNomina } from "@features/nomina/types/nomina.types"
+import { participacionDe } from "@features/nomina/utils/periodo"
+import { useFormato } from "@shared/hooks/useFormato"
 
-interface Props {
-  barberos: ResumenBarbero[]
+interface DashboardBarberosCardProps {
+  /**
+   * Sale de `/ganancias/resumen`, que es TRANSACCIONAL y siempre está al día.
+   * `/reportes/barberos` mide rendimiento y depende del job nocturno; para
+   * "quién produjo cuánto" el ledger ya tiene la respuesta.
+   */
+  filas: ResumenNomina[]
+  subtitulo: string
 }
 
-export function DashboardBarberosCard({ barberos }: Props) {
+export function DashboardBarberosCard({ filas, subtitulo }: DashboardBarberosCardProps) {
+  const { dinero, numero } = useFormato()
+
+  const totalProduccion = filas.reduce((suma, fila) => suma + Number(fila.produccionCentavos), 0)
+
   return (
     <SectionCard
-      titulo="Rendimiento barberos"
+      titulo="Producción por barbero"
       accion={
         <span className="rounded-md bg-secondary px-2 py-1 text-[10px] text-muted-foreground">
-          Esta semana
+          {subtitulo}
         </span>
       }
     >
-      <ul className="space-y-4">
-        {barberos.map((barbero) => (
-          <li key={barbero.nombre} className="flex items-center gap-3">
-            <InitialsAvatar iniciales={barbero.iniciales} color={barbero.color} />
-            <div className="min-w-0 flex-1">
-              <div className="mb-1 flex items-center justify-between">
-                <div>
-                  <p className="text-xs leading-none font-semibold text-foreground">
-                    {barbero.nombre}
-                  </p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {barbero.citas} citas · ★ {barbero.calificacion}
-                  </p>
+      {filas.length === 0 ? (
+        <SinDatos titulo="Nadie ha cerrado citas todavía" alto={100} />
+      ) : (
+        <ul className="space-y-4">
+          {filas.map((fila) => {
+            const nombre = fila.barbero?.nombrePublico ?? "Barbero retirado"
+            const color = tokenDeColor(fila.barbero?.indiceColor ?? 0)
+            const participacion = participacionDe(fila.produccionCentavos, String(totalProduccion))
+
+            return (
+              <li key={`${fila.barberoId}-${fila.moneda}`} className="flex items-center gap-3">
+                <InitialsAvatar iniciales={inicialesDe(nombre)} color={color} />
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs leading-none font-semibold text-foreground">{nombre}</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        {numero(fila.citas)} citas
+                      </p>
+                    </div>
+                    <p
+                      className="text-xs font-bold text-(--tono) tabular-nums"
+                      style={{ "--tono": color } as CSSProperties}
+                    >
+                      {dinero(Number(fila.produccionCentavos))}
+                    </p>
+                  </div>
+                  <div
+                    className="h-1.5 w-full overflow-hidden rounded-full bg-secondary"
+                    role="progressbar"
+                    aria-valuenow={Math.round(participacion)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Participación de ${nombre}: ${Math.round(participacion)}%`}
+                  >
+                    <div
+                      className="h-full rounded-full bg-(--tono) transition-[width] duration-700 motion-reduce:transition-none"
+                      style={{ "--tono": color, width: `${participacion}%` } as CSSProperties}
+                    />
+                  </div>
                 </div>
-                <p
-                  className="text-xs font-bold text-(--tono) tabular-nums"
-                  style={{ "--tono": barbero.color } as React.CSSProperties}
-                >
-                  ${formatNumber(barbero.ingresos)}
-                </p>
-              </div>
-              <div
-                className="h-1.5 w-full overflow-hidden rounded-full bg-secondary"
-                role="progressbar"
-                aria-valuenow={barbero.porcentajeMeta}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`Meta semanal de ${barbero.nombre}: ${barbero.porcentajeMeta}%`}
-              >
-                <div
-                  className="h-full rounded-full transition-[width] duration-700 motion-reduce:transition-none"
-                  style={
-                    {
-                      "--tono": barbero.color,
-                      width: `${barbero.porcentajeMeta}%`,
-                    } as React.CSSProperties
-                  }
-                />
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </SectionCard>
   )
 }

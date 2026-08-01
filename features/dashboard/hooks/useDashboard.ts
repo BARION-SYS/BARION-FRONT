@@ -1,63 +1,78 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import type { CitaHoy } from "@features/citas/types/citas.types"
 import { dashboardService } from "@features/dashboard/services/dashboard.service"
 import type {
-  KpiDashboard,
-  PuntoIngresoDiario,
-  PuntoIngresoMensual,
-  ResumenBarbero,
-  ServicioPopular,
+  FiltrosMetas,
+  Meta,
+  RangoDias,
+  RangoInstantes,
+  ReporteDashboard,
+  Serie,
 } from "@features/dashboard/types/dashboard.types"
 import { getErrorMessage } from "@shared/utils/error"
 
-// Estado de API del dashboard — lo instancia SOLO el contenedor (app/dashboard/page.tsx).
+/**
+ * Estado de API de reportes. Lo instancian el dashboard y las estadísticas: son
+ * los mismos endpoints con otra ventana de tiempo.
+ *
+ * `serie` arranca en `disponible: false` a propósito — es el mismo estado que
+ * devuelve la api mientras el job nocturno del worker no exista, así que la
+ * pantalla no necesita distinguir "cargando" de "todavía no hay historia".
+ */
+const SERIE_VACIA: Serie = { granularidad: "dia", puntos: [], disponible: false }
+
 export function useDashboard() {
-  const [kpis, setKpis] = useState<KpiDashboard[]>([])
-  const [ingresosSemana, setIngresosSemana] = useState<PuntoIngresoDiario[]>([])
-  const [ingresosMensuales, setIngresosMensuales] = useState<PuntoIngresoMensual[]>([])
-  const [citasHoy, setCitasHoy] = useState<CitaHoy[]>([])
-  const [resumenBarberos, setResumenBarberos] = useState<ResumenBarbero[]>([])
-  const [serviciosPopulares, setServiciosPopulares] = useState<ServicioPopular[]>([])
-  const [loadingResumen, setLoadingResumen] = useState(false)
+  const [pulso, setPulso] = useState<ReporteDashboard | null>(null)
+  const [serie, setSerie] = useState<Serie>(SERIE_VACIA)
+  const [metas, setMetas] = useState<Meta[]>([])
+  const [loadingPulso, setLoadingPulso] = useState(false)
+  const [loadingSerie, setLoadingSerie] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchResumen = useCallback(async () => {
-    setLoadingResumen(true)
+  const fetchPulso = useCallback(async (rango: RangoInstantes) => {
+    setLoadingPulso(true)
     setError(null)
     try {
-      const [resKpis, resSemana, resMensuales, resCitas, resBarberos, resServicios] =
-        await Promise.all([
-          dashboardService.obtenerKpisDashboard(),
-          dashboardService.obtenerIngresosSemana(),
-          dashboardService.obtenerIngresosMensuales(),
-          dashboardService.obtenerCitasDeHoy(),
-          dashboardService.obtenerResumenBarberos(),
-          dashboardService.obtenerServiciosPopulares(),
-        ])
-      setKpis(resKpis.data)
-      setIngresosSemana(resSemana.data)
-      setIngresosMensuales(resMensuales.data)
-      setCitasHoy(resCitas.data)
-      setResumenBarberos(resBarberos.data)
-      setServiciosPopulares(resServicios.data)
+      const res = await dashboardService.obtenerDashboard(rango)
+      setPulso(res.data)
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
-      setLoadingResumen(false)
+      setLoadingPulso(false)
+    }
+  }, [])
+
+  const fetchSerie = useCallback(async (rango: RangoDias) => {
+    setLoadingSerie(true)
+    try {
+      const res = await dashboardService.obtenerSerie(rango)
+      setSerie(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingSerie(false)
+    }
+  }, [])
+
+  const fetchMetas = useCallback(async (filtros: FiltrosMetas) => {
+    try {
+      const res = await dashboardService.obtenerMetas(filtros)
+      setMetas(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
     }
   }, [])
 
   return {
-    kpis,
-    ingresosSemana,
-    ingresosMensuales,
-    citasHoy,
-    resumenBarberos,
-    serviciosPopulares,
-    loadingResumen,
+    pulso,
+    serie,
+    metas,
+    loadingPulso,
+    loadingSerie,
     error,
-    fetchResumen,
+    fetchPulso,
+    fetchSerie,
+    fetchMetas,
   }
 }

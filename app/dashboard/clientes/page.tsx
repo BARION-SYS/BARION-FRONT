@@ -218,8 +218,12 @@ export default function ClientesPage() {
             setClienteEnEdicion(null)
           }
         }}
-        titulo={clienteEnEdicion ? clienteEnEdicion.nombre : "Nuevo cliente"}
-        descripcion="Teléfono y correo son únicos en la barbería: la misma persona dos veces parte su historial."
+        titulo={clienteEnEdicion ? clienteEnEdicion.nombre : "Registrar un cliente"}
+        descripcion={
+          clienteEnEdicion
+            ? "Teléfono y correo son únicos en la barbería: la misma persona dos veces parte su historial."
+            : "La ficha de quien atiendes en el local. No es una cuenta y no le da acceso a nada."
+        }
         size="lg"
       >
         <ClientesForm

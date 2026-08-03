@@ -39,7 +39,7 @@ export function ClientesList({
       {gestiona && (
         <Button type="button" size="sm" onClick={onNuevo} className="self-start">
           <Plus className="size-4" aria-hidden />
-          Nuevo cliente
+          Registrar cliente
         </Button>
       )}
 

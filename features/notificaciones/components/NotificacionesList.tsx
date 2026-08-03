@@ -36,7 +36,7 @@ const ICONO_GRUPO: Record<GrupoNotificacion, LucideIcon> = {
 const RUTA_ENTIDAD: Record<string, string> = {
   cita: "/dashboard/citas",
   cliente: "/dashboard/clientes",
-  barbero: "/dashboard/personas/barberos",
+  barbero: "/dashboard/personas",
   membresia: "/dashboard/personas",
   sede: "/dashboard/sedes",
   servicio: "/dashboard/servicios",

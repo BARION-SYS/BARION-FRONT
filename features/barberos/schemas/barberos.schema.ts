@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const E164 = /^\+[1-9]\d{7,14}$/
 const HORA = /^(?:[01]\d|2[0-3]):[0-5]\d$|^24:00$/
 const FECHA = /^\d{4}-\d{2}-\d{2}$/
@@ -13,7 +12,6 @@ export const esquemaBarbero = z.object({
   // De vitrina, no de autorización: lo que el cliente lee bajo el nombre.
   titulo: z.string().max(120, "Máximo 120").optional(),
   bio: z.string().max(2000, "Máximo 2000").optional(),
-  slug: z.string().regex(SLUG, "Solo minúsculas, números y guiones").optional(),
   telefonoE164: z.string().regex(E164, "Formato internacional: +573001112233").optional(),
   email: z.email("Ingresa un correo válido").optional(),
   fechaContratacion: z.string().regex(FECHA, "Formato AAAA-MM-DD").optional(),
@@ -22,9 +20,12 @@ export const esquemaBarbero = z.object({
   // decimales en el cálculo de cada comisión.
   comisionBps: z.number().int().min(0).max(MAX_COMISION_BPS).optional(),
   sedeId: z.uuid().optional(),
-  // Vincularlo a quien ya entra al sistema. Sin esto queda un barbero SIN
-  // cuenta, que es un caso normal y no un alta a medias.
-  membresiaId: z.uuid().optional(),
+  // Ni `slug` ni `membresiaId`: la api no los acepta y enviarlos responde 400.
+  //
+  // El identificador público no lo resuelve ninguna ruta —no hay página por
+  // barbero—, así que pedirlo era hacer escribir a mano algo que no lleva a
+  // ninguna parte. Y vincular la cuenta a mano dejó de ser el camino: quien
+  // atiende Y entra se da de alta en Acceso, que resuelve las dos filas de una.
 })
 
 export type DatosBarbero = z.infer<typeof esquemaBarbero>

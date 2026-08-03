@@ -16,6 +16,7 @@ import type {
   ExcepcionJornada,
   FiltrosBarberos,
   JornadaSemanal,
+  RetiroBarbero,
 } from "@features/barberos/types/barberos.types"
 
 /**
@@ -44,6 +45,24 @@ export function useBarberos() {
     try {
       const res = await barberosService.obtenerBarberos({ ...filtros, paginar: false })
       setBarberos(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingLista(false)
+    }
+  }, [])
+
+  /**
+   * UNO solo, para la pantalla que administra a una persona concreta: llegar
+   * ahí por su enlace no puede obligar a traerse el equipo entero para después
+   * quedarse con una fila.
+   */
+  const fetchBarbero = useCallback(async (barberoId: string) => {
+    setLoadingLista(true)
+    setError(null)
+    try {
+      const res = await barberosService.obtenerBarbero(barberoId)
+      setBarberos([res.data])
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
@@ -106,12 +125,16 @@ export function useBarberos() {
     }
   }, [])
 
-  const handleDejarDeAtender = useCallback(async (): Promise<string> => {
+  /** Igual que retirar a otro: informa de las citas que quedan sin cancelar. */
+  const handleDejarDeAtender = useCallback(async (): Promise<{
+    mensaje: string
+    retiro: RetiroBarbero
+  }> => {
     setLoadingAction(true)
     try {
       const res = await barberosService.dejarDeAtender()
       setMiPerfil(res.data)
-      return res.message
+      return { mensaje: res.message, retiro: res.data }
     } catch (err) {
       throw new Error(getErrorMessage(err))
     } finally {
@@ -119,18 +142,9 @@ export function useBarberos() {
     }
   }, [])
 
-  const handleCreateBarbero = useCallback(async (payload: DatosBarbero): Promise<string> => {
-    setLoadingAction(true)
-    try {
-      const res = await barberosService.crearBarbero(payload)
-      return res.message
-    } catch (err) {
-      throw new Error(getErrorMessage(err))
-    } finally {
-      setLoadingAction(false)
-    }
-  }, [])
-
+  // No hay `handleCreateBarbero`: el alta de una persona es siempre la del
+  // equipo, porque quien atiende, entra. Lo que se edita aquí es una ficha que
+  // ya existe.
   const handleUpdateBarbero = useCallback(
     async (id: string, payload: DatosBarbero): Promise<string> => {
       setLoadingAction(true)
@@ -146,19 +160,33 @@ export function useBarberos() {
     []
   )
 
-  const handleToggleBarbero = useCallback(async (barbero: Barbero): Promise<string> => {
-    setLoadingAction(true)
-    try {
-      const res = barbero.activo
-        ? await barberosService.desactivarBarbero(barbero.id)
-        : await barberosService.activarBarbero(barbero.id)
-      return res.message
-    } catch (err) {
-      throw new Error(getErrorMessage(err))
-    } finally {
-      setLoadingAction(false)
-    }
-  }, [])
+  /**
+   * Retirar de la agenda o reincorporar.
+   *
+   * Al retirar devuelve además lo que quedó comprometido: sus citas futuras NO
+   * se cancelan en cascada, así que quien retira tiene que ver a cuántos
+   * clientes hay que avisar. Al reincorporar no hay nada que enseñar.
+   */
+  const handleToggleBarbero = useCallback(
+    async (
+      barbero: Pick<Barbero, "id" | "activo">
+    ): Promise<{ mensaje: string; retiro: RetiroBarbero | null }> => {
+      setLoadingAction(true)
+      try {
+        if (!barbero.activo) {
+          const res = await barberosService.activarBarbero(barbero.id)
+          return { mensaje: res.message, retiro: null }
+        }
+        const res = await barberosService.desactivarBarbero(barbero.id)
+        return { mensaje: res.message, retiro: res.data }
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
 
   const handleReplaceJornada = useCallback(
     async (barberoId: string, payload: DatosJornada): Promise<string> => {
@@ -271,11 +299,11 @@ export function useBarberos() {
     loadingAction,
     error,
     fetchBarberos,
+    fetchBarbero,
     fetchDisponibilidad,
     fetchMiPerfil,
     handleAtenderYo,
     handleDejarDeAtender,
-    handleCreateBarbero,
     handleUpdateBarbero,
     handleToggleBarbero,
     handleReplaceJornada,

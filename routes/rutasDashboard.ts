@@ -40,9 +40,10 @@ export const rutasDashboard: RutaApp[] = [
   },
   {
     clave: "personas",
-    // Una entrada para las dos superficies: quien ENTRA (`equipo.ver`) y quien
-    // ATIENDE (`barberos.ver`). Son dos tablas y una sola pregunta para quien usa
-    // el panel; el barbero, que solo tiene la segunda, entra por la misma puerta.
+    // Una sola lista, y una sola entrada. `membresias` y `barberos` son dos
+    // tablas —hay quien entra y no atiende, y quien atiende y no entra— pero
+    // para quien usa el panel es una sola pregunta: ¿quién trabaja aquí? Con una
+    // de las dos capacidades ya hay algo que ver.
     permisos: ["equipo.ver", "barberos.ver"],
     seccion: "operacion",
     href: "/dashboard/personas",

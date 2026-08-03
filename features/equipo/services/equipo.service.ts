@@ -6,7 +6,12 @@ import {
   type DatosAltaMiembro,
   type DatosCambioRol,
 } from "@features/equipo/schemas/equipo.schema"
-import type { AltaMiembro, FiltrosEquipo, Miembro } from "@features/equipo/types/equipo.types"
+import type {
+  AltaMiembro,
+  FiltrosEquipo,
+  Miembro,
+  RevocacionMiembro,
+} from "@features/equipo/types/equipo.types"
 import type { ApiResult } from "@shared/types/api.types"
 
 export const equipoService = {
@@ -21,7 +26,9 @@ export const equipoService = {
    */
   async crearMiembro(payload: DatosAltaMiembro): Promise<ApiResult<AltaMiembro>> {
     const validos = esquemaAltaMiembro.parse(payload)
-    return api.post<AltaMiembro>("/equipo", validos)
+    // Los opcionales vacíos no viajan: la api rechaza `sedeId: ""` y una
+    // comisión omitida no es lo mismo que una comisión en blanco.
+    return api.post<AltaMiembro>("/equipo", omitEmpty({ ...validos }))
   },
 
   /**
@@ -44,10 +51,12 @@ export const equipoService = {
   },
 
   /**
-   * Revoca el acceso; no borra. Y no lo saca de la agenda: si atendía, su ficha
-   * de barbero sigue en pie y pasa a ser un barbero sin cuenta.
+   * «Esta persona ya no trabaja aquí»: revoca el acceso Y la retira de la
+   * agenda, en una sola operación. No borra —el historial se queda— y **no
+   * cancela sus citas futuras**: la respuesta las enumera para poder llamar a
+   * cada cliente.
    */
-  async revocarMiembro(membresiaId: string): Promise<ApiResult<Miembro>> {
-    return api.delete<Miembro>(`/equipo/${membresiaId}`)
+  async revocarMiembro(membresiaId: string): Promise<ApiResult<RevocacionMiembro>> {
+    return api.delete<RevocacionMiembro>(`/equipo/${membresiaId}`)
   },
 }

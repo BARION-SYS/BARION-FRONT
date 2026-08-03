@@ -12,12 +12,23 @@ export interface OfertaServicio {
 }
 
 /**
- * Quien ATIENDE. No es lo mismo que quien entra al sistema: el barbero sin
- * cuenta —el que no usa la app y al que la recepción le agenda— es un caso
- * normal, y se reconoce por `tieneAcceso: false`.
+ * Quien ATIENDE. No es lo mismo que quien entra al sistema: el administrador que
+ * no corta no tiene ficha, y quien atendía y perdió el acceso sigue teniéndola
+ * —con su historial— y se reconoce por `tieneAcceso: false`.
+ *
+ * Esa ficha sin cuenta ya no se CREA: quien atiende, entra. Es lo que queda al
+ * decir «esta persona ya no trabaja aquí», y por eso el campo sigue existiendo.
  */
 export interface Barbero {
   id: string
+  /**
+   * Su fila en `equipo`, o `null` si no entra al sistema.
+   *
+   * Es lo que empareja las dos mitades de una misma persona: la lista de
+   * Personas cruza `/equipo` con `/barberos` por aquí. El contacto no serviría —
+   * la ficha de quien tiene cuenta deja `email` y `telefonoE164` vacíos.
+   */
+  membresiaId: string | null
   /** El que ve el cliente al reservar, no el legal. */
   nombrePublico: string
   slug: string | null
@@ -90,6 +101,30 @@ export interface Ausencia {
 /** El alta de una ausencia informa de cuántas citas quedaron dentro del rango. */
 export interface AusenciaCreada extends Ausencia {
   citasPisadas: number
+}
+
+/** Una cita que sigue en pie después de retirar a su barbero. */
+export interface CitaComprometida {
+  id: string
+  /** Instantes UTC ISO-8601: el formateo a la hora de la sede es del cliente. */
+  iniciaEn: string
+  terminaEn: string
+  estado: string
+  cliente: { id: string; nombre: string; telefonoE164: string | null }
+}
+
+/**
+ * Lo que responde retirar a alguien de la agenda.
+ *
+ * Sus citas futuras **no se cancelan en cascada**: son clientes ya citados a los
+ * que hay que avisar uno por uno. Por eso la respuesta las enumera — sin la
+ * lista, la decisión de qué hacer con ellos se tomaría a ciegas.
+ */
+export interface RetiroBarbero extends Barbero {
+  /** Total de citas futuras que siguen a su nombre. */
+  citasComprometidas: number
+  /** Las 50 primeras por hora de inicio. Con el total mayor, hay más. */
+  citasPendientes: CitaComprometida[]
 }
 
 export interface FiltrosBarberos {

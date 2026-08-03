@@ -33,7 +33,7 @@ const BPS_POR_PUNTO = 100
  * mismo en la agenda.
  *
  * Existe porque el propietario de dos sillas corta, y era el único que no podía
- * darse de alta: `POST /equipo` crea una cuenta que él ya tiene, y la ficha de
+ * agregarse: `POST /equipo` crea una cuenta que él ya tiene, y la ficha de
  * barbero no acepta vincular una membresía. Sin esto tendría que pedírselo a
  * alguien, y en una barbería de una persona no hay a quién.
  *

@@ -11,8 +11,8 @@ import { esquemaBarbero, type DatosBarbero } from "@features/barberos/schemas/ba
 import type { Barbero } from "@features/barberos/types/barberos.types"
 
 interface BarberosFormProps {
-  /** Sin barbero = alta. Con barbero = edición. */
-  barbero?: Barbero | null
+  /** Siempre hay ficha: el alta la hace el formulario único de Personas. */
+  barbero: Barbero
   cargando?: boolean
   onSubmit: (datos: DatosBarbero) => Promise<void>
 }
@@ -21,19 +21,24 @@ interface BarberosFormProps {
 const BPS_POR_PUNTO = 100
 
 /**
- * Alta y edición del perfil operativo.
+ * La ficha de quien atiende: lo que el cliente ve al reservar y el acuerdo con
+ * el que se liquida.
  *
- * El título es de **vitrina** ("Barbero Senior"), no el rol de autorización: lo
- * lee el cliente al reservar y no abre ni cierra ninguna pantalla. Quién entra al
- * sistema y con qué capacidades se decide en Personas › Acceso.
+ * **Solo edita.** El alta la hace el formulario único de Personas, que pregunta
+ * de una vez si esa persona entra a la aplicación y si atiende — antes había que
+ * rellenar dos formularios en dos pantallas para el mismo barbero con cuenta.
+ * Aquí, en cambio, se está redactando su escaparate y ajustando su comisión, que
+ * es trabajo de otro día.
  *
- * No se pide el color: lo asigna la api con el índice menos usado de la
- * barbería. Obligar a elegirlo sería pedirle a alguien que lleve la cuenta de
+ * Qué puede hacer cada quien no se decide aquí: el título es de vitrina y no
+ * concede nada. Los permisos viven en la fila de esa persona, en Personas.
+ *
+ * No se pide identificador público —ninguna ruta lo resuelve y la api ya no lo
+ * acepta— ni el color, que lo asigna la api con el índice menos usado de la
+ * barbería: obligar a elegirlo sería pedirle a alguien que lleve la cuenta de
  * qué colores están cogidos.
  */
 export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps) {
-  const editando = Boolean(barbero)
-
   const {
     register,
     handleSubmit,
@@ -41,14 +46,13 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
   } = useForm<DatosBarbero>({
     resolver: standardSchemaResolver(esquemaBarbero),
     defaultValues: {
-      nombrePublico: barbero?.nombrePublico ?? "",
-      titulo: barbero?.titulo ?? undefined,
-      bio: barbero?.bio ?? undefined,
-      slug: barbero?.slug ?? undefined,
-      telefonoE164: barbero?.telefonoE164 ?? undefined,
-      email: barbero?.email ?? undefined,
-      fechaContratacion: barbero?.fechaContratacion ?? undefined,
-      comisionBps: barbero?.comisionBps ?? undefined,
+      nombrePublico: barbero.nombrePublico,
+      titulo: barbero.titulo ?? undefined,
+      bio: barbero.bio ?? undefined,
+      telefonoE164: barbero.telefonoE164 ?? undefined,
+      email: barbero.email ?? undefined,
+      fechaContratacion: barbero.fechaContratacion ?? undefined,
+      comisionBps: barbero.comisionBps ?? undefined,
     },
   })
 
@@ -68,22 +72,14 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
         <FieldError errors={[errors.nombrePublico]} />
       </Field>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field data-invalid={!!errors.titulo}>
-          <FieldLabel htmlFor="titulo">Título</FieldLabel>
-          <Input id="titulo" placeholder="Barbero Senior" {...register("titulo")} />
-          <p className="text-xs text-muted-foreground">
-            De vitrina. No decide qué puede hacer en el sistema.
-          </p>
-          <FieldError errors={[errors.titulo]} />
-        </Field>
-
-        <Field data-invalid={!!errors.slug}>
-          <FieldLabel htmlFor="slug">Identificador público</FieldLabel>
-          <Input id="slug" placeholder="carlos-ramirez" {...register("slug")} />
-          <FieldError errors={[errors.slug]} />
-        </Field>
-      </div>
+      <Field data-invalid={!!errors.titulo}>
+        <FieldLabel htmlFor="titulo">Título</FieldLabel>
+        <Input id="titulo" placeholder="Barbero Senior" {...register("titulo")} />
+        <p className="text-xs text-muted-foreground">
+          De vitrina: lo lee el cliente al reservar. No decide qué puede hacer en el sistema.
+        </p>
+        <FieldError errors={[errors.titulo]} />
+      </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field data-invalid={!!errors.telefonoE164}>
@@ -134,19 +130,15 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
       <Field data-invalid={!!errors.bio}>
         <FieldLabel htmlFor="bio">Presentación</FieldLabel>
         <Textarea id="bio" rows={3} className="resize-none" {...register("bio")} />
+        <p className="text-xs text-muted-foreground">
+          Lo que se lee de él en el escaparate, bajo su nombre.
+        </p>
         <FieldError errors={[errors.bio]} />
       </Field>
 
-      {!editando && (
-        <p className="rounded-lg border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
-          Se crea sin cuenta: aparece en la agenda y liquida comisiones, pero no inicia sesión.
-          Darle acceso es la otra pregunta del alta, en Personas › Acceso.
-        </p>
-      )}
-
       <Button type="submit" disabled={cargando} className="h-10">
         {cargando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-        {editando ? "Guardar barbero" : "Crear barbero"}
+        Guardar ficha
       </Button>
     </form>
   )

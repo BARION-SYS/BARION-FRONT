@@ -4,7 +4,12 @@ import { useCallback, useState } from "react"
 import { equipoService } from "@features/equipo/services/equipo.service"
 import { getErrorMessage } from "@shared/utils/error"
 import type { DatosAltaMiembro, DatosCambioRol } from "@features/equipo/schemas/equipo.schema"
-import type { AltaMiembro, FiltrosEquipo, Miembro } from "@features/equipo/types/equipo.types"
+import type {
+  AltaMiembro,
+  FiltrosEquipo,
+  Miembro,
+  RevocacionMiembro,
+} from "@features/equipo/types/equipo.types"
 
 export function useEquipo() {
   const [miembros, setMiembros] = useState<Miembro[]>([])
@@ -76,17 +81,25 @@ export function useEquipo() {
     []
   )
 
-  const handleRevokeMiembro = useCallback(async (membresiaId: string): Promise<string> => {
-    setLoadingAction(true)
-    try {
-      const res = await equipoService.revocarMiembro(membresiaId)
-      return res.message
-    } catch (err) {
-      throw new Error(getErrorMessage(err))
-    } finally {
-      setLoadingAction(false)
-    }
-  }, [])
+  /**
+   * Devuelve la revocación entera y no solo el mensaje: quitar el acceso retira
+   * también de la agenda, y sus citas futuras siguen en pie. Quien revoca tiene
+   * que ver a cuántos clientes hay que llamar.
+   */
+  const handleRevokeMiembro = useCallback(
+    async (membresiaId: string): Promise<{ mensaje: string; revocacion: RevocacionMiembro }> => {
+      setLoadingAction(true)
+      try {
+        const res = await equipoService.revocarMiembro(membresiaId)
+        return { mensaje: res.message, revocacion: res.data }
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
 
   return {
     miembros,

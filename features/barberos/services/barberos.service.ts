@@ -20,12 +20,17 @@ import type {
   FiltrosAusencias,
   FiltrosBarberos,
   JornadaSemanal,
+  RetiroBarbero,
 } from "@features/barberos/types/barberos.types"
 import type { ApiResult } from "@shared/types/api.types"
 
 export const barberosService = {
   async obtenerBarberos(filtros: FiltrosBarberos = {}): Promise<ApiResult<Barbero[]>> {
     return api.get<Barbero[]>("/barberos", { params: omitEmpty({ ...filtros }) })
+  },
+
+  async obtenerBarbero(id: string): Promise<ApiResult<Barbero>> {
+    return api.get<Barbero>(`/barberos/${id}`)
   },
 
   /**
@@ -49,25 +54,30 @@ export const barberosService = {
   },
 
   /** Deja de atender sin perder la ficha: no cancela las citas que ya tenga. */
-  async dejarDeAtender(): Promise<ApiResult<Barbero>> {
-    return api.delete<Barbero>("/barberos/mio")
+  async dejarDeAtender(): Promise<ApiResult<RetiroBarbero>> {
+    return api.delete<RetiroBarbero>("/barberos/mio")
   },
 
-  async crearBarbero(payload: DatosBarbero): Promise<ApiResult<Barbero>> {
-    const validos = esquemaBarbero.parse(payload)
-    // Los opcionales vacíos no viajan: omitirlos deja que la API decida su
-    // valor por defecto, que no es lo mismo que mandarlos en blanco.
-    return api.post<Barbero>("/barberos", omitEmpty({ ...validos }))
-  },
+  // Aquí vivía `crearBarbero` (`POST /barberos`), que abría una ficha SIN
+  // cuenta. Se retiró del panel: quien atiende, entra, así que dar de alta a una
+  // persona es siempre `POST /equipo`. «Atiende y no entra» sigue siendo un
+  // estado válido —es lo que queda al quitarle el acceso a quien atendía, y su
+  // historial no se toca— pero deja de ser algo que se pueda crear desde aquí.
 
   async actualizarBarbero(id: string, payload: DatosBarbero): Promise<ApiResult<Barbero>> {
     const validos = esquemaBarbero.parse(payload)
     return api.patch<Barbero>(`/barberos/${id}`, omitEmpty({ ...validos }))
   },
 
-  /** Soft delete: conserva su historial y NO cancela sus citas futuras. */
-  async desactivarBarbero(id: string, fechaRetiro?: string): Promise<ApiResult<Barbero>> {
-    return api.delete<Barbero>(`/barberos/${id}`, {
+  /**
+   * Retirarlo de la agenda. Soft delete: sale del escaparate, de los cupos y de
+   * los selectores de reserva, y conserva su historial y sus liquidaciones.
+   *
+   * **No cancela sus citas futuras** — la respuesta las enumera para poder
+   * reasignarlas una por una.
+   */
+  async desactivarBarbero(id: string, fechaRetiro?: string): Promise<ApiResult<RetiroBarbero>> {
+    return api.delete<RetiroBarbero>(`/barberos/${id}`, {
       data: omitEmpty({ fechaRetiro }),
     })
   },

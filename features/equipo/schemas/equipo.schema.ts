@@ -25,6 +25,13 @@ export const esquemaAltaMiembro = z.object({
     .or(z.literal("").transform(() => undefined)),
   /** Con rol `barbero` la api lo fuerza a true: un barbero sin agenda no existe. */
   atiende: z.boolean(),
+  /** Ata a la persona a una sede: la membresía y, si atiende, también su ficha. */
+  sedeId: z.uuid().optional(),
+  /**
+   * Puntos base, igual que la API: 5000 es el 50 %. Solo cuenta con `atiende`, y
+   * solo al abrir la ficha — una que ya existía tiene su acuerdo pactado.
+   */
+  comisionBps: z.number().int().min(0).max(10000).optional(),
 })
 
 export type DatosAltaMiembro = z.infer<typeof esquemaAltaMiembro>

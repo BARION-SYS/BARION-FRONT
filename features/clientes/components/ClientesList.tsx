@@ -74,12 +74,12 @@ export function ClientesList({
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-1.5 truncate text-sm font-medium">
                     {cliente.nombre} {cliente.apellido}
-                    {/* Verificado = ese teléfono es suyo de verdad. Es lo que
-                        sostiene el recordatorio y la campaña. */}
-                    {cliente.telefonoVerificado && (
+                    {/* Verificado = probó uno de sus canales, hoy el correo. Es
+                        lo que sostiene el recordatorio y la campaña. */}
+                    {cliente.verificado && (
                       <ShieldCheck
                         className="size-3.5 shrink-0 text-(--exito)"
-                        aria-label="Teléfono verificado"
+                        aria-label="Cliente verificado"
                       />
                     )}
                   </p>

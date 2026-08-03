@@ -116,12 +116,19 @@ export function ClientesDetail({
             </p>
           </div>
 
-          {/* No es un adorno: sin teléfono probado no hay recordatorio que
-              enviar ni reserva que él pueda hacer solo. */}
+          {/* No es un adorno: sin canal probado no hay campaña que llegue ni
+              reserva que él pueda hacer solo. Verificado = correo (el canal de
+              hoy) o teléfono, para quien pasó el OTP cuando salía por SMS. */}
           <StatusBadge
-            tono={cliente.telefonoVerificado ? "exito" : "advertencia"}
-            etiqueta={cliente.telefonoVerificado ? "Teléfono verificado" : "Sin verificar"}
-            icono={cliente.telefonoVerificado ? ShieldCheck : ShieldAlert}
+            tono={cliente.verificado ? "exito" : "advertencia"}
+            etiqueta={
+              cliente.verificado
+                ? cliente.emailVerificado
+                  ? "Correo verificado"
+                  : "Teléfono verificado"
+                : "Sin verificar"
+            }
+            icono={cliente.verificado ? ShieldCheck : ShieldAlert}
           />
         </div>
 

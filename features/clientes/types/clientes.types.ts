@@ -19,11 +19,20 @@ export interface Cliente {
   apellido: string | null
   telefonoE164: string
   /**
-   * `true` = ese teléfono es suyo de verdad, probado por OTP. `false` no es "a
-   * medias": lo registró la barbería, se le puede agendar, y no reserva solo.
+   * `true` = ese número se probó por SMS. **Hoy nadie nuevo lo consigue**: el
+   * código sale por correo, así que solo lo tienen las fichas que se verificaron
+   * cuando el canal era el teléfono.
    */
   telefonoVerificado: boolean
   email: string
+  /** `true` = esa dirección es suya de verdad, probada por OTP. */
+  emailVerificado: boolean
+  /**
+   * **Cualquiera de los dos canales.** Es el campo por el que se ramifica:
+   * `false` no es "a medias" —lo registró la barbería y se le puede agendar—,
+   * es que **no reserva solo**.
+   */
+  verificado: boolean
   /** `YYYY-MM-DD`. Sin hora: un cumpleaños no es un instante. */
   fechaNacimiento: string | null
   barberoFavorito: { id: string; nombrePublico: string } | null

@@ -8,6 +8,10 @@ import { ConfiguracionNav } from "@features/configuracion/components/Configuraci
 import { Notificaciones } from "@features/configuracion/components/Notificaciones"
 import { Seguridad } from "@features/configuracion/components/Seguridad"
 import { useConfiguracion } from "@features/configuracion/hooks/useConfiguracion"
+import { SuscripcionFacturasList } from "@features/suscripcion/components/SuscripcionFacturasList"
+import { SuscripcionPlanesList } from "@features/suscripcion/components/SuscripcionPlanesList"
+import { SuscripcionResumen } from "@features/suscripcion/components/SuscripcionResumen"
+import { useSuscripcion } from "@features/suscripcion/hooks/useSuscripcion"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { notify } from "@shared/services/notify"
 import { useAuthStore } from "@store/auth.store"
@@ -18,6 +22,7 @@ import type {
   DatosGeneral,
   DatosSeguridad,
 } from "@features/configuracion/schemas/configuracion.schema"
+import type { DatosElegirPlan } from "@features/suscripcion/schemas/suscripcion.schema"
 import type {
   CanalNotificacion,
   CanalesNotificacion,
@@ -38,6 +43,20 @@ export default function ConfiguracionPage() {
     handleActualizarContrasena,
   } = useConfiguracion()
 
+  const {
+    suscripcion,
+    planes,
+    facturas,
+    loadingSuscripcion,
+    loadingFacturas,
+    loadingAction: loadingSuscripcionAction,
+    fetchSuscripcion,
+    fetchFacturas,
+    handleElegirPlanSuscripcion,
+    handleCancelarSuscripcion,
+    handleReanudarSuscripcion,
+  } = useSuscripcion()
+
   /**
    * Ocultar el botón no es seguridad —la api revalida el permiso en cada
    * petición—, pero evita ofrecer un guardado que va a terminar en 403.
@@ -56,6 +75,14 @@ export default function ConfiguracionPage() {
   useEffect(() => {
     void fetchConfiguracion()
   }, [fetchConfiguracion])
+
+  // La cuenta se pide al abrir su sección, no al entrar a Configuración: son
+  // tres llamadas que la mayoría de las visitas no necesita.
+  useEffect(() => {
+    if (seccionActiva !== "plan") return
+    void fetchSuscripcion()
+    void fetchFacturas()
+  }, [seccionActiva, fetchSuscripcion, fetchFacturas])
 
   // Estado inicial de los toggles según lo que reporta la API
   useEffect(() => {
@@ -80,6 +107,32 @@ export default function ConfiguracionPage() {
   const onSubmitFicha = async (datos: DatosFicha) => {
     try {
       notify.success(await handleGuardarFicha(datos))
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }
+
+  const onElegirPlan = async (datos: DatosElegirPlan) => {
+    try {
+      // El mensaje viene de la api porque es el que distingue el cambio limpio
+      // del que deja la cuenta por encima de sus topes.
+      notify.success(await handleElegirPlanSuscripcion(datos))
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }
+
+  const onCancelarSuscripcion = async () => {
+    try {
+      notify.info(await handleCancelarSuscripcion())
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }
+
+  const onReanudarSuscripcion = async () => {
+    try {
+      notify.success(await handleReanudarSuscripcion())
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
@@ -130,6 +183,29 @@ export default function ConfiguracionPage() {
         {seccionActiva === "apariencia" && barberia && (
           <Apariencia nombreBarberia={barberia.nombreComercial} />
         )}
+        {seccionActiva === "plan" &&
+          (loadingSuscripcion || !suscripcion || !barberia ? (
+            <DataSkeleton variant="card" count={2} />
+          ) : (
+            <>
+              <SuscripcionResumen
+                suscripcion={suscripcion}
+                soloLectura={!gestiona}
+                cargando={loadingSuscripcionAction}
+                onCancelar={onCancelarSuscripcion}
+                onReanudar={onReanudarSuscripcion}
+              />
+              <SuscripcionPlanesList
+                planes={planes}
+                suscripcion={suscripcion}
+                pais={barberia.pais}
+                soloLectura={!gestiona}
+                cargando={loadingSuscripcionAction}
+                onElegir={onElegirPlan}
+              />
+              <SuscripcionFacturasList facturas={facturas} cargando={loadingFacturas} />
+            </>
+          ))}
         {seccionActiva === "notificaciones" && (
           <Notificaciones canales={canales} activos={canalesActivos} alAlternar={alternarCanal} />
         )}

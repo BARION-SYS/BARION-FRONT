@@ -11,6 +11,11 @@
       "icono": "Palette"
     },
     {
+      "id": "plan",
+      "etiqueta": "Plan",
+      "icono": "CreditCard"
+    },
+    {
       "id": "notificaciones",
       "etiqueta": "Notificaciones",
       "icono": "Bell"

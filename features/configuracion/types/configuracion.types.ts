@@ -5,7 +5,8 @@ import type { LucideIcon } from "lucide-react"
  * en `/dashboard/sedes`. Una cadena que abre en dos ciudades tiene dos semanas
  * distintas y no caben en un único formulario de configuración.
  */
-export type IdSeccionConfiguracion = "general" | "apariencia" | "notificaciones" | "seguridad"
+export type IdSeccionConfiguracion =
+  "general" | "apariencia" | "plan" | "notificaciones" | "seguridad"
 
 export interface SeccionConfiguracion {
   id: IdSeccionConfiguracion

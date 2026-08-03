@@ -1,4 +1,4 @@
-import { Bell, Palette, Shield, Store } from "lucide-react"
+import { Bell, CreditCard, Palette, Shield, Store } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { api } from "@lib/http/instances"
 import { omitEmpty } from "@shared/utils/params"
@@ -37,6 +37,7 @@ function ok<T>(data: T, message = "ok"): ApiResult<T> {
 // Los íconos no son serializables: en el JSON viajan como nombre string y aquí se resuelven al componente real.
 const iconosSeccion: Record<string, LucideIcon> = {
   Bell,
+  CreditCard,
   Palette,
   Shield,
   Store,

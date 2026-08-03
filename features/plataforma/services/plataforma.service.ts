@@ -10,6 +10,7 @@ import type {
   BarberiaFicha,
   BarberiaInventario,
   FiltrosInventario,
+  PlanPlataforma,
 } from "@features/plataforma/types/plataforma.types"
 import type { ApiResult } from "@shared/types/api.types"
 
@@ -46,5 +47,18 @@ export const plataformaService = {
   ): Promise<ApiResult<BarberiaFicha>> {
     const validos = esquemaCambioEstado.parse(payload)
     return api.post<BarberiaFicha>(`/plataforma/barberias/${id}/estado`, validos)
+  },
+
+  /**
+   * El catálogo comercial: planes activos con sus límites, sus funciones y su
+   * precio por país.
+   *
+   * Es la ÚNICA ruta pública de la API (`@Publico()`) — la misma que consume el
+   * sitio de venta. Aquí no se usa para vender, sino porque el alta necesita
+   * elegir un plan que exista de verdad: teclear el código a mano acaba
+   * creándole a un cliente una suscripción a un plan que nadie tiene.
+   */
+  async obtenerPlanes(): Promise<ApiResult<PlanPlataforma[]>> {
+    return api.get<PlanPlataforma[]>("/publico/planes")
   },
 }

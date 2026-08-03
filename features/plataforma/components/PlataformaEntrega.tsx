@@ -1,9 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { Check, Copy, ExternalLink } from "lucide-react"
-import { Button } from "@shared/components/ui/button"
-import { notify } from "@shared/services/notify"
+import { EnlaceCopiable } from "@features/plataforma/components/EnlaceCopiable"
 import type { BarberiaFicha } from "@features/plataforma/types/plataforma.types"
 
 interface PlataformaEntregaProps {
@@ -22,23 +19,7 @@ interface PlataformaEntregaProps {
  * tiene. Repetirla en pantalla solo añade un sitio más del que puede escaparse.
  */
 export function PlataformaEntrega({ barberia, correoPropietario }: PlataformaEntregaProps) {
-  const [copiado, setCopiado] = useState<string | null>(null)
-
   const origen = typeof window === "undefined" ? "" : window.location.origin
-  const urlEntrada = `${origen}/b/${barberia.slug}/entrar`
-  const urlPortal = `${origen}/b/${barberia.slug}`
-
-  const copiar = async (texto: string, clave: string) => {
-    try {
-      await navigator.clipboard.writeText(texto)
-      setCopiado(clave)
-      window.setTimeout(() => setCopiado(null), 2000)
-    } catch {
-      // Sin permiso de portapapeles el enlace sigue visible y se puede
-      // seleccionar a mano: se avisa en vez de dejar el botón mudo.
-      notify.error("No se pudo copiar. Selecciona el enlace y cópialo a mano")
-    }
-  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -55,73 +36,20 @@ export function PlataformaEntrega({ barberia, correoPropietario }: PlataformaEnt
       <EnlaceCopiable
         etiqueta="Entrada de su equipo"
         descripcion="Aquí entran el propietario y, más adelante, sus barberos"
-        valor={urlEntrada}
-        copiado={copiado === "entrada"}
-        onCopiar={() => void copiar(urlEntrada, "entrada")}
+        valor={`${origen}/b/${barberia.slug}/entrar`}
       />
 
       <EnlaceCopiable
         etiqueta="Portal público de reservas"
         descripcion="Lo que verán sus clientes. Es también el destino del código QR"
-        valor={urlPortal}
-        copiado={copiado === "portal"}
-        onCopiar={() => void copiar(urlPortal, "portal")}
+        valor={`${origen}/b/${barberia.slug}`}
       />
 
       <EnlaceCopiable
         etiqueta="Correo del propietario"
         descripcion="Con este correo inicia sesión"
         valor={correoPropietario}
-        copiado={copiado === "correo"}
-        onCopiar={() => void copiar(correoPropietario, "correo")}
       />
-    </div>
-  )
-}
-
-interface EnlaceCopiableProps {
-  etiqueta: string
-  descripcion: string
-  valor: string
-  copiado: boolean
-  onCopiar: () => void
-}
-
-function EnlaceCopiable({ etiqueta, descripcion, valor, copiado, onCopiar }: EnlaceCopiableProps) {
-  const esEnlace = valor.startsWith("http")
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <p className="text-sm font-medium">{etiqueta}</p>
-      <p className="text-xs text-muted-foreground">{descripcion}</p>
-      <div className="flex items-center gap-2 rounded-lg border border-border bg-secondary/40 px-3 py-2">
-        <code className="min-w-0 flex-1 truncate text-xs">{valor}</code>
-        {esEnlace && (
-          <a
-            href={valor}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            aria-label={`Abrir ${etiqueta}`}
-          >
-            <ExternalLink className="size-3.5" aria-hidden />
-          </a>
-        )}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 shrink-0 px-2"
-          onClick={onCopiar}
-        >
-          {copiado ? (
-            <Check className="size-3.5 text-(--exito)" aria-hidden />
-          ) : (
-            <Copy className="size-3.5" aria-hidden />
-          )}
-          <span className="sr-only">Copiar {etiqueta}</span>
-        </Button>
-      </div>
     </div>
   )
 }

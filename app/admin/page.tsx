@@ -1,92 +1,95 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import Link from "next/link"
+import { ArrowRight, Globe, Tags } from "lucide-react"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { Modal } from "@shared/components/modals/Modal"
 import { Button } from "@shared/components/ui/button"
 import { notify } from "@shared/services/notify"
-import { useAuthStore } from "@store/auth.store"
-import { puede } from "@features/auth/utils/permisos"
 import { getErrorMessage } from "@shared/utils/error"
+import { puede } from "@features/auth/utils/permisos"
+import { useAuthStore } from "@store/auth.store"
 import { usePlataforma } from "@features/plataforma/hooks/usePlataforma"
-import { PlataformaEntrega } from "@features/plataforma/components/PlataformaEntrega"
-import { PlataformaForm } from "@features/plataforma/components/PlataformaForm"
-import { PlataformaList } from "@features/plataforma/components/PlataformaList"
-import { PlataformaToolbar } from "@features/plataforma/components/PlataformaToolbar"
-import type { DatosAltaBarberia } from "@features/plataforma/schemas/plataforma.schema"
-import type {
-  BarberiaInventario,
-  EstadoBarberia,
-} from "@features/plataforma/types/plataforma.types"
+import { PlataformaAltasList } from "@features/plataforma/components/PlataformaAltasList"
+import { PlataformaDetail } from "@features/plataforma/components/PlataformaDetail"
+import { PlataformaEstadoChart } from "@features/plataforma/components/PlataformaEstadoChart"
+import { PlataformaIndicadores } from "@features/plataforma/components/PlataformaIndicadores"
+import { PlataformaSegmentosChart } from "@features/plataforma/components/PlataformaSegmentosChart"
+import {
+  distribucionPorEstado,
+  distribucionPorPais,
+  distribucionPorPlan,
+  resumirInventario,
+  ultimasAltas,
+} from "@features/plataforma/utils/inventario"
+import type { EstadoBarberia } from "@features/plataforma/types/plataforma.types"
 
 /**
- * Inventario de barberías — lo que ve el staff de Barion.
+ * Cómo va el negocio de Barion, no el de una barbería.
  *
- * El flujo completo del negocio cabe en esta pantalla: se da de alta la
- * barbería, se copia el enlace de entrada y se le pasa al cliente. A partir de
- * ahí él crea sus barberos, su catálogo y su código QR, y Barion solo vuelve
- * para cobrar o para suspender.
+ * Todo lo que se ve aquí sale del inventario COMPLETO —una sola lectura con
+ * `paginar=false`— y se cuenta en el cliente: son sumas de lo que ya viaja en
+ * cada fila, y pedirle a la API un endpoint de agregados sería mantener la misma
+ * verdad en dos sitios. Cuando no hay barberías todavía no se pintan ceros: se
+ * dice que no hay ninguna, que es otra cosa.
  */
 export default function AdminPage() {
   const {
     barberias,
-    total,
-    recienCreada,
+    ficha,
     loadingLista,
+    loadingFicha,
     loadingAction,
     error,
     fetchBarberias,
-    handleCreateBarberia,
+    fetchBarberia,
     handleChangeEstadoBarberia,
-    limpiarRecienCreada,
+    limpiarFicha,
   } = usePlataforma()
 
-  // Estado de UI: vive en el contenedor, nunca en el hook.
-  /**
-   * El staff de Barion también se reparte: quien solo consulta el inventario no
-   * tiene por qué encontrar el alta ni el cambio de estado.
-   */
   const sesion = useAuthStore((estado) => estado.sesion)
   const gestiona = puede(sesion, "plataforma.barberias.gestionar")
 
-  const [busqueda, setBusqueda] = useState("")
-  const [estado, setEstado] = useState<EstadoBarberia | "todas">("todas")
-  const [creando, setCreando] = useState(false)
-  // Se conserva para mostrarlo en la entrega: la API no lo devuelve, y con razón
-  // —es dato del propietario, no de la barbería— pero quien acaba de darla de
-  // alta necesita tenerlo a mano para copiarlo junto al enlace.
-  const [correoEntregado, setCorreoEntregado] = useState("")
+  // Estado de UI: la ficha abierta vive en el contenedor, nunca en el hook.
+  const [abierta, setAbierta] = useState(false)
 
   const cargar = useCallback(() => {
-    void fetchBarberias({
-      busqueda: busqueda || undefined,
-      estado: estado === "todas" ? undefined : estado,
-    })
-  }, [fetchBarberias, busqueda, estado])
+    // Sin paginar: el resumen cuenta el inventario entero, y `limit=100` como
+    // sustituto empieza a mentir el día que haya 101 barberías.
+    void fetchBarberias({ paginar: false })
+  }, [fetchBarberias])
 
   useEffect(() => {
     cargar()
   }, [cargar])
 
-  const onCrear = useCallback(
-    async (datos: DatosAltaBarberia) => {
-      try {
-        const mensaje = await handleCreateBarberia(datos)
-        setCorreoEntregado(datos.propietarioEmail)
-        setCreando(false)
-        notify.success(mensaje)
-        cargar()
-      } catch (err) {
-        notify.error(getErrorMessage(err))
-      }
+  const resumen = useMemo(() => resumirInventario(barberias), [barberias])
+  const porEstado = useMemo(() => distribucionPorEstado(barberias), [barberias])
+  const porPais = useMemo(() => distribucionPorPais(barberias), [barberias])
+  const porPlan = useMemo(() => distribucionPorPlan(barberias), [barberias])
+  const recientes = useMemo(() => ultimasAltas(barberias), [barberias])
+
+  const onAbrir = useCallback(
+    (id: string) => {
+      setAbierta(true)
+      void fetchBarberia(id)
     },
-    [handleCreateBarberia, cargar]
+    [fetchBarberia]
+  )
+
+  const onCerrar = useCallback(
+    (abierto: boolean) => {
+      setAbierta(abierto)
+      if (!abierto) limpiarFicha()
+    },
+    [limpiarFicha]
   )
 
   const onCambiarEstado = useCallback(
-    async (barberia: BarberiaInventario, destino: EstadoBarberia) => {
+    async (id: string, destino: EstadoBarberia) => {
       try {
-        const mensaje = await handleChangeEstadoBarberia(barberia.id, { estado: destino })
+        const mensaje = await handleChangeEstadoBarberia(id, { estado: destino })
         notify.success(mensaje)
         cargar()
       } catch (err) {
@@ -97,54 +100,68 @@ export default function AdminPage() {
   )
 
   return (
-    <main className="scroll-fino flex-1 overflow-y-auto p-4 sm:p-6">
-      <SectionCard titulo="Barberías" subtitulo="Alta, estado y plan de cada cliente">
-        <div className="flex flex-col gap-5">
-          <PlataformaToolbar
-            busqueda={busqueda}
-            estado={estado}
-            total={total}
-            onBuscar={setBusqueda}
-            onFiltrarEstado={setEstado}
-            gestiona={gestiona}
-            onCrear={() => setCreando(true)}
-          />
+    <main className="scroll-fino flex flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6">
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+      <PlataformaIndicadores resumen={resumen} loading={loadingLista} />
 
-          <PlataformaList
-            barberias={barberias}
-            loading={loadingLista}
-            gestiona={gestiona}
-            onCambiarEstado={(barberia, destino) => void onCambiarEstado(barberia, destino)}
-          />
-        </div>
-      </SectionCard>
+      <div className="grid gap-4 xl:grid-cols-3">
+        <PlataformaEstadoChart segmentos={porEstado} total={resumen.total} />
+        <PlataformaSegmentosChart
+          titulo="Por país"
+          subtitulo="Dónde opera lo vendido"
+          segmentos={porPais}
+          color="var(--chart-3)"
+          vacio={{
+            titulo: "Sin barberías todavía",
+            detalle: "El reparto por país aparece con la primera alta.",
+            icono: Globe,
+          }}
+        />
+        <PlataformaSegmentosChart
+          titulo="Por plan"
+          subtitulo="Qué tiene contratado cada quien"
+          segmentos={porPlan}
+          color="var(--chart-1)"
+          vacio={{
+            titulo: "Sin planes contratados",
+            detalle: "Cada alta arranca con su plan de prueba.",
+            icono: Tags,
+          }}
+        />
+      </div>
 
-      <Modal
-        open={creando}
-        onOpenChange={setCreando}
-        titulo="Nueva barbería"
-        descripcion="Se crea con su sede y su propietario: queda lista para entregar."
-        size="lg"
-      >
-        <PlataformaForm cargando={loadingAction} onSubmit={onCrear} />
-      </Modal>
-
-      <Modal
-        open={recienCreada !== null}
-        onOpenChange={(abierto) => !abierto && limpiarRecienCreada()}
-        titulo="Entrégasela a tu cliente"
-        size="lg"
-        footer={
-          <Button type="button" onClick={limpiarRecienCreada}>
-            Listo
+      <SectionCard
+        titulo="Últimas altas"
+        subtitulo="Lo que entró más recientemente"
+        accion={
+          <Button variant="outline" size="sm" render={<Link href="/admin/barberias" />}>
+            Ver el inventario
+            <ArrowRight className="size-4" aria-hidden />
           </Button>
         }
       >
-        {recienCreada && (
-          <PlataformaEntrega barberia={recienCreada} correoPropietario={correoEntregado} />
-        )}
+        <PlataformaAltasList
+          barberias={recientes}
+          loading={loadingLista}
+          onAbrir={(barberia) => onAbrir(barberia.id)}
+        />
+      </SectionCard>
+
+      <Modal
+        open={abierta}
+        onOpenChange={onCerrar}
+        titulo="Ficha de la barbería"
+        descripcion="Cómo está montada y en qué estado opera."
+        size="lg"
+      >
+        <PlataformaDetail
+          ficha={ficha}
+          loading={loadingFicha}
+          gestiona={gestiona}
+          cargandoAccion={loadingAction}
+          onCambiarEstado={(destino) => ficha && void onCambiarEstado(ficha.id, destino)}
+        />
       </Modal>
     </main>
   )

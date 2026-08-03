@@ -47,6 +47,15 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   const router = useRouter()
   const ruta = obtenerRutaActiva(pathname)
 
+  /**
+   * El área de plataforma comparte chrome con el panel, pero no comparte datos:
+   * el staff de Barion no pertenece a ninguna barbería, así que ni tiene sedes
+   * entre las que elegir, ni bandeja de avisos, ni colores de marca que ajustar.
+   * Pedirlos igualmente sería un 403 por recarga y un menú que lleva a rutas que
+   * esa sesión no puede abrir.
+   */
+  const esAdmin = pathname.startsWith("/admin")
+
   const sesion = useAuthStore((s) => s.sesion)
   const { handleLogoutAuth } = useAuth()
   const { relativo } = useFormato()
@@ -59,10 +68,11 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
     handleMarcarTodasLeidasNotificaciones,
   } = useNotificaciones()
   useEffect(() => {
+    if (esAdmin) return
     // La campana enseña las últimas, no la bandeja entera: la lista completa es
     // de su pantalla.
     void fetchNotificaciones({ limit: 10 })
-  }, [fetchNotificaciones])
+  }, [fetchNotificaciones, esAdmin])
 
   // Transversal: la sede activa alimenta filtros de listados y timezone de
   // formateo (`useFormato`) en todo el panel, no solo aquí.
@@ -71,8 +81,9 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   const setSedeActual = useSedeStore((s) => s.setSedeActual)
   const sedeActual = useSedeActual()
   useEffect(() => {
+    if (esAdmin) return
     void fetchSedes()
-  }, [fetchSedes])
+  }, [fetchSedes, esAdmin])
   useEffect(() => {
     setSedes(sedes)
   }, [sedes, setSedes])
@@ -107,7 +118,9 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   // El AuthProvider no pinta el chrome sin sesión resuelta, así que aquí siempre
   // hay una. El email es el respaldo de quien todavía no tiene nombre puesto.
   const nombreUsuario = sesion?.usuario.nombre ?? sesion?.usuario.email ?? ""
-  const rolUsuario = sesion?.rol?.nombre ?? ""
+  // La sesión de plataforma llega sin rol —no tiene membresía en ninguna
+  // barbería—, así que se nombra por lo que es en vez de dejar el hueco vacío.
+  const rolUsuario = esAdmin ? "Staff de Barion" : (sesion?.rol?.nombre ?? "")
 
   return (
     <motion.header
@@ -166,7 +179,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
           </kbd>
         </div>
 
-        {sedes.length > 1 && (
+        {!esAdmin && sedes.length > 1 && (
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -193,85 +206,87 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
           </DropdownMenu>
         )}
 
-        <BrandStudio />
+        {!esAdmin && <BrandStudio />}
         <ThemeToggle />
 
         <div className="mx-1 hidden h-6 w-px bg-border md:block" aria-hidden />
 
-        {/* Notificaciones */}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label={
-                  noLeidas > 0 ? `Notificaciones, ${noLeidas} sin leer` : "Notificaciones"
-                }
-                className="relative"
-              >
-                <Bell aria-hidden />
-                {noLeidas > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[10px] font-bold text-primary-foreground"
-                    aria-hidden
-                  >
-                    {noLeidas}
-                  </span>
-                )}
-              </Button>
-            }
-          />
-          <DropdownMenuContent align="end" className="w-80">
-            <div className="flex items-center justify-between px-2 py-1.5">
-              <span className="text-sm font-medium text-foreground">Notificaciones</span>
-              {noLeidas > 0 && (
+        {/* Notificaciones — la bandeja es de quien trabaja en una barbería */}
+        {!esAdmin && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
                 <Button
-                  variant="link"
-                  size="sm"
-                  className="h-auto p-0 text-xs"
-                  onClick={() => void alMarcarTodas()}
+                  variant="outline"
+                  size="icon"
+                  aria-label={
+                    noLeidas > 0 ? `Notificaciones, ${noLeidas} sin leer` : "Notificaciones"
+                  }
+                  className="relative"
                 >
-                  Marcar todas como leídas
-                </Button>
-              )}
-            </div>
-            <DropdownMenuSeparator />
-            {notificaciones.length === 0 && (
-              <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                Sin notificaciones
-              </p>
-            )}
-            {notificaciones.map((n) => (
-              <DropdownMenuItem
-                key={n.id}
-                onClick={() => void alAbrirNotificacion(n.id)}
-                className="items-start gap-2 py-2"
-              >
-                <span
-                  className={cn(
-                    "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
-                    n.leida ? "bg-border" : "bg-primary"
-                  )}
-                  aria-hidden
-                />
-                <span className="min-w-0">
-                  <span className={cn("block truncate text-sm", !n.leida && "font-semibold")}>
-                    {n.titulo ?? n.tipo}
-                  </span>
-                  {n.detalle && (
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {n.detalle}
+                  <Bell aria-hidden />
+                  {noLeidas > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[10px] font-bold text-primary-foreground"
+                      aria-hidden
+                    >
+                      {noLeidas}
                     </span>
                   )}
-                  <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                    {relativo(n.creadaEn)}
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="w-80">
+              <div className="flex items-center justify-between px-2 py-1.5">
+                <span className="text-sm font-medium text-foreground">Notificaciones</span>
+                {noLeidas > 0 && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0 text-xs"
+                    onClick={() => void alMarcarTodas()}
+                  >
+                    Marcar todas como leídas
+                  </Button>
+                )}
+              </div>
+              <DropdownMenuSeparator />
+              {notificaciones.length === 0 && (
+                <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+                  Sin notificaciones
+                </p>
+              )}
+              {notificaciones.map((n) => (
+                <DropdownMenuItem
+                  key={n.id}
+                  onClick={() => void alAbrirNotificacion(n.id)}
+                  className="items-start gap-2 py-2"
+                >
+                  <span
+                    className={cn(
+                      "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                      n.leida ? "bg-border" : "bg-primary"
+                    )}
+                    aria-hidden
+                  />
+                  <span className="min-w-0">
+                    <span className={cn("block truncate text-sm", !n.leida && "font-semibold")}>
+                      {n.titulo ?? n.tipo}
+                    </span>
+                    {n.detalle && (
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {n.detalle}
+                      </span>
+                    )}
+                    <span className="mt-0.5 block text-[10px] text-muted-foreground">
+                      {relativo(n.creadaEn)}
+                    </span>
                   </span>
-                </span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         {/* Menú de usuario */}
         <DropdownMenu>
@@ -321,16 +336,22 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
               </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/dashboard/configuracion")}>
-              <UserRound aria-hidden /> Mi perfil
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/dashboard/citas")}>
-              <CalendarDays aria-hidden /> Mi agenda
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/dashboard/configuracion")}>
-              <Settings aria-hidden /> Configuración
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            {/* Los atajos son del panel de una barbería: en plataforma llevarían
+                a rutas que esa sesión no puede abrir. */}
+            {!esAdmin && (
+              <>
+                <DropdownMenuItem onClick={() => router.push("/dashboard/configuracion")}>
+                  <UserRound aria-hidden /> Mi perfil
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/dashboard/citas")}>
+                  <CalendarDays aria-hidden /> Mi agenda
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/dashboard/configuracion")}>
+                  <Settings aria-hidden /> Configuración
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem variant="destructive" onClick={alCerrarSesion}>
               <LogOut aria-hidden /> Cerrar sesión
             </DropdownMenuItem>

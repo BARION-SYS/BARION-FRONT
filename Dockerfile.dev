@@ -1,30 +1,64 @@
 # barion (front) — DESARROLLO
+#
 # En este servidor se trabaja desde el HOST: el código Y node_modules se montan
-# por volumen (compose del padre). Instalar deps = pnpm add en el host; el
+# por volumen (compose del padre). Instalar deps = `pnpm add` en el host; el
 # contenedor las ve al instante, sin rebuild ni reinicio.
-# Base glibc (slim, no alpine): los binarios nativos instalados desde el host
-# (sharp, swc de Next, lightningcss) deben poder ejecutarse dentro.
-
+#
+# Base glibc (slim, NO alpine): los binarios nativos instalados desde el host
+# —sharp, el swc de Next, lightningcss— están compilados contra glibc y no se
+# ejecutan sobre la musl de Alpine. Compartir node_modules obliga a que ambos
+# lados usen la misma libc, y es lo que permite que instalar una dependencia sea
+# instantáneo en vez de reinstalar el árbol entero dentro.
 FROM node:22-slim
-WORKDIR /app
+
+# Quién es el contenedor. `1002` es el dev del host y `1005` el grupo que
+# comparten los programadores: lo que el contenedor genere —la caché de
+# compilación, un build— queda escribible para todos ellos y no solo para quien
+# levantó el entorno.
+#
+# Se cambian sin tocar este archivo:
+#   docker compose -f docker-compose.dev.yml build --build-arg UID=1001 web
+ARG UID=1002
+ARG GID=1005
 
 # Versión EXACTA la que fija `packageManager` en package.json. pnpm 10 se
 # automantiene: si la global no coincide al carácter, ANTES de cualquier comando
-# se reinstala a sí mismo (`pnpm add pnpm@x.y.z`) — una descarga en cada arranque
-# que además escribe donde el contenedor no puede. Al subir el pin en el front,
-# subir también esta línea.
+# se reinstala a sí mismo — una descarga en cada arranque que además escribe
+# donde el contenedor no puede. Al subir el pin en el front, subir esta línea.
 RUN npm install -g pnpm@10.33.3
 
-# Aquí no se instala nada al construir, pero `make add-web` sí corre `pnpm add`
-# dentro del contenedor. Sin esto pnpm deja su store en `/app/.pnpm-store`, que
-# por el bind mount es el repo del host, y con dueño root.
-# El contenedor corre con el uid del host (no root, ver `user:` en el compose):
-# el directorio se crea al construir y se abre a cualquier uid, porque el que va
-# a escribir ahí no se conoce hasta que arranca.
-ENV npm_config_store_dir=/pnpm-store
-RUN mkdir -p /pnpm-store && chmod 777 /pnpm-store
+# Un usuario de VERDAD, con su grupo y su home.
+#
+# Antes el compose pasaba `user: "1002:1002"` contra una imagen que no conocía
+# ese uid: quedaba un usuario sin entrada en /etc/passwd y sin home, y había que
+# apuntar `HOME` a /tmp para que las herramientas no escribieran en `/`. Con el
+# usuario declarado aquí, `~` existe y vale para todas.
+#
+# El grupo se crea solo si el gid está libre: la imagen base ya trae `node`
+# (1000) y no hay por qué chocar con él.
+RUN if ! getent group ${GID} >/dev/null; then groupadd -g ${GID} programadores; fi \
+ && useradd -u ${UID} -g ${GID} -m -d /home/app -s /bin/bash app \
+ && mkdir -p /app \
+ && chown -R ${UID}:${GID} /app /home/app
+
+# `.next` NO se comparte con el host: el compose le monta encima un volumen de
+# Docker. Este directorio existe en la imagen solo para fijarle el dueño — al
+# crear el volumen, Docker lo hereda de aquí, y el contenedor no corre como
+# root. Sin esto el volumen nace de root y Next no puede escribir su caché.
+RUN mkdir -p /app/.next && chown ${UID}:${GID} /app/.next
+
+# Store de pnpm FUERA de /app, y dentro del home del usuario. Por defecto pnpm
+# lo pone en el home, ve que está en otro dispositivo que node_modules y cae a
+# un store local del proyecto: `/app/.pnpm-store`, que por el bind mount es el
+# repo del host. La variable es `npm_config_store_dir`: `PNPM_STORE_DIR` pnpm la
+# ignora.
+ENV HOME=/home/app
+ENV npm_config_store_dir=/home/app/.pnpm-store
+ENV NEXT_TELEMETRY_DISABLED=1
+
+WORKDIR /app
+USER ${UID}:${GID}
 
 EXPOSE 2203
-ENV NEXT_TELEMETRY_DISABLED=1
 
 CMD ["pnpm", "dev"]

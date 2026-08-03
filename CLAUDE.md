@@ -139,7 +139,7 @@ shared/
 ├── components/
 │   ├── ui/          # Primitivos shadcn — SOLO shadcn, nunca editar a mano
 │   ├── brand/       # LogoBarion — logo adaptativo al tema, única fuente de marca
-│   ├── modals/      # Modal — shell agnóstico sobre Dialog (open, titulo, children, footer, size)
+│   ├── modals/      # Modal (cuadro centrado) y SidePanel (panel derecho a alto completo) — shells agnósticos sobre Dialog de Base UI (open, titulo, children, footer, size)
 │   ├── feedback/    # DataSkeleton, Loadable
 │   ├── charts/      # ChartTooltip
 │   ├── forms/       # composiciones de formulario reutilizables
@@ -154,6 +154,8 @@ shared/
 Reutilizar SIEMPRE los compartidos antes de construir: `SectionCard` (tarjeta con header), `StatCard` (indicador), `StatusBadge` (píldora por `tono` con ícono — estado nunca solo color), `InitialsAvatar`, `ChartTooltip` (todo Tooltip de recharts), `DataSkeleton`/`Loadable` (carga), `InfoTooltip` (`shared/components/tooltips/` — tooltip genérico condicional para cualquier componente).
 
 **Modales = SIEMPRE el `Modal` compartido (`shared/components/modals/Modal.tsx`), presentacional puro.** Un modal NO sabe nada de lo que ocurre dentro: sin estado, sin lógica, sin hooks/services. La lógica (submit, `loading`, validación, cierre tras éxito) vive en el padre, que arma el contenido y lo pasa por `children`/`footer`. PROHIBIDO componer `Dialog` a mano en un feature.
+
+**Formulario largo o ficha de detalle = `SidePanel` (`shared/components/modals/SidePanel.tsx`), misma filosofía que el `Modal` y misma API.** Entra desde el borde derecho a alto completo sobre el `Dialog` de Base UI (vía `ui/sheet`), y en móvil ocupa el ancho entero. **Encabezado y pie quedan fijos; solo scrollea el cuerpo**, así que el botón de envío nunca se sale de alcance: va en `footer` y se ata al `<form>` con el atributo `form` + el id que exporta el formulario. Anima con `motion` (entrada spring, salida más corta) apoyándose en `preventUnmountOnClose()` + `actionsRef.unmount()` de Base UI — sin eso la salida no se ve. Un cuadro centrado (`Modal`) se reserva para confirmaciones y contenido corto.
 
 **Estados de carga = skeleton, NUNCA spinner ni texto "Cargando…" (regla dura).** Todo loading de datos usa `DataSkeleton` (`shared/components/feedback/`, sobre el Skeleton de shadcn) con la variante de lo que va a aparecer (`text|list|card|table|form|stats|chart`), directo o vía la compuerta `Loadable` (`loading` → skeleton, `isEmpty` → vacío, si no → children). Única excepción: el estado de submit de un botón.
 

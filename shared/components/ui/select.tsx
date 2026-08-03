@@ -6,7 +6,58 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "@shared/utils/cn"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-const Select = SelectPrimitive.Root
+type EtiquetaDeItem = { value: unknown; label: React.ReactNode }
+
+/**
+ * Recorre el JSX en busca de `SelectItem` y devuelve su par valor → etiqueta.
+ *
+ * Base UI pinta en el trigger el valor CRUDO mientras no se le diga cómo traducirlo:
+ * con `value={sede.id}` el control acaba enseñando un uuid. Su remedio es el prop
+ * `items` de la raíz, pero pedírselo a cada pantalla es delegar en que nadie lo
+ * olvide — y la que lo olvide vuelve a enseñar el identificador. Se arma aquí, una
+ * vez, leyendo lo que la propia pantalla ya declaró.
+ */
+function etiquetasDeItems(children: React.ReactNode): EtiquetaDeItem[] {
+  const items: EtiquetaDeItem[] = []
+
+  const recorrer = (nodos: React.ReactNode) => {
+    React.Children.forEach(nodos, (nodo) => {
+      if (!React.isValidElement(nodo)) return
+      const props = nodo.props as { value?: unknown; children?: React.ReactNode }
+
+      if (nodo.type === SelectItem) {
+        // `toArray` reparte keys: una etiqueta con varios hijos se pinta en el trigger sin avisos.
+        const partes = React.Children.toArray(props.children)
+        items.push({ value: props.value, label: partes.length === 1 ? partes[0] : partes })
+        return
+      }
+
+      recorrer(props.children)
+    })
+  }
+
+  recorrer(children)
+  return items
+}
+
+/**
+ * La raíz del select. Deriva `items` del propio árbol para que el trigger enseñe
+ * SIEMPRE la etiqueta y nunca el valor. Un `items` explícito manda sobre lo derivado,
+ * y un valor sin item que lo case sigue cayendo al valor crudo, como en Base UI.
+ */
+function Select<Value, Multiple extends boolean | undefined = false>({
+  children,
+  items,
+  ...props
+}: SelectPrimitive.Root.Props<Value, Multiple>) {
+  const itemsDerivados = React.useMemo(() => items ?? etiquetasDeItems(children), [items, children])
+
+  return (
+    <SelectPrimitive.Root items={itemsDerivados} {...props}>
+      {children}
+    </SelectPrimitive.Root>
+  )
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (

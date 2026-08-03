@@ -6,11 +6,14 @@ import { DEFAULT_LOCALE, getNumberFormat } from "@shared/utils/i18n"
 // Escalable: agregar moneda = agregarla en config/regiones.config.ts.
 
 // Monedas cuyo uso real no lleva decimales aunque ISO defina 2 (regla de producto).
-const decimalesPorMoneda: Partial<Record<CodigoMoneda, number>> = {
+// Indexado por código y no por `CodigoMoneda`: la API entrega ISO 4217 de
+// cualquier país —el catálogo de planes trae uno por mercado— y una moneda que
+// este front no opera igual se tiene que poder escribir.
+const decimalesPorMoneda: Record<string, number> = {
   COP: 0,
 }
 
-function fractionDigits(currency: CodigoMoneda, locale: string): number {
+function fractionDigits(currency: string, locale: string): number {
   return (
     decimalesPorMoneda[currency] ??
     getNumberFormat(locale, { style: "currency", currency }).resolvedOptions()
@@ -40,9 +43,12 @@ export function toMinorUnits(
   return Math.round(amountMajor * 10 ** fractionDigits(currency, locale))
 }
 
+// `currency` es un ISO 4217 cualquiera, no solo las tres regiones que Barion
+// opera: los precios del catálogo de planes vienen por país y un plan de un
+// mercado nuevo se tiene que poder leer antes de que exista su región aquí.
 export function formatMoney(
   amountMinor: number,
-  currency: CodigoMoneda,
+  currency: string,
   locale = DEFAULT_LOCALE
 ): string {
   const digits = fractionDigits(currency, locale)

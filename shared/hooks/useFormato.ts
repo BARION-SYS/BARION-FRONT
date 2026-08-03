@@ -35,6 +35,15 @@ export function useFormato() {
 
   return {
     dinero: (centavos: number) => formatMoney(centavos, moneda, locale),
+    /**
+     * Dinero en una moneda que NO es la de la sede.
+     *
+     * La necesita lo que se cotiza por país y no por tenant —el catálogo de
+     * planes—: pintar un precio en euros con el símbolo de pesos no es un
+     * detalle de formato, es decir otra cifra.
+     */
+    dineroEn: (centavos: number, codigoMoneda: string) =>
+      formatMoney(centavos, codigoMoneda, locale),
     /** Lo que se escribe en un formulario → lo que la API acepta. */
     aCentavos: (monto: number) => String(toMinorUnits(monto, moneda, locale)),
     /** Centavos de la API → el número que se precarga en el formulario. */

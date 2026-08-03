@@ -4,6 +4,7 @@ import { useCallback, useState } from "react"
 import { portalService } from "@features/portal/services/portal.service"
 import { getErrorMessage } from "@shared/utils/error"
 import type {
+  DatosAccionEnlace,
   DatosCalificar,
   DatosPreferencia,
   DatosReagendar,
@@ -12,6 +13,7 @@ import type {
 } from "@features/portal/schemas/portal.schema"
 import type { Cliente, Consentimientos } from "@features/clientes/types/clientes.types"
 import type {
+  AccionEnlace,
   BarberiaPortal,
   BarberoPortal,
   Cita,
@@ -44,10 +46,12 @@ export function usePortal() {
   const [consentimientos, setConsentimientos] = useState<Consentimientos | null>(null)
   const [fidelidad, setFidelidad] = useState<FidelidadPortal | null>(null)
   const [promociones, setPromociones] = useState<PromocionPortal[]>([])
+  const [accion, setAccion] = useState<AccionEnlace | null>(null)
   const [loadingPortal, setLoadingPortal] = useState(false)
   const [loadingAgenda, setLoadingAgenda] = useState(false)
   const [loadingCitas, setLoadingCitas] = useState(false)
   const [loadingAction, setLoadingAction] = useState(false)
+  const [loadingAccion, setLoadingAccion] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   /**
@@ -265,6 +269,34 @@ export function usePortal() {
     []
   )
 
+  /**
+   * El enlace de un correo. **Gasta el token cuando funciona** —pero no cuando la
+   * api lo rechaza pidiendo un dato—, así que la página puede reintentar con lo
+   * que falte sin pedir otro enlace.
+   *
+   * Devuelve el `message` de la api —es la frase que se pinta— y deja `accion`
+   * para elegir la pantalla por su `resultado`.
+   *
+   * **El error se relanza tal cual, y es la excepción a la regla del hook**: el
+   * sobre de la api trae `motivo`, que es lo que distingue «falta el puntaje» o
+   * «confirma la cancelación» de un fallo terminal. Envolverlo en un `Error` con
+   * solo el mensaje tiraría ese campo y obligaría a volver a adivinar por la
+   * frase. La página sigue sacando el texto con `getErrorMessage`.
+   */
+  const handleEjecutarAccionPortal = useCallback(
+    async (slug: string, token: string, payload: DatosAccionEnlace = {}): Promise<string> => {
+      setLoadingAccion(true)
+      try {
+        const res = await portalService.ejecutarAccionEnlace(slug, token, payload)
+        setAccion(res.data)
+        return res.message
+      } finally {
+        setLoadingAccion(false)
+      }
+    },
+    []
+  )
+
   const handleCanjearPremioPortal = useCallback(async (premioId: string): Promise<string> => {
     setLoadingAction(true)
     try {
@@ -289,10 +321,12 @@ export function usePortal() {
     consentimientos,
     fidelidad,
     promociones,
+    accion,
     loadingPortal,
     loadingAgenda,
     loadingCitas,
     loadingAction,
+    loadingAccion,
     error,
     fetchPortal,
     fetchAgenda,
@@ -306,6 +340,7 @@ export function usePortal() {
     handleReagendarCitaPortal,
     handleCalificarCitaPortal,
     handleGuardarPreferenciaPortal,
+    handleEjecutarAccionPortal,
     handleCanjearPremioPortal,
   }
 }

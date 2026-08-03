@@ -1,6 +1,7 @@
 import { api } from "@lib/http/instances"
 import { omitEmpty } from "@shared/utils/params"
 import {
+  esquemaAccionEnlace,
   esquemaCalificar,
   esquemaCancelar,
   esquemaCanje,
@@ -13,6 +14,7 @@ import {
   type DatosCalificar,
   type DatosCancelar,
   type DatosCanje,
+  type DatosAccionEnlace,
   type DatosPerfilCliente,
   type DatosPreferencia,
   type DatosReagendar,
@@ -22,6 +24,7 @@ import {
 } from "@features/portal/schemas/portal.schema"
 import type { Cliente, Consentimientos } from "@features/clientes/types/clientes.types"
 import type {
+  AccionEnlace,
   BarberiaPortal,
   BarberoPortal,
   CanjePortal,
@@ -108,6 +111,31 @@ export const portalService = {
     const validos = esquemaVerificarCodigo.parse(payload)
     return api.post<SesionCliente>(
       `/publico/barberias/${slug}/otp/verificar`,
+      omitEmpty({ ...validos })
+    )
+  },
+
+  /**
+   * El enlace de un correo, ejecutado. **De un solo uso**: reenviarlo no cancela
+   * dos veces.
+   *
+   * El token va en la RUTA y decide qué se hace —confirmar, cancelar, tomar un
+   * cupo liberado, calificar o darse de baja—; el cuerpo solo aporta lo que el
+   * token no puede llevar. No existe forma de preguntarle a la api qué propósito
+   * tiene un token sin gastarlo: es ella quien lo resuelve al ejecutarlo.
+   *
+   * **Un rechazo no gasta el enlace** (`marcarUsado` corre después de aplicar),
+   * y de ahí que la calificación y la cancelación se resuelvan en dos llamadas
+   * al MISMO token: la primera vuelve con `motivo` diciendo qué falta.
+   */
+  async ejecutarAccionEnlace(
+    slug: string,
+    token: string,
+    payload: DatosAccionEnlace = {}
+  ): Promise<ApiResult<AccionEnlace>> {
+    const validos = esquemaAccionEnlace.parse(payload)
+    return api.post<AccionEnlace>(
+      `/publico/barberias/${slug}/acciones/${encodeURIComponent(token)}`,
       omitEmpty({ ...validos })
     )
   },

@@ -211,6 +211,24 @@ export interface PromocionPortal {
   terminaEn: string | null
 }
 
+/**
+ * Lo que devuelve ejecutar el enlace de un correo
+ * (`POST /publico/barberias/:slug/acciones/:token`).
+ *
+ * **`resultado` es lo único con lo que se elige la pantalla.** El propósito lo
+ * decide el TOKEN y lo resuelve la api: aquí no hay nada que pedir ni que elegir,
+ * solo lo que pasó.
+ */
+export type ResultadoAccion = "confirmada" | "cancelada" | "reservada" | "calificada" | "baja"
+
+export interface AccionEnlace {
+  /** `confirmar` · `cancelar` · `aceptar_oferta` · `calificar` · `baja`. */
+  accion: string
+  resultado: ResultadoAccion
+  /** `null` en la baja de comunicaciones: no hay cita detrás. */
+  citaId: string | null
+}
+
 /** Filtros de las citas del cliente. Su id sale del token, nunca de la query. */
 export interface FiltrosCitasCliente {
   desde?: string

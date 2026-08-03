@@ -82,6 +82,31 @@ export const esquemaCalificar = z.object({
   comentario: z.string().trim().max(1000, "Máximo 1000 caracteres").optional(),
 })
 
+/**
+ * Lo que acompaña al enlace de un correo.
+ *
+ * **No lleva `accion`, y es a propósito**: qué hace el enlace lo decide el token
+ * y lo resuelve la api. Si la pantalla pudiera elegir el propósito, un enlace de
+ * «calificar» serviría para cancelarle la cita a otro. Aquí solo viaja lo que el
+ * token no puede llevar dentro: el motivo de una cancelación y el puntaje de una
+ * calificación — cada uno lo ignora la api si el token no es de ese propósito.
+ */
+export const esquemaAccionEnlace = z.object({
+  /**
+   * El sí explícito de una cancelación. **Solo la cancelación lo exige**: es la
+   * única acción destructiva del grupo —libera un cupo que puede coger otro— y
+   * un enlace se abre solo más veces de lo que parece (un cliente de correo que
+   * precarga, un antivirus que sigue los enlaces, un reenvío a un grupo).
+   *
+   * Sin él la api responde `422 · motivo: requiere_confirmacion` **sin gastar el
+   * token**, que es lo que permite pedir el motivo antes de ejecutar.
+   */
+  confirmado: z.boolean().optional(),
+  motivo: z.string().trim().max(500, "Máximo 500 caracteres").optional(),
+  puntaje: z.number().int().min(1, "Del 1 al 5").max(5, "Del 1 al 5").optional(),
+  comentario: z.string().trim().max(1000, "Máximo 1000 caracteres").optional(),
+})
+
 /** El teléfono NO está: es la llave con la que entra y no se cambia desde aquí. */
 export const esquemaPerfilCliente = z.object({
   nombre: z.string().trim().min(2, "Ingresa tu nombre").optional(),
@@ -113,3 +138,4 @@ export type DatosCalificar = z.infer<typeof esquemaCalificar>
 export type DatosPerfilCliente = z.infer<typeof esquemaPerfilCliente>
 export type DatosPreferencia = z.infer<typeof esquemaPreferencia>
 export type DatosCanje = z.infer<typeof esquemaCanje>
+export type DatosAccionEnlace = z.infer<typeof esquemaAccionEnlace>

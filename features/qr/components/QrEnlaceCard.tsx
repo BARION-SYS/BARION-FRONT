@@ -1,18 +1,27 @@
-import { Check, Copy, Link, RefreshCw } from "lucide-react"
+import { Check, Copy, Link } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Input } from "@shared/components/ui/input"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { cn } from "@shared/utils/cn"
 
-interface PropsEnlaceReservas {
+interface QrEnlaceCardProps {
   url: string
+  /** La sede del cartón: el enlace lleva su marca y por eso no es uno solo. */
+  nombreSede: string
   copiado: boolean
   onCopiar: () => void
 }
 
-export function QrEnlaceCard({ url, copiado, onCopiar }: PropsEnlaceReservas) {
+/**
+ * El enlace que codifica el cartón. **No hay «generar uno nuevo» y no es un
+ * olvido**: el `slug` de la barbería va impreso en los códigos ya repartidos y
+ * cambiarlo los dejaría muertos, así que no se edita. La marca de la sede sí se
+ * puede rotar, pero eso se hace en `/dashboard/sedes` —donde se ve lo que se está
+ * invalidando—, no desde un botón suelto aquí.
+ */
+export function QrEnlaceCard({ url, nombreSede, copiado, onCopiar }: QrEnlaceCardProps) {
   return (
-    <SectionCard titulo="Enlace de reserva">
+    <SectionCard titulo="Enlace de reserva" subtitulo={`Cartón de ${nombreSede}`}>
       <div className="flex items-center gap-2">
         <div className="relative min-w-0 flex-1">
           <Link
@@ -35,14 +44,9 @@ export function QrEnlaceCard({ url, copiado, onCopiar }: PropsEnlaceReservas) {
         </Button>
       </div>
 
-      <Button
-        variant="ghost"
-        size="lg"
-        className="mt-3 cursor-pointer self-start text-xs text-muted-foreground hover:text-foreground motion-reduce:transition-none"
-      >
-        <RefreshCw aria-hidden />
-        Generar nuevo enlace
-      </Button>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Lleva la marca de esta sede: lo que se reserve desde aquí queda atribuido a su cartón.
+      </p>
     </SectionCard>
   )
 }

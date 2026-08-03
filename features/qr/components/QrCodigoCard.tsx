@@ -8,7 +8,7 @@ import { Card } from "@shared/components/ui/card"
 import { Button } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
 
-interface PropsCodigoQr {
+interface QrCodigoCardProps {
   nombreBarberia: string
   url: string
   copiado: boolean
@@ -44,7 +44,7 @@ function colorMarcaEscaneable(): string {
   return luminancia > 0.6 ? "#18181b" : primario
 }
 
-export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: PropsCodigoQr) {
+export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodigoCardProps) {
   const contenedorRef = useRef<HTMLDivElement>(null)
   const qrRef = useRef<QRCodeStyling | null>(null)
   const { resolvedTheme } = useTheme()

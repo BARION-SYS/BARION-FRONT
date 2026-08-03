@@ -1,10 +1,10 @@
 import { SectionCard } from "@shared/components/cards/SectionCard"
 
-interface PropsCapacidadesQr {
-  capacidades: string[]
+interface QrCapacidadesCardProps {
+  capacidades: readonly string[]
 }
 
-export function QrCapacidadesCard({ capacidades }: PropsCapacidadesQr) {
+export function QrCapacidadesCard({ capacidades }: QrCapacidadesCardProps) {
   return (
     <SectionCard titulo="Al escanear el QR el cliente puede">
       <ol className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">

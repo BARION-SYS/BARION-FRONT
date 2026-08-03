@@ -23,6 +23,21 @@ export function rangoDeHoy(timezone: string): { desde: string; hasta: string } {
   }
 }
 
+/**
+ * Los últimos `dias` días contando hoy, como rango transaccional: `hasta` es el
+ * arranque de mañana y queda EXCLUIDO, que es como lo pide la api.
+ */
+export function ultimosDiasInstantes(
+  timezone: string,
+  dias: number
+): { desde: string; hasta: string } {
+  const hoy = hoyLocal(timezone)
+  return {
+    desde: inicioDiaLocal(sumarDias(hoy, -(dias - 1)), timezone),
+    hasta: inicioDiaLocal(sumarDias(hoy, 1), timezone),
+  }
+}
+
 /** Los últimos `dias` días, como rango agregado (ambos extremos inclusive). */
 export function ultimosDias(
   timezone: string,

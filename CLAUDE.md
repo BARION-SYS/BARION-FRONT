@@ -2,14 +2,18 @@
 
 Frontend de Barion — SaaS multi-tenant para barberías (Colombia base; opera también en EE. UU. y España). Next.js App Router. **PWA — no existe app nativa.** Consume la API de `barion-api` (`/api/v1` — prefijo global + versión); los tipos de las respuestas son **propios de este repo**. Arquitectura diseñada para conectar la API real sin refactorizar estructura.
 
-**Estado actual: mock de UI, EXCEPTO `auth`.** La data mock de cada feat vive en `constants/[feat].json`; el service es el ÚNICO que la importa y la sirve con la MISMA forma `ApiResult<T>` — al integrar solo cambia el cuerpo del service (JSON → `api.get/post/...`). Los íconos van en el JSON como nombre (string) y el service los mapea a componentes Lucide.
+**Estado actual: TODO va contra la api real. No queda ningún mock** — `qr` era el último y se integró (`/reportes/qr`, `/reportes/qr/actividad`, `/barberias/mi` y el `slugQr` que ya viene en `/sedes`).
 
-**`auth` ya es real** y marca el patrón para los demás:
+**Dos features van contra la api pero llegan vacías, y no es un error**: `estadisticas` (y la tendencia del `dashboard`) espera al job nocturno del worker, y `notificaciones` a que el worker escriba la bandeja. Lo que falta ahí es un dato que aún nadie calcula, no una llamada. **Cuando eso pasa se dice en pantalla —`SinDatos`, un guion en el KPI— y nunca se pinta un cero**: un cero se lee como "no hubo trabajo".
+
+**`auth` marca el patrón** que siguen todas:
 
 - La sesión viaja en una **cookie httpOnly** que este código no puede leer. No hay token que guardar ni cabecera que poner: basta `withCredentials` en el `ApiClient`.
 - El login **solo autentica** — identifica por correo, que es único; no se pide la barbería. Su respuesta se ignora a propósito.
 - **`GET /auth/me` es la ÚNICA fuente de la sesión**, tras entrar y tras cada recarga. Dos orígenes para lo mismo acaban siendo dos verdades.
 - El store **no persiste**: la verdad es la cookie, y una copia en localStorage le sobrevive — el panel seguiría pintándose autenticado mientras cada petición devuelve 401. `hidratada` distingue "no hay sesión" de "todavía no se sabe", para no expulsar a nadie en cada recarga.
+
+**La página de venta NO vive aquí.** Es otro repo y otro despliegue (`BARION-WEB`, sitio público con dominio propio): posiciona en buscadores, no tiene sesión y cambia por razones distintas. De este repo son el panel, el escaparate del tenant y las puertas de acceso — más `/registro`, porque quien termina el alta entra al panel. `/` redirige a `/entrar`; el «volver al inicio» sale a `rutasWeb.inicio` (`NEXT_PUBLIC_LANDING_URL`) con `<a>`, nunca con `next/link`. **Nada de código se comparte con `BARION-WEB`**: lo que se parezca entre los dos (logo, botón, tokens) es duplicación querida.
 
 Este archivo define arquitectura y convenciones. NO lista los features a propósito: en cada tarea, leer el código del feat afectado — el código es la fuente de verdad.
 
@@ -53,11 +57,11 @@ Cada feature agrupa todo su código. `shared/` solo para lo usado en 2+ features
 features/[nombre]/
 ├── components/   # presentacionales (List/Toolbar/Form/Detalle…) — la página padre vive en app/
 ├── hooks/        # use[Nombre].ts — UN solo hook, toda la lógica de API
-├── services/     # [nombre].service.ts — singleton, solo HTTP (hoy mock con forma ApiResult)
+├── services/     # [nombre].service.ts — singleton, solo HTTP sobre `api`
 ├── types/        # [nombre].types.ts — lo que la API devuelve + filtros
 ├── schemas/      # [nombre].schema.ts — Zod, lo que el front envía
 ├── utils/        # helpers de dominio (configEstadoCita…) — solo cuando hace falta
-└── constants/    # constantes de dominio + [feat].json — la data mock del feat en JSON
+└── constants/    # constantes de dominio (copy de catálogo, diccionarios de etiquetas)
 ```
 
 Únicas subcarpetas válidas. Nunca un `.ts`/`.tsx` suelto en la raíz de la feature.
@@ -100,7 +104,6 @@ API → Service → Hook → Página (padre) → Hijos
 - RHF + `standardSchemaResolver` (`@hookform/resolvers/standard-schema`) + componentes `Field` de shadcn (ver `features/auth/components/Login.tsx`).
 - Errores de validación = inline junto al campo, NUNCA toast.
 - **Notificaciones**: toasts SOLO vía `notify` (`shared/services/notify.ts`, wrapper de sonner) — nunca `toast` directo. El padre captura el `message` de la mutación y dispara `notify.success(message)`; errores de API con `notify.error(getErrorMessage(err))`.
-- Mutaciones mock: el service mantiene una copia en memoria del JSON (módulo-scope) y la modifica — el padre refetchea tras mutar y el cambio SE VE, mismo flujo que con la API real.
 
 ## Rutas (`routes/`)
 
@@ -174,7 +177,6 @@ Mismo esquema que GORA-ADMIN: **componente = feature primero + rol en inglés**,
 | Types                       | `.types`                                                     | `citas.types.ts`                                                            |
 | Schema                      | `.schema`                                                    | `citas.schema.ts`                                                           |
 | Store                       | `.store`                                                     | `auth.store.ts`                                                             |
-| Mock JSON                   | `constants/[feat].json`                                      | `constants/citas.json`                                                      |
 | Props                       | `[Componente]Props`                                          | `CitasListProps`                                                            |
 
 - Roles válidos de componente de feature: `List`, `Toolbar`, `Form`, `Detail`, `Card`, `Chart`, `Nav` (+ sufijo descriptivo si hay varios del mismo rol: `NominaProduccionChart`). Piezas que no encajan en un rol usan nombre conciso del dominio (`GrillaSemana` del calendario) — la excepción, no la regla.
@@ -238,7 +240,7 @@ Para trabajo de UI/UX apoyarse en las skills, no improvisar: `frontend-design` (
 
 1. `features/[nombre]/` con `components/`, `hooks/`, `services/`, `types/`, `schemas/`.
 2. `types/` — lo que la API devuelve + filtros. 3. `schemas/` — zod de lo que se envía (`z.infer<>`).
-3. `services/[nombre].service.ts` — singleton sobre `api`; `schema.parse` antes de enviar; `omitEmpty` en queries (mock: misma forma `ApiResult`).
+3. `services/[nombre].service.ts` — singleton sobre `api`; `schema.parse` antes de enviar; `omitEmpty` en queries.
 4. `hooks/use[Nombre].ts` — un solo hook, solo API state + `useCallback` ops.
 5. `app/dashboard/[nombre]/page.tsx` — el padre (`'use client'`): hook + UI state + `useEffect` fetch + handlers.
 6. Hijos presentacionales por props. 8. Entrada en `routes/rutasDashboard.ts`.

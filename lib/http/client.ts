@@ -23,6 +23,14 @@ export class ApiClient {
       baseURL,
       timeout: 15000,
       withCredentials: true,
+      // Un array en la query va como clave REPETIDA y sin corchetes
+      // (`ofertaIds=a&ofertaIds=b`), que es lo que documenta el contrato de la
+      // api. Por defecto axios le pega corchetes —`ofertaIds[]=a`— y Express 5
+      // parsea la query con `querystring` (no con `qs`), así que NO los deshace:
+      // a la api le llega una propiedad literal `ofertaIds[]` que su DTO no
+      // conoce y responde 400. Se notó en el escaparate, donde dejaba la ficha
+      // visible pero cortaba el paso de reservar.
+      paramsSerializer: { indexes: null },
       ...options,
     })
 

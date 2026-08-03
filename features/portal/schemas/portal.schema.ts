@@ -13,6 +13,20 @@ import { z } from "zod"
  */
 const E164 = /^\+[1-9]\d{7,14}$/
 
+/**
+ * La marca del cartón QR: `sedes.slug_qr`, tal como venía en la URL impresa.
+ *
+ * Viaja como campo OPCIONAL en lo que crea al cliente y la cita, y es lo que las
+ * deja con `origen = 'qr'` atadas a la sede del cartón. Quien no traiga marca
+ * —cookie rechazada, navegación privada— reserva igual: se prefiere subestimar
+ * el QR antes que inflarlo.
+ */
+const slugQr = z
+  .string()
+  .trim()
+  .regex(/^[a-z0-9][a-z0-9-]{0,79}$/i, "Marca de QR inválida")
+  .optional()
+
 const telefono = z
   .string()
   .trim()
@@ -38,6 +52,7 @@ export const esquemaVerificarCodigo = z.object({
   nombre: z.string().trim().min(2, "Ingresa tu nombre").optional(),
   email: z.email("Ingresa un correo válido").optional(),
   aceptaPromos: z.boolean().optional(),
+  slugQr,
 })
 
 /** Los datos que el cliente escribe antes de recibir el código. */
@@ -67,6 +82,7 @@ export const esquemaReserva = z.object({
   iniciaEn: z.iso.datetime("Selecciona un horario"),
   notas: z.string().trim().max(1000).optional(),
   claveIdempotencia: z.string().min(8).max(128).optional(),
+  slugQr,
 })
 
 export const esquemaReagendar = z.object({

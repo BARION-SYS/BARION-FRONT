@@ -18,6 +18,7 @@ import { copiaPorPaso, numeroDePaso, TOTAL_PASOS } from "@features/portal/consta
 import { usePortal } from "@features/portal/hooks/usePortal"
 import { claveDeDia, type ContextoFormato } from "@features/portal/utils/formato"
 import { horarioDeHoy } from "@features/portal/utils/horarios"
+import { capturarMarcaQr, marcaQr } from "@features/portal/utils/qr"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
@@ -79,6 +80,17 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
   useEffect(() => {
     void fetchPortal(slug)
   }, [fetchPortal, slug])
+
+  /**
+   * La marca del cartón QR — `?qr={sede.slugQr}` — a una cookie de 30 días.
+   *
+   * Aquí y no en un `useSearchParams`: es un efecto de una sola vez que no pinta
+   * nada, y leer la dirección del navegador evita meter esta pantalla en una
+   * frontera de Suspense solo para capturar un parámetro. Última marca gana.
+   */
+  useEffect(() => {
+    capturarMarcaQr(window.location.search)
+  }, [])
 
   // La marca la define el tenant y el portal SOLO la refleja: el cliente jamás la
   // edita, así que se aplica al montar y no se persiste como preferencia suya.
@@ -203,12 +215,17 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     async (codigo: string) => {
       if (!contacto || !sede || !inicio || servicioIds.length === 0) return
       try {
+        // La marca del cartón viaja en las DOS: la ficha del cliente nace al
+        // verificar y la cita al reservar, y cada una guarda su propio `origen`.
+        // Sin cookie va `undefined` y el service la descarta — se reserva igual.
+        const slugQr = marcaQr()
         await handleVerificarCodigoPortal(slug, {
           telefonoE164: contacto.telefonoE164,
           codigo,
           nombre: contacto.nombre,
           email: contacto.email,
           aceptaPromos: contacto.aceptaPromos,
+          slugQr,
         })
         const mensaje = await handleReservarPortal({
           sedeId: sede.id,
@@ -216,6 +233,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
           servicioIds,
           iniciaEn: inicio,
           notas: contacto.notas,
+          slugQr,
         })
         setPaso("listo")
         notify.success(mensaje)

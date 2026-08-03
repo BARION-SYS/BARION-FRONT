@@ -11,6 +11,7 @@ import { PortalOtpForm } from "@features/portal/components/PortalOtpForm"
 import { usePortal } from "@features/portal/hooks/usePortal"
 import { type ContextoFormato } from "@features/portal/utils/formato"
 import { horarioDeHoy } from "@features/portal/utils/horarios"
+import { marcaQr } from "@features/portal/utils/qr"
 import { resumenServicios } from "@features/citas/utils/servicios"
 import { Button } from "@shared/components/ui/button"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
@@ -120,11 +121,18 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
    * Verificar deja la sesión. **Sin nombre ni correo**: quien entra por aquí ya es
    * cliente de la barbería, y si no lo fuera la api pediría esos datos — que es lo
    * que hace el flujo de reserva.
+   *
+   * La marca del cartón QR sí viaja: quien escaneó y entra por aquí puede ser una
+   * ficha nueva, y es al verificar cuando nace con su `origen`.
    */
   const verificarCodigo = useCallback(
     async (codigo: string) => {
       try {
-        await handleVerificarCodigoPortal(slug, { telefonoE164: telefono, codigo })
+        await handleVerificarCodigoPortal(slug, {
+          telefonoE164: telefono,
+          codigo,
+          slugQr: marcaQr(),
+        })
         await fetchMisCitas()
         void fetchFidelidad()
         setFase("citas")

@@ -60,6 +60,13 @@ export default function DashboardPage() {
   const veReportes = puede(sesion, "reportes.ver")
   const leeBarberos = puede(sesion, "barberos.ver")
   const leeCatalogo = puede(sesion, "catalogo.ver")
+  // Esta pantalla se abre con `reportes.ver` O con `agenda.ver_propia`, así que
+  // ninguna de sus tres fuentes se puede dar por hecha. El caso real no es el
+  // barbero —que trae las dos de abajo— sino el administrador al que le
+  // revocaron una capacidad persona a persona: sin esto, aterriza en el panel
+  // con dos 403 en la consola.
+  const veAgenda = puede(sesion, "agenda.ver") || puede(sesion, "agenda.ver_propia")
+  const veGanancias = puede(sesion, "ganancias.ver") || puede(sesion, "ganancias.ver_propias")
 
   // Los pasos que esta sesión puede EJECUTAR. Un barbero no gestiona sedes, ni
   // personas, ni el catálogo: se queda sin ninguno y la lista no aparece.
@@ -73,10 +80,10 @@ export default function DashboardPage() {
   const anio = useMemo(() => anioEnCurso(timezone), [timezone])
 
   useEffect(() => {
-    // Lo que TODO el mundo que entra aquí puede ver: su agenda de hoy y lo que
-    // lleva ganado — la api ya acota ambas por `*_propia`.
-    void fetchCitas({ ...hoy, sedeId: sedeActual?.id })
-    void fetchResumen(hoy)
+    // La agenda de hoy y lo que se lleva ganado — la api acota ambas por
+    // `*_propia` cuando toca, pero cada una detrás de SU capacidad.
+    if (veAgenda) void fetchCitas({ ...hoy, sedeId: sedeActual?.id })
+    if (veGanancias) void fetchResumen(hoy)
 
     if (!veReportes) return
 
@@ -90,6 +97,8 @@ export default function DashboardPage() {
     fetchSerie,
     fetchMetas,
     veReportes,
+    veAgenda,
+    veGanancias,
     hoy,
     ultimoMes,
     anio.hasta,

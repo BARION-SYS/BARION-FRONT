@@ -54,12 +54,15 @@ export default function CitasPage() {
     handleCambiarEstadoCita,
   } = useCitas()
 
-  const { barberos, fetchBarberos } = useBarberos()
+  const { barberos, miPerfil, fetchBarberos, fetchMiPerfil } = useBarberos()
   const { clientes, fetchClientes } = useClientes()
   const { oferta, fetchOferta } = useServicios()
 
   const sesion = useAuthStore((estado) => estado.sesion)
   const gestiona = puede(sesion, "agenda.gestionar") || puede(sesion, "agenda.gestionar_propia")
+  // El equipo entero es de `barberos.ver`. El barbero no lo trae, y pedirlo
+  // igual devolvería 403 en cada entrada a la agenda.
+  const veEquipo = puede(sesion, "barberos.ver")
   const sedeActual = useSedeActual()
   const { timezone } = useFormato()
 
@@ -94,9 +97,18 @@ export default function CitasPage() {
     cargar()
   }, [cargar])
 
+  // Quién puede aparecer en el filtro y en el formulario. Con `barberos.ver`, el
+  // equipo; sin él, la ficha propia —`GET /barberos/mio`, que la api resuelve
+  // desde la sesión—, que es exactamente a quien ese barbero puede agendar.
   useEffect(() => {
-    void fetchBarberos({ sedeId: sedeActual?.id, soloActivos: true })
-  }, [fetchBarberos, sedeActual?.id])
+    if (veEquipo) void fetchBarberos({ sedeId: sedeActual?.id, soloActivos: true })
+    else void fetchMiPerfil()
+  }, [veEquipo, fetchBarberos, fetchMiPerfil, sedeActual?.id])
+
+  const agendables = useMemo(
+    () => (veEquipo ? barberos : miPerfil ? [miPerfil] : []),
+    [veEquipo, barberos, miPerfil]
+  )
 
   useEffect(() => {
     if (seleccionada) void fetchHistorial(seleccionada.id)
@@ -191,7 +203,7 @@ export default function CitasPage() {
         fechas={fechas}
         barberoId={barberoId}
         estado={estado}
-        barberos={barberos}
+        barberos={agendables}
         gestiona={gestiona}
         onVista={setVista}
         onMover={(dias) =>
@@ -255,7 +267,7 @@ export default function CitasPage() {
             key={reprogramando?.id ?? "nueva"}
             sedeId={sedeActual.id}
             clientes={clientes}
-            barberos={barberos}
+            barberos={agendables}
             oferta={oferta}
             disponibilidad={disponibilidad}
             cargandoDisponibilidad={loadingDisponibilidad}

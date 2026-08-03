@@ -16,17 +16,21 @@ import { SectionCard } from "@shared/components/cards/SectionCard"
 import { StatCard } from "@shared/components/stats/StatCard"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { Switch } from "@shared/components/ui/switch"
+import { InfoTooltip } from "@shared/components/tooltips/InfoTooltip"
 import { useFormato } from "@shared/hooks/useFormato"
 import { inicialesDe } from "@shared/utils/iniciales"
 import type {
   Cliente,
   Consentimientos,
+  Segmento,
   TipoConsentimiento,
   Visita,
 } from "@features/clientes/types/clientes.types"
 
 interface ClientesDetailProps {
   cliente: Cliente
+  /** El segmento del que sale la etiqueta, para poder decir de dónde viene. */
+  segmentoEtiqueta: Segmento | null
   historial: Visita[]
   consentimientos: Consentimientos | null
   cargandoFicha: boolean
@@ -53,6 +57,7 @@ const CANALES: { tipo: TipoConsentimiento; etiqueta: string }[] = [
  */
 export function ClientesDetail({
   cliente,
+  segmentoEtiqueta,
   historial,
   consentimientos,
   cargandoFicha,
@@ -67,6 +72,19 @@ export function ClientesDetail({
 
   const vigente = (tipo: TipoConsentimiento) =>
     consentimientos?.vigentes.find((v) => v.tipo === tipo)?.otorgado ?? false
+
+  // De dónde sale la etiqueta. Sin esto es una palabra pegada al nombre y nadie
+  // sabe si la puso el sistema, un compañero o nadie.
+  const origenEtiqueta = segmentoEtiqueta
+    ? [
+        segmentoEtiqueta.descripcion,
+        segmentoEtiqueta.tipo === "dinamico"
+          ? "Se rehace cada noche a partir de sus citas."
+          : "La mantiene el equipo a mano.",
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : null
 
   return (
     <div className="flex flex-col gap-4">
@@ -98,7 +116,11 @@ export function ClientesDetail({
             <p className="flex items-center gap-2 text-base font-semibold">
               {cliente.nombre} {cliente.apellido}
               {cliente.etiqueta && (
-                <StatusBadge tono="primario" etiqueta={cliente.etiqueta.nombre} compacta />
+                <InfoTooltip contenido={origenEtiqueta} activo={Boolean(origenEtiqueta)}>
+                  <span>
+                    <StatusBadge tono="primario" etiqueta={cliente.etiqueta.nombre} compacta />
+                  </span>
+                </InfoTooltip>
               )}
             </p>
             <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">

@@ -134,6 +134,7 @@ export type PasoReserva = "servicio" | "barbero" | "agenda" | "datos" | "codigo"
 export interface CodigoEmitido {
   enviado: boolean
   venceEn: string
+  /** Hoy siempre `"email"`: el SMS se paga por mensaje y Barion no lo asume. */
   canal: "telefono" | "email"
 }
 
@@ -145,8 +146,12 @@ export interface SesionCliente {
   barberiaId: string
   clienteId: string
   nombre: string
-  /** `true` si lo que se acaba de probar fue su teléfono. */
-  telefonoVerificado: boolean
+  /**
+   * `true` = su ficha es una identidad probada y **puede reservar sola**. Lo es
+   * con cualquiera de los dos canales: el correo, que es el de hoy, o el teléfono
+   * de quien se verificó cuando el código salía por SMS.
+   */
+  verificado: boolean
   /** `true` = era su primera vez y quedó registrado. */
   registrado: boolean
 }

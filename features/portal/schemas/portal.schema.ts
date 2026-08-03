@@ -1,15 +1,14 @@
 import { z } from "zod"
 
 /**
- * Lo que el portal ENVÍA. Dos cambios respecto del mock, y los dos vienen de la
- * api:
+ * Lo que el portal ENVÍA.
  *
- *  · El teléfono va en **E.164** (`+573001112233`), sin espacios ni guiones: es
- *    la llave con la que se reconoce al cliente, y `+57 300 111 22 33` y
- *    `+573001112233` no pueden ser dos personas.
- *  · El **correo es obligatorio** al registrarse. No es un dato de contacto
- *    opcional: es un canal del producto, y dejarlo vacío crea clientes a los que
- *    es imposible escribir.
+ *  · **El código de acceso sale por CORREO, y solo por correo.** Mandar un SMS
+ *    se paga por mensaje y Barion no asume la mensajería, así que el correo es
+ *    el canal que se verifica y la llave con la que el cliente entra.
+ *  · El **teléfono sigue siendo obligatorio** al registrarse —la barbería tiene
+ *    que poder llamar a quien va a atender—, pero ya no se verifica. Va en
+ *    **E.164** (`+573001112233`), sin espacios ni guiones.
  */
 const E164 = /^\+[1-9]\d{7,14}$/
 
@@ -35,22 +34,24 @@ const telefono = z
   .transform((valor) => valor.replace(/[\s-]/g, ""))
   .refine((valor) => E164.test(valor), "Formato internacional: +573001112233")
 
-/** Pedir el código: un canal y nada más. */
-export const esquemaSolicitarCodigo = z.object({ telefonoE164: telefono })
+/** Pedir el código: el correo y nada más. Es el único canal que lo manda. */
+export const esquemaSolicitarCodigo = z.object({
+  email: z.email("Ingresa un correo válido"),
+})
 
 /**
- * Verificar el código. `nombre` y `email` solo hacen falta la primera vez, pero el
- * formulario los pide siempre: quien reserva escribe sus datos en el mismo paso en
- * el que pide el código, y volver a preguntarlos después sería un paso más.
+ * Verificar el código. `nombre` y `telefonoE164` solo hacen falta la primera vez,
+ * pero el formulario los pide siempre: quien reserva escribe sus datos en el mismo
+ * paso en el que pide el código, y volver a preguntarlos después sería un paso más.
  */
 export const esquemaVerificarCodigo = z.object({
-  telefonoE164: telefono,
+  email: z.email("Ingresa un correo válido"),
   codigo: z
     .string()
     .trim()
     .regex(/^\d{6}$/, "El código es de 6 dígitos"),
   nombre: z.string().trim().min(2, "Ingresa tu nombre").optional(),
-  email: z.email("Ingresa un correo válido").optional(),
+  telefonoE164: telefono.optional(),
   aceptaPromos: z.boolean().optional(),
   slugQr,
 })
@@ -123,11 +124,14 @@ export const esquemaAccionEnlace = z.object({
   comentario: z.string().trim().max(1000, "Máximo 1000 caracteres").optional(),
 })
 
-/** El teléfono NO está: es la llave con la que entra y no se cambia desde aquí. */
+/**
+ * Ni el correo ni el teléfono están: el correo es la llave con la que entra y
+ * cambiarlo sería cambiar de identidad sin volver a probar nada. Los dos se
+ * corrigen desde el panel, que es donde hay alguien respondiendo.
+ */
 export const esquemaPerfilCliente = z.object({
   nombre: z.string().trim().min(2, "Ingresa tu nombre").optional(),
   apellido: z.string().trim().max(120).nullable().optional(),
-  email: z.email("Ingresa un correo válido").optional(),
   fechaNacimiento: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato AAAA-MM-DD")

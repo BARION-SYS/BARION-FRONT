@@ -37,8 +37,13 @@ const DIAS_AGENDA = 14
  *
  * ── El orden de los pasos, y por qué ────────────────────────────────────────
  * `servicio → barbero → agenda → datos → codigo → listo`. Los datos van DESPUÉS de
- * elegir la hora porque verificar el teléfono **es** entrar y también registrarse:
+ * elegir la hora porque verificar el correo **es** entrar y también registrarse:
  * pedirlo antes obligaría a identificarse para mirar precios.
+ *
+ * ── El código sale por CORREO ───────────────────────────────────────────────
+ * Y solo por correo: un SMS se paga por mensaje y Barion no asume la mensajería.
+ * El teléfono se sigue pidiendo —la barbería tiene que poder llamar a quien va a
+ * atender— pero no se verifica.
  *
  * ── Catálogo y oferta no son lo mismo ───────────────────────────────────────
  * El cliente elige del CATÁLOGO (`servicioIds`), que es lo que se manda al
@@ -186,7 +191,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
   const enviarContacto = useCallback(
     async (datos: DatosContacto) => {
       try {
-        const mensaje = await handleSolicitarCodigoPortal(slug, datos.telefonoE164)
+        const mensaje = await handleSolicitarCodigoPortal(slug, datos.email)
         setContacto(datos)
         setPaso("codigo")
         notify.success(mensaje)
@@ -200,7 +205,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
   const reenviarCodigo = useCallback(async () => {
     if (!contacto) return
     try {
-      notify.success(await handleSolicitarCodigoPortal(slug, contacto.telefonoE164))
+      notify.success(await handleSolicitarCodigoPortal(slug, contacto.email))
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
@@ -220,10 +225,12 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
         // Sin cookie va `undefined` y el service la descarta — se reserva igual.
         const slugQr = marcaQr()
         await handleVerificarCodigoPortal(slug, {
-          telefonoE164: contacto.telefonoE164,
+          email: contacto.email,
           codigo,
           nombre: contacto.nombre,
-          email: contacto.email,
+          // Solo hace falta si es su primera vez, y va siempre porque el
+          // formulario ya lo pidió: la api lo guarda sin verificarlo.
+          telefonoE164: contacto.telefonoE164,
           aceptaPromos: contacto.aceptaPromos,
           slugQr,
         })
@@ -385,7 +392,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                       {paso === "codigo" && contacto && (
                         <div className="max-w-lg">
                           <PortalOtpForm
-                            destino={contacto.telefonoE164}
+                            destino={contacto.email}
                             onSubmit={confirmarReserva}
                             onReenviar={reenviarCodigo}
                             cargando={loadingAction}

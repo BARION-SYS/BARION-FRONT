@@ -2,13 +2,13 @@
 
 import { useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { Loader2, MessageCircle } from "lucide-react"
+import { Loader2, Mail } from "lucide-react"
 import { z } from "zod"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
 
-/** Solo el código: el canal y los datos los tiene ya la página. */
+/** Solo el código: el correo y los datos los tiene ya la página. */
 const esquemaSoloCodigo = z.object({
   codigo: z
     .string()
@@ -19,7 +19,7 @@ const esquemaSoloCodigo = z.object({
 type DatosSoloCodigo = z.infer<typeof esquemaSoloCodigo>
 
 interface PortalOtpFormProps {
-  /** A dónde se envió, para que quien lo escribe sepa dónde mirar. */
+  /** El correo al que se envió, para que quien lo escribe sepa dónde mirar. */
   destino: string
   onSubmit: (codigo: string) => Promise<void>
   onReenviar: () => void
@@ -27,8 +27,9 @@ interface PortalOtpFormProps {
 }
 
 /**
- * El código de 6 dígitos. Es el mismo formulario para reservar y para entrar a
- * «Mis citas», porque es la misma cosa: **verificar el canal ES la sesión**.
+ * El código de 6 dígitos que llega **al correo**. Es el mismo formulario para
+ * reservar y para entrar a «Mis citas», porque es la misma cosa: **verificar el
+ * correo ES la sesión**, y también el registro.
  */
 export function PortalOtpForm({ destino, onSubmit, onReenviar, cargando }: PortalOtpFormProps) {
   const {
@@ -49,15 +50,15 @@ export function PortalOtpForm({ destino, onSubmit, onReenviar, cargando }: Porta
       noValidate
     >
       <div className="flex items-start gap-2 rounded-xl bg-secondary/60 p-3">
-        <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+        <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
         <p className="text-xs text-muted-foreground">
-          Enviamos un código de 6 dígitos a <span className="font-semibold">{destino}</span>. Vence
-          en 10 minutos.
+          Enviamos un código de 6 dígitos al correo <span className="font-semibold">{destino}</span>
+          . Vence en 10 minutos — revisa también la carpeta de spam.
         </p>
       </div>
 
       <Field data-invalid={!!errors.codigo}>
-        <FieldLabel htmlFor="codigo">Código de verificación</FieldLabel>
+        <FieldLabel htmlFor="codigo">Código del correo</FieldLabel>
         <Input
           id="codigo"
           inputMode="numeric"

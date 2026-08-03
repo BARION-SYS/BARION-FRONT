@@ -22,8 +22,8 @@ import { useMarcaStore } from "@store/marca.store"
 import type { DatosSolicitarCodigo } from "@features/portal/schemas/portal.schema"
 import type { Cita } from "@features/portal/types/portal.types"
 
-/** Qué se pinta: pedir el número, escribir el código, o ya lo suyo. */
-type FaseAcceso = "telefono" | "codigo" | "citas"
+/** Qué se pinta: pedir el correo, escribir el código, o ya lo suyo. */
+type FaseAcceso = "correo" | "codigo" | "citas"
 
 /**
  * El área del cliente: sus citas, sus puntos y sus permisos de comunicación.
@@ -52,8 +52,8 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
     handleCalificarCitaPortal,
   } = usePortal()
 
-  const [fase, setFase] = useState<FaseAcceso>("telefono")
-  const [telefono, setTelefono] = useState("")
+  const [fase, setFase] = useState<FaseAcceso>("correo")
+  const [correo, setCorreo] = useState("")
   const [citaACancelar, setCitaACancelar] = useState<Cita | null>(null)
   const [citaACalificar, setCitaACalificar] = useState<Cita | null>(null)
   const [puntaje, setPuntaje] = useState(5)
@@ -98,8 +98,8 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
   const pedirCodigo = useCallback(
     async (datos: DatosSolicitarCodigo) => {
       try {
-        const mensaje = await handleSolicitarCodigoPortal(slug, datos.telefonoE164)
-        setTelefono(datos.telefonoE164)
+        const mensaje = await handleSolicitarCodigoPortal(slug, datos.email)
+        setCorreo(datos.email)
         setFase("codigo")
         notify.success(mensaje)
       } catch (err) {
@@ -111,16 +111,16 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
 
   const reenviarCodigo = useCallback(async () => {
     try {
-      notify.success(await handleSolicitarCodigoPortal(slug, telefono))
+      notify.success(await handleSolicitarCodigoPortal(slug, correo))
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
-  }, [slug, telefono, handleSolicitarCodigoPortal])
+  }, [slug, correo, handleSolicitarCodigoPortal])
 
   /**
-   * Verificar deja la sesión. **Sin nombre ni correo**: quien entra por aquí ya es
-   * cliente de la barbería, y si no lo fuera la api pediría esos datos — que es lo
-   * que hace el flujo de reserva.
+   * Verificar deja la sesión. **Sin nombre ni teléfono**: quien entra por aquí ya
+   * es cliente de la barbería, y si no lo fuera la api pediría esos datos — que es
+   * lo que hace el flujo de reserva.
    *
    * La marca del cartón QR sí viaja: quien escaneó y entra por aquí puede ser una
    * ficha nueva, y es al verificar cuando nace con su `origen`.
@@ -129,7 +129,7 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
     async (codigo: string) => {
       try {
         await handleVerificarCodigoPortal(slug, {
-          telefonoE164: telefono,
+          email: correo,
           codigo,
           slugQr: marcaQr(),
         })
@@ -140,7 +140,7 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
         notify.error(getErrorMessage(err))
       }
     },
-    [slug, telefono, handleVerificarCodigoPortal, fetchMisCitas, fetchFidelidad]
+    [slug, correo, handleVerificarCodigoPortal, fetchMisCitas, fetchFidelidad]
   )
 
   const cancelarCita = useCallback(async () => {
@@ -196,18 +196,18 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
               <p className="mt-1.5 text-sm text-muted-foreground">
                 {fase === "citas"
                   ? "Tus citas en esta barbería. Puedes cancelar y calificar lo atendido."
-                  : "Entra con el celular con el que reservaste — sin contraseñas."}
+                  : "Entra con el correo con el que reservaste — sin contraseñas."}
               </p>
             </header>
 
             <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
-              {fase === "telefono" && (
+              {fase === "correo" && (
                 <PortalAccesoForm onSubmit={pedirCodigo} cargando={loadingAction} />
               )}
 
               {fase === "codigo" && (
                 <PortalOtpForm
-                  destino={telefono}
+                  destino={correo}
                   onSubmit={verificarCodigo}
                   onReenviar={reenviarCodigo}
                   cargando={loadingAction || loadingCitas}

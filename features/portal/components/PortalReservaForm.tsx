@@ -18,14 +18,15 @@ interface PortalReservaFormProps {
 /**
  * Paso 4: quién reserva.
  *
- * **Sin cuenta y sin contraseña**: el código que llega al teléfono es toda la
+ * **Sin cuenta y sin contraseña**: el código que llega al CORREO es toda la
  * autenticación que existe, y también el registro. Por eso este formulario pide lo
  * que hace falta para crear la ficha si es su primera vez —nombre, teléfono y
  * correo— y no vuelve a preguntar nada después.
  *
- * El correo NO es opcional: es un canal del producto, y un cliente sin correo es
- * uno al que no se le puede escribir. Eso se descubre cuando una campaña no llega a
- * media base.
+ * Los dos campos son obligatorios y por razones distintas: el **correo** es la
+ * llave, el único canal por el que sale el código —un SMS se paga por mensaje y
+ * Barion no lo asume—; el **teléfono** no se verifica, pero la barbería tiene que
+ * poder llamar a quien va a atender.
  *
  * «Quiero recibir novedades» es un **consentimiento**, no una casilla de interfaz:
  * la api lo guarda con su origen, su versión de política, la IP y el user agent.
@@ -72,7 +73,7 @@ export function PortalReservaForm({ onSubmit, cargando }: PortalReservaFormProps
           {...register("telefonoE164")}
         />
         <p id="ayuda-telefono" className="text-xs text-muted-foreground">
-          Te enviamos un código para confirmar la cita y sus recordatorios.
+          Para que la barbería pueda llamarte si algo cambia.
         </p>
         <FieldError errors={[errors.telefonoE164]} />
       </Field>
@@ -85,9 +86,13 @@ export function PortalReservaForm({ onSubmit, cargando }: PortalReservaFormProps
           autoComplete="email"
           placeholder="tucorreo@ejemplo.com"
           aria-invalid={!!errors.email}
+          aria-describedby="ayuda-correo"
           className="h-11 text-base"
           {...register("email")}
         />
+        <p id="ayuda-correo" className="text-xs text-muted-foreground">
+          Ahí te enviamos el código para confirmar la cita y sus recordatorios.
+        </p>
         <FieldError errors={[errors.email]} />
       </Field>
 

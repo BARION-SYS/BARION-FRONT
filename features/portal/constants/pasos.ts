@@ -26,11 +26,11 @@ export const copiaPorPaso: Record<PasoReserva, CopiaPaso> = {
   },
   datos: {
     titulo: "Tus datos",
-    subtitulo: "Sin registro: con tu nombre y tu celular basta.",
+    subtitulo: "Sin registro: tu nombre, tu correo y un celular donde llamarte.",
     cta: "",
   },
   codigo: {
-    titulo: "Confirma tu número",
+    titulo: "Confirma tu correo",
     subtitulo: "Así evitamos reservas falsas y te llegan los recordatorios.",
     cta: "",
   },

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { Loader2, Smartphone } from "lucide-react"
+import { Loader2, Mail } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
@@ -18,7 +18,7 @@ interface PortalAccesoFormProps {
 
 /**
  * Entrada del cliente a «Mis citas»: **sin cuenta y sin contraseña**, solo el
- * número con el que reservó. El código que llega es toda la autenticación.
+ * correo con el que reservó. El código que le llega ahí es toda la autenticación.
  */
 export function PortalAccesoForm({ onSubmit, cargando }: PortalAccesoFormProps) {
   const {
@@ -27,7 +27,7 @@ export function PortalAccesoForm({ onSubmit, cargando }: PortalAccesoFormProps) 
     formState: { errors, isSubmitting },
   } = useForm<DatosSolicitarCodigo>({
     resolver: standardSchemaResolver(esquemaSolicitarCodigo),
-    defaultValues: { telefonoE164: "" },
+    defaultValues: { email: "" },
   })
 
   const deshabilitado = isSubmitting || !!cargando
@@ -35,25 +35,25 @@ export function PortalAccesoForm({ onSubmit, cargando }: PortalAccesoFormProps) 
   return (
     <form className="space-y-4" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
       <div className="flex items-start gap-2 rounded-xl bg-secondary/60 p-3">
-        <Smartphone className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+        <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
         <p className="text-xs text-muted-foreground">
-          Consulta, reagenda o cancela tus citas con el mismo número con el que reservaste.
+          Consulta, reagenda o cancela tus citas con el mismo correo con el que reservaste.
         </p>
       </div>
 
-      <Field data-invalid={!!errors.telefonoE164}>
-        <FieldLabel htmlFor="telefono-acceso">Celular</FieldLabel>
+      <Field data-invalid={!!errors.email}>
+        <FieldLabel htmlFor="correo-acceso">Correo</FieldLabel>
         <Input
-          id="telefono-acceso"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="+57 300 123 4567"
-          aria-invalid={!!errors.telefonoE164}
+          id="correo-acceso"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="tucorreo@ejemplo.com"
+          aria-invalid={!!errors.email}
           className="h-11 text-base"
-          {...register("telefonoE164")}
+          {...register("email")}
         />
-        <FieldError errors={[errors.telefonoE164]} />
+        <FieldError errors={[errors.email]} />
       </Field>
 
       <Button

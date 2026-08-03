@@ -109,11 +109,12 @@ export function usePortal() {
     []
   )
 
+  /** El código sale por correo, y solo por correo: es el único canal que lo manda. */
   const handleSolicitarCodigoPortal = useCallback(
-    async (slug: string, telefonoE164: string): Promise<string> => {
+    async (slug: string, email: string): Promise<string> => {
       setLoadingAction(true)
       try {
-        const res = await portalService.solicitarCodigo(slug, { telefonoE164 })
+        const res = await portalService.solicitarCodigo(slug, { email })
         return res.message
       } catch (err) {
         throw new Error(getErrorMessage(err))

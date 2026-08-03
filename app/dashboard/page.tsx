@@ -16,6 +16,9 @@ import {
 } from "@features/dashboard/utils/serie"
 import { useCitas } from "@features/citas/hooks/useCitas"
 import { useNomina } from "@features/nomina/hooks/useNomina"
+import { PrimerosPasosList } from "@features/primeros-pasos/components/PrimerosPasosList"
+import { usePrimerosPasos } from "@features/primeros-pasos/hooks/usePrimerosPasos"
+import { pasosDeSesion, todoHecho } from "@features/primeros-pasos/utils/pasos"
 import { puede } from "@features/auth/utils/permisos"
 import { StatCard } from "@shared/components/stats/StatCard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
@@ -41,15 +44,26 @@ import { useSedeActual } from "@store/sede.store"
  *   MISMA pantalla es su resumen del día. Lo único que cambia es que **no pide
  *   lo que su sesión no puede ver**: `reportes.ver` no está en el rol `barbero`,
  *   y pedirlo igual llenaría su pantalla de aterrizaje de errores 403.
+ *
+ * Encima de todo eso —y solo mientras haga falta— va la lista de primeros pasos:
+ * quien termina `/registro` aterriza aquí con una barbería vacía y sin alta
+ * asistida que lo guíe. Se retira sola en cuanto no queda nada pendiente.
  */
 export default function DashboardPage() {
   const { pulso, serie, metas, loadingPulso, error, fetchPulso, fetchSerie, fetchMetas } =
     useDashboard()
   const { citas, fetchCitas } = useCitas()
   const { resumen, fetchResumen } = useNomina()
+  const { progreso, fetchProgreso } = usePrimerosPasos()
 
   const sesion = useAuthStore((estado) => estado.sesion)
   const veReportes = puede(sesion, "reportes.ver")
+  const leeBarberos = puede(sesion, "barberos.ver")
+  const leeCatalogo = puede(sesion, "catalogo.ver")
+
+  // Los pasos que esta sesión puede EJECUTAR. Un barbero no gestiona sedes, ni
+  // personas, ni el catálogo: se queda sin ninguno y la lista no aparece.
+  const pasos = useMemo(() => pasosDeSesion(sesion), [sesion])
 
   const sedeActual = useSedeActual()
   const { dinero, numero, timezone, fecha, fechaCorta } = useFormato()
@@ -81,6 +95,17 @@ export default function DashboardPage() {
     anio.hasta,
     sedeActual?.id,
   ])
+
+  // El alta guiada solo se comprueba si hay algún paso que ofrecer, y solo pide
+  // lo que esta sesión puede leer: pedir el resto sería un 403 seguro.
+  //
+  // Espera a que el `Navbar` haya cargado las sedes —toda barbería nace con una,
+  // la crea el alta— en lugar de arrancar con `null` y repetirlo todo un tick
+  // después: dos rondas de peticiones por cada entrada al panel.
+  useEffect(() => {
+    if (pasos.length === 0 || !sedeActual) return
+    void fetchProgreso({ sede: sedeActual, leeBarberos, leeCatalogo })
+  }, [pasos.length, sedeActual, leeBarberos, leeCatalogo, fetchProgreso])
 
   const puntos = useMemo(
     () => aPuntosGrafica(serie.puntos, (periodo) => fechaCorta(`${periodo}T12:00:00Z`), metas),
@@ -116,6 +141,13 @@ export default function DashboardPage() {
         <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
+      )}
+
+      {/* Lo primero que se ve mientras el alta no esté terminada, y nada en
+          cuanto lo esté: el `null` de `progreso` es "todavía no se sabe", así
+          que una barbería ya montada nunca lo ve aparecer y desaparecer. */}
+      {progreso && !todoHecho(pasos, progreso) && (
+        <PrimerosPasosList pasos={pasos} progreso={progreso} />
       )}
 
       <section aria-label="Indicadores de hoy">

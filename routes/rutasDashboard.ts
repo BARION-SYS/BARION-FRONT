@@ -3,6 +3,7 @@ import {
   Bell,
   Building2,
   CalendarDays,
+  CalendarClock,
   DollarSign,
   LayoutDashboard,
   QrCode,
@@ -112,6 +113,22 @@ export const rutasDashboard: RutaApp[] = [
     subtitulo: "Análisis y métricas de negocio",
     icono: BarChart3,
     entrada: "zoom",
+  },
+  {
+    // La pantalla del BARBERO sobre sí mismo. Los permisos son los `*_propia`,
+    // que solo tiene el rol `barbero`: quien gestiona a todo el equipo ya tiene
+    // Personas, y verle aquí una sección «lo mío» sería una segunda puerta a lo
+    // mismo. Un propietario que además atiende se abre su propia ficha desde
+    // Personas y la administra ahí, como la de cualquier otro.
+    clave: "mi-perfil",
+    permisos: ["jornadas.gestionar_propia", "oferta.gestionar_propia"],
+    seccion: "operacion",
+    href: "/dashboard/mi-perfil",
+    etiqueta: "Mi perfil",
+    titulo: "Mi perfil",
+    subtitulo: "Cuándo trabajas y qué ofreces",
+    icono: CalendarClock,
+    entrada: "fundido",
   },
   {
     clave: "qr",

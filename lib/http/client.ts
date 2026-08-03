@@ -4,6 +4,7 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
 } from "axios"
+import { esMotivoConocido } from "@shared/utils/error"
 import type { ApiEnvelope, ApiErrorEnvelope, ApiResult, HttpError } from "@shared/types/api.types"
 
 // Solo la clase — las instancias nombradas viven en lib/http/instances.ts.
@@ -29,10 +30,17 @@ export class ApiClient {
       (response) => response,
       (error: AxiosError<ApiErrorEnvelope>) => {
         const cuerpo = error.response?.data
+        const sobre = cuerpo?.error
+        const motivo = sobre?.motivo
         const normalized: HttpError = {
           status: error.response?.status ?? 0,
           // La API responde { error: { message, status } }, no { message }.
-          message: cuerpo?.error?.message ?? cuerpo?.message ?? error.message,
+          message: sobre?.message ?? cuerpo?.message ?? error.message,
+          // `codigo` y `motivo` son ADITIVOS: una api que todavía no los emite
+          // los deja en undefined y quien ramifica con ellos ya cuenta con eso.
+          // Un `motivo` fuera del catálogo se descarta aquí, en el borde.
+          codigo: sobre?.codigo,
+          motivo: esMotivoConocido(motivo) ? motivo : undefined,
           detail: cuerpo,
         }
         return Promise.reject(normalized)

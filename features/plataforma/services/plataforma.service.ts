@@ -3,14 +3,24 @@ import { omitEmpty } from "@shared/utils/params"
 import {
   esquemaAltaBarberia,
   esquemaCambioEstado,
+  esquemaCorreccionSuscripcion,
+  esquemaPlanEdicion,
+  esquemaPlanNuevo,
   type DatosAltaBarberia,
   type DatosCambioEstado,
+  type DatosCorreccionSuscripcion,
+  type DatosPlanEdicion,
+  type DatosPlanNuevo,
 } from "@features/plataforma/schemas/plataforma.schema"
 import type {
   BarberiaFicha,
   BarberiaInventario,
   FiltrosInventario,
+  FiltrosPlanes,
+  FiltrosSuscripciones,
+  PlanAdmin,
   PlanPlataforma,
+  SuscripcionPlataforma,
 } from "@features/plataforma/types/plataforma.types"
 import type { ApiResult } from "@shared/types/api.types"
 
@@ -60,5 +70,60 @@ export const plataformaService = {
    */
   async obtenerPlanes(): Promise<ApiResult<PlanPlataforma[]>> {
     return api.get<PlanPlataforma[]>("/publico/planes")
+  },
+
+  /**
+   * El catálogo COMPLETO, para administrarlo: incluye los planes retirados, las
+   * banderas apagadas y las tarifas que ya no se ofrecen.
+   *
+   * Es otra superficie que `obtenerPlanes`, no un filtro suya. Quien edita
+   * necesita ver lo que está apagado para poder encenderlo, y el catálogo
+   * público solo publica lo que se vende.
+   */
+  async obtenerCatalogoPlanes(filtros: FiltrosPlanes = {}): Promise<ApiResult<PlanAdmin[]>> {
+    return api.get<PlanAdmin[]>("/plataforma/planes", { params: omitEmpty({ ...filtros }) })
+  },
+
+  async crearPlan(payload: DatosPlanNuevo): Promise<ApiResult<PlanAdmin>> {
+    const validos = esquemaPlanNuevo.parse(payload)
+    return api.post<PlanAdmin>("/plataforma/planes", validos)
+  },
+
+  /**
+   * Edita un plan. No hay `DELETE` y no se echa en falta: retirar es
+   * `activo: false`, que lo saca del catálogo público y de lo contratable
+   * dejando exactamente igual a quien ya lo tiene.
+   */
+  async actualizarPlan(planId: string, payload: DatosPlanEdicion): Promise<ApiResult<PlanAdmin>> {
+    const validos = esquemaPlanEdicion.parse(payload)
+    return api.patch<PlanAdmin>(`/plataforma/planes/${planId}`, validos)
+  },
+
+  async obtenerSuscripciones(
+    filtros: FiltrosSuscripciones = {}
+  ): Promise<ApiResult<SuscripcionPlataforma[]>> {
+    return api.get<SuscripcionPlataforma[]>("/plataforma/suscripciones", {
+      params: omitEmpty({ ...filtros }),
+    })
+  },
+
+  /**
+   * La corrección de soporte, direccionada por la BARBERÍA y no por el id de la
+   * suscripción: hay una por barbería, así que no hay ambigüedad, y es como se
+   * direcciona todo el resto del módulo.
+   *
+   * Los opcionales vacíos no viajan: `omitEmpty` conserva `false` y `0`, que
+   * aquí son valores legítimos —cancelar la baja programada y dejar la cuenta
+   * sin días de gracia—.
+   */
+  async corregirSuscripcion(
+    barberiaId: string,
+    payload: DatosCorreccionSuscripcion
+  ): Promise<ApiResult<SuscripcionPlataforma>> {
+    const validos = esquemaCorreccionSuscripcion.parse(payload)
+    return api.patch<SuscripcionPlataforma>(
+      `/plataforma/suscripciones/${barberiaId}`,
+      omitEmpty({ ...validos })
+    )
   },
 }

@@ -1,3 +1,6 @@
+import type { PeriodoTarifa } from "@features/plataforma/types/plataforma.types"
+import type { TonoEstado } from "@shared/types/ui.types"
+
 /**
  * El texto comercial de lo que la API entrega como banderas.
  *
@@ -41,7 +44,35 @@ export const ETIQUETA_SUSCRIPCION: Record<string, string> = {
   sobre_limite: "Sobre el límite",
 }
 
+/** El tono con el que se pinta cada estado — nunca solo color: siempre etiqueta. */
+export const TONO_SUSCRIPCION: Record<string, TonoEstado> = {
+  prueba: "info",
+  activa: "exito",
+  mora: "advertencia",
+  cancelada: "neutro",
+  sobre_limite: "peligro",
+}
+
+/**
+ * Los tres períodos de cobro, en el orden en el que se leen: del que todo el
+ * mundo entiende al que exige más compromiso.
+ *
+ * La lista es CERRADA porque `periodo` decide cuántos meses dura lo que se abre
+ * al cobrar; un valor que nadie sepa traducir a meses abriría un período de
+ * duración indefinida.
+ */
+export const PERIODOS_TARIFA: PeriodoTarifa[] = ["mensual", "semestral", "anual"]
+
+/** El sufijo con el que se lee un precio: «$ 89.000 /mes». */
 export const ETIQUETA_PERIODO: Record<string, string> = {
   mensual: "/mes",
+  semestral: "/semestre",
   anual: "/año",
+}
+
+/** El nombre del período cuando encabeza una columna, en vez de seguir a un precio. */
+export const NOMBRE_PERIODO: Record<PeriodoTarifa, string> = {
+  mensual: "Mensual",
+  semestral: "Semestral",
+  anual: "Anual",
 }

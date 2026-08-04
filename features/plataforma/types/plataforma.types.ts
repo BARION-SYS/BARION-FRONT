@@ -41,6 +41,17 @@ export interface FiltrosInventario {
 }
 
 /**
+ * Cada cuánto se cobra una tarifa.
+ *
+ * Son TRES y se ofrecen a la vez: el semestral y el anual existen para que
+ * quien pueda adelantar pague menos, no para sustituir al mensual. Un plan
+ * puede tener tarifa en unos y no en otros —el período sin tarifa simplemente
+ * no se publica— y **ninguno se calcula a partir de otro**: el descuento por
+ * adelantar es una decisión comercial, no una multiplicación.
+ */
+export type PeriodoTarifa = "mensual" | "semestral" | "anual"
+
+/**
  * Un precio del plan en un país.
  *
  * `montoCentavos` viaja como CADENA porque en la base es `bigint` y en JSON no
@@ -51,7 +62,6 @@ export interface PrecioPlan {
   codigoPais: string
   montoCentavos: string
   moneda: string
-  /** `mensual` | `anual`. */
   periodo: string
 }
 
@@ -70,6 +80,100 @@ export interface PlanPlataforma {
   limites: Record<string, number | null>
   funciones: string[]
   precios: PrecioPlan[]
+}
+
+/**
+ * Una tarifa vista desde la ADMINISTRACIÓN, que no es la del sitio de venta.
+ *
+ * Añade `activo`: aquí llegan también las retiradas, porque retirar una tarifa
+ * es reversible y esconderla dejaría a soporte sin manera de volver a
+ * publicarla.
+ */
+export interface PrecioPlanAdmin extends PrecioPlan {
+  activo: boolean
+}
+
+/**
+ * Un plan del catálogo INTERNO (`GET /plataforma/planes`).
+ *
+ * Otra superficie que `PlanPlataforma`, no un filtro suyo: aquella publica lo
+ * que se vende y esta enseña lo que existe —los retirados, las banderas
+ * apagadas y las tarifas que ya no se ofrecen—.
+ *
+ * `funciones` es el objeto CRUDO (`{ agenda: true, campanas: false }`) y no la
+ * lista de claves encendidas: quien edita necesita ver las apagadas para poder
+ * encenderlas, y una lista de las encendidas no dice cuáles existen.
+ */
+export interface PlanAdmin {
+  id: string
+  /** Con lo que se contrata. INMUTABLE: la API no lo acepta en el `PATCH`. */
+  codigo: string
+  nombre: string
+  activo: boolean
+  orden: number
+  funciones: Record<string, boolean>
+  /** `null` en una clave = sin límite. Una clave ausente, también. */
+  limites: Record<string, number | null>
+  precios: PrecioPlanAdmin[]
+  creadoEn: string
+  actualizadoEn: string
+}
+
+export interface FiltrosPlanes {
+  /** Sin valor llegan los publicados **y** los retirados. */
+  activo?: boolean
+  busqueda?: string
+  page?: number
+  limit?: number
+  paginar?: boolean
+}
+
+/** Los cinco valores que admite `suscripciones_estado_check`. */
+export type EstadoSuscripcion = "prueba" | "activa" | "mora" | "cancelada" | "sobre_limite"
+
+/**
+ * Qué tiene contratado cada barbería, visto por soporte.
+ *
+ * **No lleva precio, y no es un olvido**: lo que la barbería paga es lo que
+ * pactó al contratar, no la tarifa publicada hoy — pintar la de hoy como «lo
+ * que paga» mentiría.
+ *
+ * `id` es el de la SUSCRIPCIÓN y no es lo que va en la URL del `PATCH`: la
+ * corrección se direcciona por `barberia.id`, porque hay una suscripción por
+ * barbería y así se direcciona todo el módulo.
+ */
+export interface SuscripcionPlataforma {
+  id: string
+  barberia: {
+    id: string
+    slug: string
+    nombreComercial: string
+    codigoPais: string
+    estado: EstadoBarberia
+  }
+  plan: { codigo: string; nombre: string }
+  estado: EstadoSuscripcion
+  /** Instantes UTC ISO-8601; `null` cuando no aplican a ese estado. */
+  pruebaTerminaEn: string | null
+  periodoActualDesde: string | null
+  periodoActualHasta: string | null
+  /** El campo que hay que pintar: fin de la prueba mientras dura, del período después. */
+  vigenteHasta: string | null
+  graciaDias: number
+  graciaHasta: string | null
+  suspendidaEn: string | null
+  cancelaAlFinPeriodo: boolean
+  canceladaEn: string | null
+  creadoEn: string
+}
+
+export interface FiltrosSuscripciones {
+  estado?: EstadoSuscripcion
+  planCodigo?: string
+  busqueda?: string
+  page?: number
+  limit?: number
+  paginar?: boolean
 }
 
 /** Lo que sale de contar el inventario — no lo calcula la API, lo deriva el front. */

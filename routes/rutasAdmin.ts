@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Tags } from "lucide-react"
+import { Building2, CreditCard, LayoutDashboard, Tags } from "lucide-react"
 import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
 
 /**
@@ -9,10 +9,11 @@ import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
  * despliegue aparte: es el mismo panel con otras rutas.
  *
  * Sigue siendo corta, y lo será mientras la API lo sea: este actor mira cómo va
- * el negocio (resumen), administra el inventario de clientes (barberías) y
- * consulta lo que se les vende (planes). Lo demás pasa dentro de cada barbería,
- * y Barion no entra ahí — sin `app.barberia_id` la base no le entrega ni una
- * cita, por mucho poder que tenga en la aplicación.
+ * el negocio (resumen), administra el inventario de clientes (barberías),
+ * mantiene lo que se les vende (planes) y corrige lo que se les cobra
+ * (suscripciones). Lo demás pasa dentro de cada barbería, y Barion no entra ahí
+ * — sin `app.barberia_id` la base no le entrega ni una cita, por mucho poder que
+ * tenga en la aplicación.
  */
 export const rutasAdmin: RutaApp[] = [
   {
@@ -38,10 +39,11 @@ export const rutasAdmin: RutaApp[] = [
     entrada: "derecha",
   },
   {
-    // Sin `permisos`: el catálogo es la ÚNICA lectura pública de la API y quien
-    // está en esta área ya pasó la puerta. Pedir una capacidad aquí le
-    // escondería los precios justo a quien tiene que dar de alta con ellos.
+    // El catálogo dejó de ser una lectura del público y pasó a ser su
+    // administración (`/plataforma/planes`), que tiene UNA sola capacidad para
+    // leer y para escribir: quien no puede cambiarlo tampoco lo consulta.
     clave: "admin-planes",
+    permisos: ["plataforma.planes.gestionar"],
     seccion: "principal",
     href: "/admin/planes",
     etiqueta: "Planes",
@@ -49,6 +51,20 @@ export const rutasAdmin: RutaApp[] = [
     subtitulo: "Qué se vende: límites, funciones y precio por país",
     icono: Tags,
     entrada: "izquierda",
+  },
+  {
+    // Aparte de las barberías a propósito: allí se decide si una opera y aquí
+    // se corrige lo que se le cobra. Son dos decisiones distintas, con dos
+    // capacidades distintas.
+    clave: "admin-suscripciones",
+    permisos: ["plataforma.suscripciones.gestionar"],
+    seccion: "principal",
+    href: "/admin/suscripciones",
+    etiqueta: "Suscripciones",
+    titulo: "Suscripciones",
+    subtitulo: "Qué tiene contratado cada barbería y hasta cuándo le vale",
+    icono: CreditCard,
+    entrada: "derecha",
   },
 ]
 

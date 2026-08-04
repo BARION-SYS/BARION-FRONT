@@ -59,3 +59,7 @@ pnpm-debug.log*
 *.swp
 .DS_Store
 Thumbs.db
+
+# Skills del asistente: contenido descargado. Se versiona el lock, no la copia.
+.agents
+.claude

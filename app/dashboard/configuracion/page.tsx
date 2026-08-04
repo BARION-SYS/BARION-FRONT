@@ -8,11 +8,16 @@ import { ConfiguracionNav } from "@features/configuracion/components/Configuraci
 import { Notificaciones } from "@features/configuracion/components/Notificaciones"
 import { Seguridad } from "@features/configuracion/components/Seguridad"
 import { useConfiguracion } from "@features/configuracion/hooks/useConfiguracion"
+import { PagosMedioPagoList } from "@features/pagos/components/PagosMedioPagoList"
+import { PagosTarjetaForm } from "@features/pagos/components/PagosTarjetaForm"
+import { usePagos } from "@features/pagos/hooks/usePagos"
 import { SuscripcionFacturasList } from "@features/suscripcion/components/SuscripcionFacturasList"
 import { SuscripcionPlanesList } from "@features/suscripcion/components/SuscripcionPlanesList"
 import { SuscripcionResumen } from "@features/suscripcion/components/SuscripcionResumen"
 import { useSuscripcion } from "@features/suscripcion/hooks/useSuscripcion"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+import { Modal } from "@shared/components/modals/Modal"
+import { Button } from "@shared/components/ui/button"
 import { notify } from "@shared/services/notify"
 import { useAuthStore } from "@store/auth.store"
 import { puede } from "@features/auth/utils/permisos"
@@ -22,6 +27,8 @@ import type {
   DatosGeneral,
   DatosSeguridad,
 } from "@features/configuracion/schemas/configuracion.schema"
+import type { DatosTarjeta } from "@features/pagos/schemas/pagos.schema"
+import type { MedioPago } from "@features/pagos/types/pagos.types"
 import type { DatosElegirPlan } from "@features/suscripcion/schemas/suscripcion.schema"
 import type {
   CanalNotificacion,
@@ -57,6 +64,20 @@ export default function ConfiguracionPage() {
     handleReanudarSuscripcion,
   } = useSuscripcion()
 
+  const {
+    mediosPago,
+    configuracion: configuracionPasarela,
+    aceptaciones,
+    errorConfiguracion,
+    loadingMediosPago,
+    loadingConfiguracion: loadingPasarela,
+    loadingAction: loadingPagosAction,
+    fetchMediosPago,
+    fetchConfiguracionPagos,
+    handleGuardarMedioPago,
+    handleRetirarMedioPago,
+  } = usePagos()
+
   /**
    * Ocultar el botón no es seguridad —la api revalida el permiso en cada
    * petición—, pero evita ofrecer un guardado que va a terminar en 403.
@@ -65,6 +86,8 @@ export default function ConfiguracionPage() {
   const gestiona = puede(sesion, "barberias.gestionar")
 
   const [seccionActiva, setSeccionActiva] = useState<IdSeccionConfiguracion>("general")
+  const [agregandoTarjeta, setAgregandoTarjeta] = useState(false)
+  const [medioARetirar, setMedioARetirar] = useState<MedioPago | null>(null)
   const [canalesActivos, setCanalesActivos] = useState<CanalesNotificacion>({
     whatsapp: false,
     sms: false,
@@ -82,7 +105,11 @@ export default function ConfiguracionPage() {
     if (seccionActiva !== "plan") return
     void fetchSuscripcion()
     void fetchFacturas()
-  }, [seccionActiva, fetchSuscripcion, fetchFacturas])
+    void fetchMediosPago()
+    // La configuración de la pasarela se pide junto a los medios y no al abrir
+    // el formulario: es la que decide si ese formulario existe siquiera.
+    void fetchConfiguracionPagos()
+  }, [seccionActiva, fetchSuscripcion, fetchFacturas, fetchMediosPago, fetchConfiguracionPagos])
 
   // Estado inicial de los toggles según lo que reporta la API
   useEffect(() => {
@@ -133,6 +160,36 @@ export default function ConfiguracionPage() {
   const onReanudarSuscripcion = async () => {
     try {
       notify.success(await handleReanudarSuscripcion())
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }
+
+  /**
+   * El token de la pasarela se pide dentro del guardado, así que un rechazo
+   * deja el formulario abierto y con lo escrito: volver a enviarlo canjea la
+   * tarjeta otra vez en vez de reintentar con un token ya gastado.
+   */
+  const onGuardarTarjeta = async (datos: DatosTarjeta) => {
+    try {
+      const mensaje = await handleGuardarMedioPago(datos)
+      setAgregandoTarjeta(false)
+      notify.success(mensaje)
+      void fetchMediosPago()
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }
+
+  const onRetirarMedioPago = async () => {
+    if (!medioARetirar) return
+    try {
+      // El mensaje de la api es el que avisa de que ya no queda ninguno con el
+      // que cobrar: se muestra tal cual, no se reescribe aquí.
+      const mensaje = await handleRetirarMedioPago(medioARetirar.id)
+      setMedioARetirar(null)
+      notify.info(mensaje)
+      void fetchMediosPago()
     } catch (err) {
       notify.error(getErrorMessage(err))
     }
@@ -203,6 +260,20 @@ export default function ConfiguracionPage() {
                 cargando={loadingSuscripcionAction}
                 onElegir={onElegirPlan}
               />
+              <PagosMedioPagoList
+                mediosPago={mediosPago}
+                cargando={loadingMediosPago || loadingPasarela}
+                cargandoAction={loadingPagosAction}
+                soloLectura={!gestiona}
+                configuracion={configuracionPasarela}
+                errorConfiguracion={errorConfiguracion}
+                // La fecha de corte sale del período vigente; en prueba todavía
+                // no hay período y lo que manda es hasta cuándo llega la prueba.
+                proximoCobroEn={suscripcion.periodoActualHasta ?? suscripcion.vigenteHasta}
+                renovacionActiva={!suscripcion.cancelaAlFinPeriodo && !suscripcion.canceladaEn}
+                onAgregar={() => setAgregandoTarjeta(true)}
+                onRetirar={setMedioARetirar}
+              />
               <SuscripcionFacturasList facturas={facturas} cargando={loadingFacturas} />
             </>
           ))}
@@ -211,6 +282,51 @@ export default function ConfiguracionPage() {
         )}
         {seccionActiva === "seguridad" && <Seguridad onSubmit={onSubmitSeguridad} />}
       </div>
+
+      {/* Sin aceptaciones no hay formulario: el proveedor no guarda una tarjeta sin ellas. */}
+      <Modal
+        open={agregandoTarjeta && aceptaciones !== null}
+        onOpenChange={(abierto) => !abierto && setAgregandoTarjeta(false)}
+        titulo="Agregar tarjeta"
+        descripcion="Será la tarjeta con la que se cobre tu suscripción. La anterior deja de cobrar."
+        className="max-h-[85dvh] overflow-y-auto"
+      >
+        {aceptaciones && (
+          <PagosTarjetaForm
+            aceptaciones={aceptaciones}
+            cargando={loadingPagosAction}
+            onSubmit={onGuardarTarjeta}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        open={medioARetirar !== null}
+        onOpenChange={(abierto) => !abierto && setMedioARetirar(null)}
+        titulo="Retirar el medio de pago"
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" size="sm" onClick={() => setMedioARetirar(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={loadingPagosAction}
+              onClick={() => void onRetirarMedioPago()}
+            >
+              Retirar
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">
+          {medioARetirar?.predeterminado
+            ? "Es la tarjeta con la que se cobra. Al retirarla te quedas sin forma de pagar la próxima renovación: ninguna otra ocupa su lugar, hay que guardar una nueva."
+            : "Dejará de aparecer aquí. Los cobros que ya se hicieron con ella se conservan."}
+        </p>
+      </Modal>
     </main>
   )
 }

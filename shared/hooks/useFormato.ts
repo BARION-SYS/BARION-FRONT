@@ -45,9 +45,9 @@ export function useFormato() {
     dineroEn: (centavos: number, codigoMoneda: string) =>
       formatMoney(centavos, codigoMoneda, locale),
     /** Lo que se escribe en un formulario → lo que la API acepta. */
-    aCentavos: (monto: number) => String(toMinorUnits(monto, moneda, locale)),
+    aCentavos: (monto: number) => String(toMinorUnits(monto, moneda)),
     /** Centavos de la API → el número que se precarga en el formulario. */
-    deCentavos: (centavos: number) => toMajorUnits(centavos, moneda, locale),
+    deCentavos: (centavos: number) => toMajorUnits(centavos, moneda),
     moneda,
     hora: (valor: string | Date) => formatTime(valor, timezone, locale),
     fecha: (valor: string | Date) => formatDate(valor, timezone, locale),

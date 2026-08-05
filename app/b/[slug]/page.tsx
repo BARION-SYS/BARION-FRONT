@@ -11,6 +11,7 @@ import { PortalNegocioCard } from "@features/portal/components/PortalNegocioCard
 import { PortalOtpForm } from "@features/portal/components/PortalOtpForm"
 import { PortalPasosNav } from "@features/portal/components/PortalPasosNav"
 import { PortalPortada } from "@features/portal/components/PortalPortada"
+import { PortalReconocidoCard } from "@features/portal/components/PortalReconocidoCard"
 import { PortalReservaForm } from "@features/portal/components/PortalReservaForm"
 import { PortalResumenDetail } from "@features/portal/components/PortalResumenDetail"
 import { PortalSesionForm } from "@features/portal/components/PortalSesionForm"
@@ -571,6 +572,19 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
               className={`grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 ${paso === "barbero" ? "" : "pt-8"}`}
             >
               <div className="min-w-0">
+                {/* Quien vuelve se entera al ENTRAR de que no le pedirán sus datos,
+                    no cuatro pasos después. */}
+                {conSesion && perfil && (
+                  <div className="mb-6">
+                    <PortalReconocidoCard
+                      nombre={perfil.nombre}
+                      verificado={perfil.verificado}
+                      hrefCitas={hrefCitas}
+                      onNoSoyYo={() => void cerrarSesionCliente()}
+                    />
+                  </div>
+                )}
+
                 <PortalPasosNav pasoActual={paso} onIrAPaso={setPaso} />
 
                 <section className="mt-6" aria-labelledby="titulo-paso">

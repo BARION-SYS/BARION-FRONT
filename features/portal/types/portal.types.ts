@@ -131,7 +131,32 @@ export interface SeguimientoPortal {
 }
 
 /** Pasos del flujo público de reserva. El OTP es el paso `codigo`. */
-export type PasoReserva = "servicio" | "barbero" | "agenda" | "datos" | "codigo" | "listo"
+/**
+ * El orden importa y es este: **barbero primero**.
+ *
+ * Con el catálogo delante, el cliente elegía un servicio que su barbero podía no
+ * hacer, y el choque aparecía al final —después del código— obligando a rehacer
+ * el flujo entero. Eligiendo barbero primero, la carta que se pinta ES su oferta:
+ * lo que no ofrece no se puede elegir porque no está, y el precio deja de ser un
+ * «desde» para ser el que se va a cobrar.
+ */
+export type PasoReserva = "barbero" | "servicio" | "agenda" | "datos" | "codigo" | "listo"
+
+/**
+ * Un servicio tal como se ofrece EN ESTE flujo, ya resuelto contra quien atiende.
+ *
+ * Con un barbero elegido, `precioCentavos` es el suyo y `barberos` es 1. Con
+ * «cualquiera disponible» se pinta el mínimo de quienes lo hacen y `barberos`
+ * dice cuántos son — que es lo que justifica seguir enseñando un «desde».
+ */
+export interface ServicioOfrecido extends ServicioPortal {
+  /** El de la oferta del barbero elegido, o el más bajo de los candidatos. */
+  precioCentavos: string | null
+  /** Cuántos barberos lo ofrecen. Con uno elegido siempre es 1. */
+  barberos: number
+  /** La duración real de quien atiende, que puede no ser la del catálogo. */
+  duracionRealMin: number
+}
 
 export interface CodigoEmitido {
   enviado: boolean

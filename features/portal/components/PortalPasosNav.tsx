@@ -11,13 +11,13 @@ interface PasoVisible {
 
 // Los pasos "datos" y "codigo" son una sola etapa a ojos del cliente: confirmar.
 const pasos: PasoVisible[] = [
-  { paso: "servicio", etiqueta: "Servicio" },
   { paso: "barbero", etiqueta: "Barbero" },
+  { paso: "servicio", etiqueta: "Servicio" },
   { paso: "agenda", etiqueta: "Horario" },
   { paso: "datos", etiqueta: "Confirmar" },
 ]
 
-const orden: PasoReserva[] = ["servicio", "barbero", "agenda", "datos", "codigo", "listo"]
+const orden: PasoReserva[] = ["barbero", "servicio", "agenda", "datos", "codigo", "listo"]
 
 interface PortalPasosNavProps {
   pasoActual: PasoReserva

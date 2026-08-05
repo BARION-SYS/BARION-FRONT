@@ -9,14 +9,14 @@ export interface CopiaPaso {
 
 // Copia de cada paso del flujo público — un solo lugar para ajustar el tono del portal.
 export const copiaPorPaso: Record<PasoReserva, CopiaPaso> = {
+  barbero: {
+    titulo: "¿Con quién te quieres cortar?",
+    subtitulo: "Elige tu barbero y te mostramos solo lo que él hace, con su precio real.",
+    cta: "Ver sus servicios",
+  },
   servicio: {
     titulo: "¿Qué te vas a hacer?",
-    subtitulo: "Elige un servicio; el precio y la duración son los de la barbería.",
-    cta: "Elegir barbero",
-  },
-  barbero: {
-    titulo: "¿Con quién?",
-    subtitulo: "Elige tu barbero de confianza o deja que te asignemos el primero libre.",
+    subtitulo: "Esta es su carta: el precio y la duración son los suyos, no un aproximado.",
     cta: "Ver horarios",
   },
   agenda: {
@@ -38,6 +38,17 @@ export const copiaPorPaso: Record<PasoReserva, CopiaPaso> = {
 }
 
 /**
+ * El paso 1 cuando se eligió «cualquiera disponible»: la carta ya no es la de una
+ * persona, sino la unión de lo que hace el equipo. Prometer «su precio real»
+ * sería mentira — ahí el precio vuelve a ser un «desde».
+ */
+export const copiaServicioCualquiera: CopiaPaso = {
+  titulo: "¿Qué te vas a hacer?",
+  subtitulo: "Todo lo que hace el equipo. Al elegir, dejamos solo a quien pueda atenderte.",
+  cta: "Ver horarios",
+}
+
+/**
  * El mismo paso 4, pero para quien ya entró: no es un alta, es una confirmación.
  * La copia de `datos` promete «sin registro» y pide tres campos que aquí no se
  * piden, así que sería mentira dejarla.
@@ -52,8 +63,8 @@ export const copiaDatosConSesion: CopiaPaso = {
 export const TOTAL_PASOS = 4
 
 export const numeroDePaso: Record<PasoReserva, number> = {
-  servicio: 1,
-  barbero: 2,
+  barbero: 1,
+  servicio: 2,
   agenda: 3,
   datos: 4,
   codigo: 4,

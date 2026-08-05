@@ -1,6 +1,6 @@
 "use client"
 
-import { Star, Users } from "lucide-react"
+import { Palmtree, Star, Users } from "lucide-react"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import { cn } from "@shared/utils/cn"
@@ -13,38 +13,31 @@ interface PortalBarberosListProps {
   /** `null` con `cualquiera` activo = "el primero disponible". */
   barberoId: string | null
   cualquiera: boolean
-  /** Lo elegido en el paso anterior: quien no lo ofrezca todo no se puede elegir. */
-  servicioIds: string[]
   loading: boolean
   onSeleccionar: (barberoId: string | null) => void
 }
 
 /**
- * Paso 2: quién atiende. La primera opción es **«cualquiera disponible»**, que en
+ * Paso 1: quién atiende. La primera opción es **«cualquiera disponible»**, que en
  * el contrato es `barberoId: null` —no un id 0 inventado— y la resuelve la api
  * contra el motor de disponibilidad.
  *
- * Quien no ofrezca TODO lo elegido queda deshabilitado en vez de oculto: que un
- * barbero no haga barba es información útil, y esconderlo parecería que no trabaja
- * ahí.
+ * Aquí ya no se deshabilita a nadie, y esa es la consecuencia de haber puesto este
+ * paso primero: no hay nada elegido todavía contra lo que medir. Lo que antes se
+ * pintaba como «no hace todo lo que elegiste» dejó de existir porque el conflicto
+ * ya no puede darse — la carta del paso siguiente ES la oferta de quien se elija.
  */
 export function PortalBarberosList({
   barberos,
   barberoId,
   cualquiera,
-  servicioIds,
   loading,
   onSeleccionar,
 }: PortalBarberosListProps) {
-  const ofreceTodo = (barbero: BarberoPortal) =>
-    servicioIds.every((servicioId) =>
-      barbero.oferta.some((linea) => linea.servicioId === servicioId)
-    )
-
   return (
     <Loadable loading={loading} variant="list" count={4} isEmpty={barberos.length === 0}>
-      <ul className="space-y-3">
-        <li>
+      <ul className="grid gap-3 xl:grid-cols-2">
+        <li className="xl:col-span-2">
           <button
             type="button"
             onClick={() => onSeleccionar(null)}
@@ -65,7 +58,7 @@ export function PortalBarberosList({
                 Cualquiera disponible
               </span>
               <span className="block text-xs text-muted-foreground">
-                Te asignamos al primero libre a la hora que elijas
+                Verás todo lo que hace el equipo y te asignamos al primero libre
               </span>
             </span>
           </button>
@@ -73,18 +66,15 @@ export function PortalBarberosList({
 
         {barberos.map((barbero) => {
           const activo = !cualquiera && barbero.id === barberoId
-          const disponible = ofreceTodo(barbero)
           return (
             <li key={barbero.id}>
               <button
                 type="button"
-                disabled={!disponible}
                 onClick={() => onSeleccionar(barbero.id)}
                 aria-pressed={activo}
                 className={cn(
-                  "flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-xl border p-4 text-left transition-colors motion-reduce:transition-none",
+                  "flex min-h-11 w-full cursor-pointer items-start gap-3 rounded-xl border p-4 text-left transition-colors motion-reduce:transition-none",
                   "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-                  "disabled:cursor-not-allowed disabled:opacity-45",
                   activo
                     ? "border-primary bg-primary/10"
                     : "border-border bg-card hover:border-primary/40"
@@ -111,17 +101,26 @@ export function PortalBarberosList({
                       </span>
                     )}
                   </span>
+
                   {barbero.titulo && (
-                    <span className="block truncate text-xs text-muted-foreground">
+                    <span className="mt-0.5 block truncate text-xs text-muted-foreground">
                       {barbero.titulo}
                     </span>
                   )}
-                  <span className="mt-1 block text-[11px] text-muted-foreground">
-                    {!disponible
-                      ? "No hace todo lo que elegiste"
-                      : barbero.enVacaciones
-                        ? "De vacaciones estos días"
+
+                  <span className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+                      {barbero.oferta.length === 1
+                        ? "1 servicio"
                         : `${barbero.oferta.length} servicios`}
+                    </span>
+                    {/* Estado nunca solo por color: la ausencia lleva ícono y texto. */}
+                    {barbero.enVacaciones && (
+                      <span className="flex items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--advertencia)_16%,transparent)] px-2 py-0.5 text-[11px] font-medium text-(--advertencia)">
+                        <Palmtree className="h-3 w-3" aria-hidden />
+                        De vacaciones
+                      </span>
+                    )}
                   </span>
                 </span>
               </button>

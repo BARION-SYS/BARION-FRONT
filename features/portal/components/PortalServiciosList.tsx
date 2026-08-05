@@ -1,31 +1,36 @@
 "use client"
 
-import { Clock, Sparkles } from "lucide-react"
+import { Clock, Sparkles, Users } from "lucide-react"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import { cn } from "@shared/utils/cn"
 import { formatDuration } from "@shared/utils/datetime"
 import { dineroDe, type ContextoFormato } from "@features/portal/utils/formato"
-import type { ServicioPortal } from "@features/portal/types/portal.types"
+import type { ServicioOfrecido } from "@features/portal/types/portal.types"
 
 interface PortalServiciosListProps {
-  servicios: ServicioPortal[]
+  servicios: ServicioOfrecido[]
   servicioIds: string[]
+  /** Con un barbero elegido el precio es el suyo; sin él, un «desde» del equipo. */
+  precioExacto: boolean
   loading: boolean
   formato: ContextoFormato
   /** N servicios por cita: cada click alterna, no reemplaza la elección. */
-  onAlternar: (servicio: ServicioPortal) => void
+  onAlternar: (servicio: ServicioOfrecido) => void
 }
 
 /**
- * Paso 1: la carta. Presentacional puro — la selección la maneja la página.
+ * Paso 2: la carta de quien va a atender.
  *
- * El precio se pinta como **«desde»**: es el de referencia del catálogo, y el que
- * se cobra es el de la oferta del barbero que atienda. Enseñarlo como definitivo
- * sería prometer un precio que puede no ser el de quien corte.
+ * El precio deja de ser un «desde» del catálogo cuando hay barbero elegido: lo que
+ * se pinta es su oferta, que es exactamente lo que se reserva y lo que se cobra.
+ * Con «cualquiera disponible» no hay una sola cifra que prometer, así que vuelve
+ * el «desde» y se dice cuántos lo hacen — enseñar un precio cerrado ahí sería
+ * prometer el de alguien que quizá no corte.
  */
 export function PortalServiciosList({
   servicios,
   servicioIds,
+  precioExacto,
   loading,
   formato,
   onAlternar,
@@ -61,13 +66,13 @@ export function PortalServiciosList({
                     )}
                   </span>
                   <span className="shrink-0 text-right">
-                    {servicio.precioDesdeCentavos && (
+                    {!precioExacto && servicio.precioCentavos && (
                       <span className="block text-[10px] tracking-wide text-muted-foreground uppercase">
                         Desde
                       </span>
                     )}
                     <span className="block text-base font-bold text-primary tabular-nums">
-                      {dineroDe(servicio.precioDesdeCentavos, formato)}
+                      {dineroDe(servicio.precioCentavos, formato)}
                     </span>
                   </span>
                 </span>
@@ -75,8 +80,14 @@ export function PortalServiciosList({
                 <span className="flex flex-wrap items-center gap-2">
                   <span className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
                     <Clock className="h-3 w-3" aria-hidden />
-                    {formatDuration(servicio.duracionMin)}
+                    {formatDuration(servicio.duracionRealMin)}
                   </span>
+                  {!precioExacto && servicio.barberos > 1 && (
+                    <span className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+                      <Users className="h-3 w-3" aria-hidden />
+                      {servicio.barberos} lo hacen
+                    </span>
+                  )}
                   {servicio.destacado && (
                     <span className="flex items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--primary)_14%,transparent)] px-2 py-0.5 text-[11px] font-medium text-primary">
                       <Sparkles className="h-3 w-3" aria-hidden />

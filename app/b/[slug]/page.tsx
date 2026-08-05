@@ -18,6 +18,7 @@ import { PortalServiciosList } from "@features/portal/components/PortalServicios
 import {
   copiaDatosConSesion,
   copiaPorPaso,
+  copiaServicioCualquiera,
   numeroDePaso,
   TOTAL_PASOS,
 } from "@features/portal/constants/pasos"
@@ -31,7 +32,7 @@ import { getErrorMessage } from "@shared/utils/error"
 import { useMarcaStore } from "@store/marca.store"
 import type { Cliente } from "@features/clientes/types/clientes.types"
 import type { DatosContacto, DatosReservaConSesion } from "@features/portal/schemas/portal.schema"
-import type { PasoReserva } from "@features/portal/types/portal.types"
+import type { PasoReserva, ServicioOfrecido } from "@features/portal/types/portal.types"
 
 /** Horas antes de la cita hasta las que el cliente cancela solo (default de la api). */
 const HORAS_CANCELACION = 4
@@ -57,9 +58,19 @@ const CONSENTIMIENTO_PROMOS = "marketing_email"
  * callbacks por props.
  *
  * ── El orden de los pasos, y por qué ────────────────────────────────────────
- * `servicio → barbero → agenda → datos → codigo → listo`. Los datos van DESPUÉS de
- * elegir la hora porque verificar el correo **es** entrar y también registrarse:
- * pedirlo antes obligaría a identificarse para mirar precios.
+ * `barbero → servicio → agenda → datos → codigo → listo`.
+ *
+ * **El barbero va primero, y ese orden es la corrección de un fallo real.** Con el
+ * catálogo delante, el cliente elegía un servicio, luego un barbero, se registraba,
+ * recibía el código — y solo entonces se descubría que ese barbero no hacía lo
+ * elegido, con la única salida de volver al principio y repetirlo todo. Eligiendo
+ * barbero primero, la carta del paso 2 ES su oferta: lo que no hace no aparece, así
+ * que el choque no puede darse, y el precio pasa de ser un «desde» del catálogo a
+ * ser el que se va a cobrar.
+ *
+ * Los datos siguen yendo DESPUÉS de elegir la hora porque verificar el correo **es**
+ * entrar y también registrarse: pedirlo antes obligaría a identificarse para mirar
+ * precios.
  *
  * ── El código sale por CORREO ───────────────────────────────────────────────
  * Y solo por correo: un SMS se paga por mensaje y Barion no asume la mensajería.
@@ -99,7 +110,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
   } = usePortal()
 
   // Estado de UI del flujo — el hook solo guarda estado de API.
-  const [paso, setPaso] = useState<PasoReserva>("servicio")
+  const [paso, setPaso] = useState<PasoReserva>("barbero")
   const [identidad, setIdentidad] = useState<Identidad>("comprobando")
   const [servicioIds, setServicioIds] = useState<string[]>([])
   /** `null` con `cualquiera` = "el primero disponible". */
@@ -161,8 +172,47 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     [sede?.zonaHoraria, barberia?.moneda, barberia?.locale]
   )
 
-  const serviciosElegidos = servicios.filter((servicio) => servicioIds.includes(servicio.id))
   const barbero = barberos.find((candidato) => candidato.id === barberoId) ?? null
+
+  /**
+   * La carta que se pinta, ya resuelta contra quien atiende: con barbero elegido es
+   * SU oferta y nada más; con «cualquiera disponible», la unión de lo que hace el
+   * equipo con el precio más bajo de quienes lo ofrecen.
+   *
+   * Que el catálogo entero deje de pintarse es justo lo que elimina el fallo: un
+   * servicio que quien atiende no hace ya no está ahí para elegirse.
+   */
+  const carta: ServicioOfrecido[] = useMemo(() => {
+    const fuente = cualquiera ? barberos : barbero ? [barbero] : []
+    if (fuente.length === 0) return []
+
+    return servicios.flatMap((servicio) => {
+      const lineas = fuente.flatMap((candidato) =>
+        candidato.oferta.filter((linea) => linea.servicioId === servicio.id)
+      )
+      if (lineas.length === 0) return []
+
+      // Dinero en centavos y como entero: comparar en coma flotante acabaría
+      // enseñando como "más barato" al que no lo es.
+      const masBarata = lineas.reduce((barata, linea) =>
+        BigInt(linea.precioCentavos) < BigInt(barata.precioCentavos) ? linea : barata
+      )
+
+      return [
+        {
+          ...servicio,
+          precioCentavos: masBarata.precioCentavos,
+          duracionRealMin: masBarata.duracionMin,
+          barberos: lineas.length,
+        },
+      ]
+    })
+  }, [servicios, barberos, barbero, cualquiera])
+
+  const serviciosElegidos = carta.filter((servicio) => servicioIds.includes(servicio.id))
+
+  /** Con barbero elegido el precio ya no es una estimación: es el que se cobra. */
+  const precioExacto = !cualquiera && barbero !== null
 
   /** Quién puede hacer TODO lo elegido: de ahí sale la oferta con la que se mide. */
   const candidatos = useMemo(
@@ -211,27 +261,46 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
       (permiso) => permiso.tipo === CONSENTIMIENTO_PROMOS && permiso.otorgado
     ) ?? false
 
-  const copia = paso === "datos" && conSesion ? copiaDatosConSesion : copiaPorPaso[paso]
+  const copia =
+    paso === "datos" && conSesion
+      ? copiaDatosConSesion
+      : paso === "servicio" && cualquiera
+        ? copiaServicioCualquiera
+        : copiaPorPaso[paso]
 
   const hrefCitas = `/b/${slug}/mis-citas`
 
   const puedeContinuar =
-    (paso === "servicio" && serviciosElegidos.length > 0) ||
     (paso === "barbero" && (cualquiera || barberoId !== null)) ||
+    (paso === "servicio" && serviciosElegidos.length > 0) ||
     (paso === "agenda" && !!inicio)
 
   const avanzar = useCallback(() => {
     setPaso((actual) =>
-      actual === "servicio" ? "barbero" : actual === "barbero" ? "agenda" : "datos"
+      actual === "barbero" ? "servicio" : actual === "servicio" ? "agenda" : "datos"
     )
   }, [])
 
-  const elegirBarbero = useCallback((elegido: string | null) => {
-    setCualquiera(elegido === null)
-    setBarberoId(elegido)
-    // Cambiar de barbero cambia los huecos: la hora anterior ya no vale.
-    setInicio(null)
-  }, [])
+  /**
+   * Cambiar de barbero **no obliga a rehacer la elección**: se conserva lo que el
+   * nuevo también ofrece y solo se cae lo que no hace. Vaciarlo entero era lo que
+   * convertía un cambio de opinión en empezar de cero.
+   */
+  const elegirBarbero = useCallback(
+    (elegido: string | null) => {
+      const nuevo = elegido === null ? null : (barberos.find((c) => c.id === elegido) ?? null)
+      setCualquiera(elegido === null)
+      setBarberoId(elegido)
+      if (nuevo) {
+        setServicioIds((actuales) =>
+          actuales.filter((id) => nuevo.oferta.some((linea) => linea.servicioId === id))
+        )
+      }
+      // Cambiar de barbero cambia los huecos: la hora anterior ya no vale.
+      setInicio(null)
+    },
+    [barberos]
+  )
 
   const alternarServicio = useCallback((id: string) => {
     setServicioIds((actuales) =>
@@ -441,7 +510,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
   }, [handleCerrarSesionPortal])
 
   const reiniciar = useCallback(() => {
-    setPaso("servicio")
+    setPaso("barbero")
     setServicioIds([])
     setBarberoId(null)
     setCualquiera(false)
@@ -492,14 +561,14 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
           </div>
         ) : (
           <>
-            {paso === "servicio" && (
+            {paso === "barbero" && (
               <div className="py-8 sm:py-10">
                 <PortalPortada barberia={barberia} sede={sede} />
               </div>
             )}
 
             <div
-              className={`grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 ${paso === "servicio" ? "" : "pt-8"}`}
+              className={`grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 ${paso === "barbero" ? "" : "pt-8"}`}
             >
               <div className="min-w-0">
                 <PortalPasosNav pasoActual={paso} onIrAPaso={setPaso} />
@@ -524,24 +593,24 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                       exit={{ opacity: 0, y: -6 }}
                       transition={{ type: "spring", stiffness: 160, damping: 24 }}
                     >
-                      {paso === "servicio" && (
-                        <PortalServiciosList
-                          servicios={servicios}
-                          servicioIds={servicioIds}
-                          loading={false}
-                          formato={formato}
-                          onAlternar={(elegido) => alternarServicio(elegido.id)}
-                        />
-                      )}
-
                       {paso === "barbero" && (
                         <PortalBarberosList
                           barberos={barberos}
                           barberoId={barberoId}
                           cualquiera={cualquiera}
-                          servicioIds={servicioIds}
                           loading={false}
                           onSeleccionar={elegirBarbero}
+                        />
+                      )}
+
+                      {paso === "servicio" && (
+                        <PortalServiciosList
+                          servicios={carta}
+                          servicioIds={servicioIds}
+                          precioExacto={precioExacto}
+                          loading={false}
+                          formato={formato}
+                          onAlternar={(elegido) => alternarServicio(elegido.id)}
                         />
                       )}
 
@@ -605,6 +674,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                 <div className="hidden lg:block">
                   <PortalResumenDetail
                     servicios={serviciosElegidos}
+                    precioExacto={precioExacto}
                     nombreBarbero={barbero?.nombrePublico ?? null}
                     inicio={inicio}
                     horasCancelacion={HORAS_CANCELACION}
@@ -627,6 +697,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
         <div className="fixed inset-x-0 bottom-0 z-20 lg:hidden">
           <PortalResumenDetail
             servicios={serviciosElegidos}
+            precioExacto={precioExacto}
             nombreBarbero={barbero?.nombrePublico ?? null}
             inicio={inicio}
             horasCancelacion={HORAS_CANCELACION}

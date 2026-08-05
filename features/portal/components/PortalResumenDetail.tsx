@@ -13,11 +13,13 @@ import {
   sumaCentavos,
   type ContextoFormato,
 } from "@features/portal/utils/formato"
-import type { ServicioPortal } from "@features/portal/types/portal.types"
+import type { ServicioOfrecido } from "@features/portal/types/portal.types"
 
 interface PortalResumenDetailProps {
   /** N servicios por cita: la lista completa que el cliente lleva elegida. */
-  servicios: ServicioPortal[]
+  servicios: ServicioOfrecido[]
+  /** Con barbero elegido el total es firme; con «cualquiera» sigue siendo un «desde». */
+  precioExacto: boolean
   /** Nombre del barbero elegido, o null con «cualquiera disponible». */
   nombreBarbero: string | null
   /** Inicio de la cita: instante UTC. */
@@ -43,11 +45,13 @@ interface PortalResumenDetailProps {
  * decimales: sumar dinero en coma flotante acaba enseñando un total que no cuadra
  * con la suma de sus líneas.
  *
- * Y es un total **«desde»**: el precio definitivo es el de la oferta del barbero
- * que atienda, y con «cualquiera disponible» todavía no se sabe quién es.
+ * Es un total FIRME en cuanto hay barbero elegido: desde que él va primero, lo que
+ * se suma es su oferta, que es lo que se cobra. Solo con «cualquiera disponible»
+ * sigue siendo un «desde», porque ahí todavía no se sabe quién atiende.
  */
 export function PortalResumenDetail({
   servicios,
+  precioExacto,
   nombreBarbero,
   inicio,
   horasCancelacion,
@@ -60,8 +64,8 @@ export function PortalResumenDetail({
   sinCta,
 }: PortalResumenDetailProps) {
   const hayServicios = servicios.length > 0
-  const total = sumaCentavos(servicios.map((servicio) => servicio.precioDesdeCentavos ?? "0"))
-  const duracionTotal = servicios.reduce((suma, servicio) => suma + servicio.duracionMin, 0)
+  const total = sumaCentavos(servicios.map((servicio) => servicio.precioCentavos ?? "0"))
+  const duracionTotal = servicios.reduce((suma, servicio) => suma + servicio.duracionRealMin, 0)
   const nombresServicios = resumenServicios(servicios.map((servicio) => servicio.nombre))
 
   const filas = [
@@ -109,7 +113,7 @@ export function PortalResumenDetail({
       <div className="flex items-center gap-3 border-t border-border bg-card/95 p-3 backdrop-blur-md">
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs text-muted-foreground">
-            {hayServicios ? nombresServicios : "Elige un servicio"}
+            {hayServicios ? nombresServicios : "Sin servicios todavía"}
           </p>
           <p className="text-lg font-bold text-foreground tabular-nums">
             {hayServicios ? dineroDe(total, formato) : "—"}
@@ -146,7 +150,9 @@ export function PortalResumenDetail({
       </dl>
 
       <div className="mt-4 flex items-baseline justify-between border-t border-dashed border-border pt-4">
-        <span className="text-xs tracking-wide text-muted-foreground uppercase">Total desde</span>
+        <span className="text-xs tracking-wide text-muted-foreground uppercase">
+          {precioExacto ? "Total" : "Total desde"}
+        </span>
         <span className="text-xl font-bold text-primary tabular-nums">
           {hayServicios ? dineroDe(total, formato) : "—"}
         </span>

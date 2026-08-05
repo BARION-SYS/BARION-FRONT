@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { Input } from "@shared/components/ui/input"
 import { Switch } from "@shared/components/ui/switch"
+import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { useFormato } from "@shared/hooks/useFormato"
 import type { DatosOferta } from "@features/servicios/schemas/servicios.schema"
 import type { LineaOferta, Servicio } from "@features/servicios/types/servicios.types"
@@ -41,42 +42,64 @@ export function ServiciosOfertaForm({
   soloLectura,
   onSubmit,
 }: ServiciosOfertaFormProps) {
-  const { aCentavos, deCentavos, dinero } = useFormato()
+  const { aCentavos, deCentavos, dinero, moneda } = useFormato()
 
-  const [filas, setFilas] = useState<Record<string, FilaOferta>>(() =>
-    Object.fromEntries(
-      servicios.map((servicio) => {
-        const linea = oferta.find((l) => l.servicioId === servicio.id)
-        return [
-          servicio.id,
-          {
-            incluido: linea?.activo ?? false,
-            // Sin línea propia se sugiere el precio de referencia del catálogo:
-            // es el número que quien administra ya pensó para ese corte.
-            monto: String(
-              deCentavos(Number(linea?.precioCentavos ?? servicio.precioBaseCentavos ?? "0"))
-            ),
-            duracion: String(linea?.duracionMin ?? servicio.duracionBaseMin),
-          },
-        ]
-      })
-    )
+  /**
+   * Las filas se DERIVAN de las props, no se copian al montar. El catálogo y la
+   * oferta se piden al abrir el modal y llegan después: una copia hecha en el
+   * primer render se queda con la lista vacía y el servicio que aparece luego no
+   * tiene fila.
+   */
+  const filasBase = useMemo<Record<string, FilaOferta>>(
+    () =>
+      Object.fromEntries(
+        servicios.map((servicio) => {
+          const linea = oferta.find((l) => l.servicioId === servicio.id)
+          return [
+            servicio.id,
+            {
+              incluido: linea?.activo ?? false,
+              // Sin línea propia se sugiere el precio de referencia del catálogo:
+              // es el número que quien administra ya pensó para ese corte.
+              monto: String(
+                deCentavos(Number(linea?.precioCentavos ?? servicio.precioBaseCentavos ?? "0"))
+              ),
+              duracion: String(linea?.duracionMin ?? servicio.duracionBaseMin),
+            },
+          ]
+        })
+      ),
+    [servicios, oferta, moneda] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
+  /** Solo lo que se tocó en pantalla; el resto se lee de lo que trajo la api. */
+  const [editadas, setEditadas] = useState<Record<string, Partial<FilaOferta>>>({})
+
+  const filaDe = (servicioId: string): FilaOferta => ({
+    ...filasBase[servicioId],
+    ...editadas[servicioId],
+  })
+
   const cambiar = (servicioId: string, parche: Partial<FilaOferta>) =>
-    setFilas((previas) => ({ ...previas, [servicioId]: { ...previas[servicioId], ...parche } }))
+    setEditadas((previas) => ({ ...previas, [servicioId]: { ...previas[servicioId], ...parche } }))
 
   const enviar = () =>
     void onSubmit({
       lineas: servicios
-        .filter((servicio) => filas[servicio.id]?.incluido)
+        .filter((servicio) => filaDe(servicio.id).incluido)
         .map((servicio, indice) => ({
           servicioId: servicio.id,
-          precioCentavos: aCentavos(Number(filas[servicio.id].monto || 0)),
-          duracionMin: Number(filas[servicio.id].duracion || servicio.duracionBaseMin),
+          precioCentavos: aCentavos(Number(filaDe(servicio.id).monto || 0)),
+          duracionMin: Number(filaDe(servicio.id).duracion || servicio.duracionBaseMin),
           orden: indice,
         })),
     })
+
+  // Mientras el catálogo viaja no hay nada que decidir: sin esto, el vacío de
+  // «no hay servicios» parpadea como si el catálogo estuviera realmente vacío.
+  if (cargando && servicios.length === 0) {
+    return <DataSkeleton variant="form" />
+  }
 
   if (servicios.length === 0) {
     return (
@@ -90,7 +113,7 @@ export function ServiciosOfertaForm({
     <div className="flex flex-col gap-4">
       <ul className="scroll-fino flex max-h-[50vh] flex-col gap-2 overflow-y-auto">
         {servicios.map((servicio) => {
-          const fila = filas[servicio.id]
+          const fila = filaDe(servicio.id)
           const limites = rangoDe(servicio, dinero)
           return (
             <li

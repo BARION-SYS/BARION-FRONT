@@ -142,6 +142,18 @@ export const portalService = {
 
   // ── Con sesión de cliente ─────────────────────────────────────────────────
 
+  /**
+   * Cerrar la sesión del cliente. **Es el mismo endpoint que usa el panel, y no
+   * es un préstamo de otra feature**: la cookie es la misma (`barion_sesion`,
+   * httpOnly) y el navegador no puede borrarla por su cuenta, así que la única
+   * forma de cerrar de verdad es pedírselo a la api. Limpiar solo el estado local
+   * dejaría la sesión viva y la siguiente lectura de `/mi/**` volvería a
+   * responder 200.
+   */
+  async cerrarSesion(): Promise<ApiResult<null>> {
+    return api.post<null>("/auth/logout")
+  },
+
   async obtenerMisCitas(filtros: FiltrosCitasCliente = {}): Promise<ApiResult<Cita[]>> {
     return api.get<Cita[]>("/mi/citas", { params: omitEmpty({ ...filtros }) })
   },

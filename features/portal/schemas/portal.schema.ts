@@ -71,6 +71,24 @@ export const esquemaContacto = z.object({
 })
 
 /**
+ * Lo que se pide cuando YA hay sesión: solo lo que es de ESTA cita.
+ *
+ * Nombre, teléfono y correo no están porque ya se saben —los tiene su ficha— y
+ * volver a pedirlos sería preguntarle a alguien lo que acaba de probar. El
+ * consentimiento sigue aquí porque puede no haberlo dado nunca, y la pantalla
+ * decide si enseñarlo mirando lo vigente, no adivinando.
+ */
+export const esquemaReservaConSesion = z.object({
+  notas: z
+    .string()
+    .trim()
+    .max(160, "Máximo 160 caracteres")
+    .optional()
+    .transform((valor) => valor || undefined),
+  aceptaPromos: z.boolean().optional(),
+})
+
+/**
  * La reserva. `servicioIds` son ids del CATÁLOGO y no de la oferta: la oferta es
  * de un barbero, y con «cualquiera disponible» no se sabe cuál hasta que la api lo
  * resuelve.
@@ -151,6 +169,7 @@ export const esquemaCanje = z.object({ premioId: z.uuid() })
 export type DatosSolicitarCodigo = z.input<typeof esquemaSolicitarCodigo>
 export type DatosVerificarCodigo = z.input<typeof esquemaVerificarCodigo>
 export type DatosContacto = z.input<typeof esquemaContacto>
+export type DatosReservaConSesion = z.input<typeof esquemaReservaConSesion>
 export type DatosReserva = z.input<typeof esquemaReserva>
 export type DatosReagendar = z.infer<typeof esquemaReagendar>
 export type DatosCancelar = z.infer<typeof esquemaCancelar>

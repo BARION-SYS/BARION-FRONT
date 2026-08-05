@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { CalendarCheck, ChevronLeft } from "lucide-react"
+import { CalendarCheck, ChevronLeft, LogIn } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { ThemeToggle } from "@shared/layout/ThemeToggle"
@@ -15,6 +15,12 @@ interface PortalCabeceraNavProps {
   horarioHoy: string
   hrefCitas?: string
   hrefVolver?: string
+  /**
+   * Quién está delante. `undefined` = **todavía no se sabe**, y entonces no se
+   * pinta nada: etiquetar de invitado a quien tiene sesión —o al revés— por
+   * medio segundo es peor que esperar a saberlo.
+   */
+  acceso?: "invitado" | "cliente"
 }
 
 /**
@@ -22,6 +28,13 @@ interface PortalCabeceraNavProps {
  *
  * **Ya no hay «Crear perfil»**: el registro es el propio código de verificación, y
  * un botón aparte llevaría a un formulario que no existe.
+ *
+ * La puerta del cliente y su área son **el mismo sitio** (`/b/{slug}/mis-citas`):
+ * quien llega sin sesión encuentra allí el correo y el código, y quien la tiene
+ * ve sus citas. Por eso el botón cambia de nombre y no de destino — y por eso no
+ * hay ninguna pantalla que pregunte «¿ya eres cliente?»: preguntarlo con el
+ * correo delante convertiría la portada en un oráculo de quién es cliente de esta
+ * barbería.
  */
 export function PortalCabeceraNav({
   nombre,
@@ -29,6 +42,7 @@ export function PortalCabeceraNav({
   horarioHoy,
   hrefCitas,
   hrefVolver,
+  acceso,
 }: PortalCabeceraNavProps) {
   return (
     <header className="sticky top-0 z-20 shrink-0 border-b border-border bg-card/85 backdrop-blur-md">
@@ -64,15 +78,19 @@ export function PortalCabeceraNav({
 
         <ThemeToggle />
 
-        {hrefCitas && (
+        {hrefCitas && acceso && (
           <Button
             render={<Link href={hrefCitas} />}
             variant="outline"
             className="h-9 gap-1.5 px-2 sm:px-3"
           >
-            <CalendarCheck aria-hidden />
-            <span className="hidden text-xs font-semibold sm:inline">Mis citas</span>
-            <span className="sr-only sm:hidden">Mis citas</span>
+            {acceso === "cliente" ? <CalendarCheck aria-hidden /> : <LogIn aria-hidden />}
+            <span className="hidden text-xs font-semibold sm:inline">
+              {acceso === "cliente" ? "Mis citas" : "Entrar"}
+            </span>
+            <span className="sr-only sm:hidden">
+              {acceso === "cliente" ? "Mis citas" : "Entrar"}
+            </span>
           </Button>
         )}
       </div>

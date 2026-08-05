@@ -1,7 +1,7 @@
 "use client"
 
 import { use, useCallback, useEffect, useMemo, useState } from "react"
-import { notFound } from "next/navigation"
+import { notFound, useRouter } from "next/navigation"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import { PortalAgendaList } from "@features/portal/components/PortalAgendaList"
 import { PortalBarberosList } from "@features/portal/components/PortalBarberosList"
@@ -13,8 +13,14 @@ import { PortalPasosNav } from "@features/portal/components/PortalPasosNav"
 import { PortalPortada } from "@features/portal/components/PortalPortada"
 import { PortalReservaForm } from "@features/portal/components/PortalReservaForm"
 import { PortalResumenDetail } from "@features/portal/components/PortalResumenDetail"
+import { PortalSesionForm } from "@features/portal/components/PortalSesionForm"
 import { PortalServiciosList } from "@features/portal/components/PortalServiciosList"
-import { copiaPorPaso, numeroDePaso, TOTAL_PASOS } from "@features/portal/constants/pasos"
+import {
+  copiaDatosConSesion,
+  copiaPorPaso,
+  numeroDePaso,
+  TOTAL_PASOS,
+} from "@features/portal/constants/pasos"
 import { usePortal } from "@features/portal/hooks/usePortal"
 import { claveDeDia, type ContextoFormato } from "@features/portal/utils/formato"
 import { horarioDeHoy } from "@features/portal/utils/horarios"
@@ -23,13 +29,28 @@ import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useMarcaStore } from "@store/marca.store"
-import type { DatosContacto } from "@features/portal/schemas/portal.schema"
+import type { Cliente } from "@features/clientes/types/clientes.types"
+import type { DatosContacto, DatosReservaConSesion } from "@features/portal/schemas/portal.schema"
 import type { PasoReserva } from "@features/portal/types/portal.types"
 
 /** Horas antes de la cita hasta las que el cliente cancela solo (default de la api). */
 const HORAS_CANCELACION = 4
 /** Cuántos días de agenda se piden de una vez. */
 const DIAS_AGENDA = 14
+
+/**
+ * Quién está delante. Se resuelve preguntando por su ficha (`/mi/perfil`), que es
+ * lo que `/auth/me` es para el panel: la cookie es httpOnly y este código no puede
+ * leerla, así que la única forma de saberlo es preguntar.
+ *
+ * `comprobando` existe para no tratar de invitado a quien tiene sesión durante la
+ * primera vuelta de render: es la diferencia entre «no ha entrado» y «todavía no
+ * se sabe».
+ */
+type Identidad = "comprobando" | "invitado" | "cliente"
+
+/** El permiso que pide la casilla de novedades del formulario de reserva. */
+const CONSENTIMIENTO_PROMOS = "marketing_email"
 
 /**
  * El escaparate y la reserva. Instancia el hook UNA vez y reparte datos y
@@ -53,25 +74,32 @@ const DIAS_AGENDA = 14
  */
 export default function PortalPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
+  const router = useRouter()
   const {
     barberia,
     servicios,
     barberos,
     agenda,
     reserva,
+    perfil,
+    consentimientos,
     loadingPortal,
     loadingAgenda,
     loadingAction,
     error,
     fetchPortal,
     fetchAgenda,
+    fetchMiPerfil,
     handleSolicitarCodigoPortal,
     handleVerificarCodigoPortal,
+    handleCerrarSesionPortal,
+    handleGuardarPreferenciaPortal,
     handleReservarPortal,
   } = usePortal()
 
   // Estado de UI del flujo — el hook solo guarda estado de API.
   const [paso, setPaso] = useState<PasoReserva>("servicio")
+  const [identidad, setIdentidad] = useState<Identidad>("comprobando")
   const [servicioIds, setServicioIds] = useState<string[]>([])
   /** `null` con `cualquiera` = "el primero disponible". */
   const [barberoId, setBarberoId] = useState<string | null>(null)
@@ -85,6 +113,15 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
   useEffect(() => {
     void fetchPortal(slug)
   }, [fetchPortal, slug])
+
+  /**
+   * ¿Hay alguien dentro? Se pregunta al abrir, no al llegar al paso 4: de ello
+   * depende lo que dice la cabecera, y un 401 aquí es la respuesta normal de un
+   * invitado —no un error— así que no rompe nada del escaparate.
+   */
+  useEffect(() => {
+    void fetchMiPerfil().then((cliente) => setIdentidad(cliente ? "cliente" : "invitado"))
+  }, [fetchMiPerfil])
 
   /**
    * La marca del cartón QR — `?qr={sede.slugQr}` — a una cookie de 30 días.
@@ -157,7 +194,22 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     })
   }, [paso, sede, ofertaParaMedir, cualquiera, barberoId, hoy, slug, fetchAgenda])
 
-  const copia = copiaPorPaso[paso]
+  /** Con sesión el paso 4 confirma; sin ella da de alta, exactamente como hoy. */
+  const conSesion = identidad === "cliente" && perfil !== null
+
+  /**
+   * Si ya dio el permiso de novedades. Se mira lo VIGENTE que devuelve la api: no
+   * marcar la casilla nunca fue una revocación, así que quien lo tiene otorgado es
+   * el único a quien no se le vuelve a preguntar.
+   */
+  const aceptaPromosVigente =
+    consentimientos?.vigentes.some(
+      (permiso) => permiso.tipo === CONSENTIMIENTO_PROMOS && permiso.otorgado
+    ) ?? false
+
+  const copia = paso === "datos" && conSesion ? copiaDatosConSesion : copiaPorPaso[paso]
+
+  const hrefCitas = `/b/${slug}/mis-citas`
 
   const puedeContinuar =
     (paso === "servicio" && serviciosElegidos.length > 0) ||
@@ -242,8 +294,20 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
           notas: contacto.notas,
           slugQr,
         })
-        setPaso("listo")
         notify.success(mensaje)
+        // Quien llegó con sesión no vuelve a un comprobante sin salida: su sitio
+        // es su área de cliente, donde la cita que acaba de pedir ya está con las
+        // demás. El invitado sí se queda en la confirmación — es lo único que
+        // tiene, porque no hay sesión detrás con la que volver.
+        if (identidad === "cliente") {
+          router.push(hrefCitas)
+          return
+        }
+        setPaso("listo")
+        // Verificar el código **es** entrar: de aquí en adelante ya hay sesión, y
+        // una segunda reserva desde este mismo escaparate no puede volver a pedir
+        // el nombre de quien acaba de darlo.
+        void fetchMiPerfil().then((cliente) => setIdentidad(cliente ? "cliente" : "invitado"))
       } catch (err) {
         notify.error(getErrorMessage(err))
       }
@@ -256,10 +320,121 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
       cualquiera,
       barberoId,
       slug,
+      identidad,
+      router,
+      hrefCitas,
+      fetchMiPerfil,
       handleVerificarCodigoPortal,
       handleReservarPortal,
     ]
   )
+
+  /**
+   * Mandar el código a un correo que ya sabemos cuál es: el de su ficha. Se usa
+   * cuando hay sesión pero la identidad **no está probada** —una ficha que abrió
+   * alguien del mostrador—, y desde aquí el flujo sigue por el camino de siempre:
+   * verificar y reservar, con lo que ya se sabe de esa persona.
+   */
+  const pedirCodigoDeSesion = useCallback(
+    async (datos: DatosReservaConSesion, cliente: Cliente) => {
+      try {
+        const mensaje = await handleSolicitarCodigoPortal(slug, cliente.email)
+        setContacto({
+          nombre: cliente.nombre,
+          telefonoE164: cliente.telefonoE164,
+          email: cliente.email,
+          notas: datos.notas,
+          aceptaPromos: datos.aceptaPromos === true,
+        })
+        setPaso("codigo")
+        notify.success(mensaje)
+      } catch (err) {
+        notify.error(getErrorMessage(err))
+      }
+    },
+    [slug, handleSolicitarCodigoPortal]
+  )
+
+  /**
+   * Reservar **con la sesión abierta**: el cliente sale de la cookie y no del
+   * formulario, así que aquí no hay alta que hacer ni código que pedir.
+   *
+   * Tener sesión no prueba la identidad, y la api lo comprueba aparte: si la ficha
+   * no está verificada se sale al código en vez de intentar una reserva que va a
+   * rechazar. Se pregunta antes por su ficha —que es el mismo hecho que mira la
+   * api— y se vuelve a mirar si aun así falla, porque comparar la frase del error
+   * sería convertir copy en contrato.
+   */
+  const confirmarConSesion = useCallback(
+    async (datos: DatosReservaConSesion) => {
+      if (!perfil || !sede || !inicio || servicioIds.length === 0) return
+
+      if (!perfil.verificado) {
+        await pedirCodigoDeSesion(datos, perfil)
+        return
+      }
+
+      try {
+        // El permiso es una fila con su origen y su fecha, no una casilla: solo se
+        // escribe cuando lo marca, y nunca se escribe una revocación por omisión.
+        if (datos.aceptaPromos === true) {
+          await handleGuardarPreferenciaPortal({
+            tipo: CONSENTIMIENTO_PROMOS,
+            otorgado: true,
+          })
+        }
+        const mensaje = await handleReservarPortal({
+          sedeId: sede.id,
+          barberoId: cualquiera ? null : barberoId,
+          servicioIds,
+          iniciaEn: inicio,
+          notas: datos.notas,
+          // La marca del cartón viaja también por aquí: sin ella, la reserva de
+          // quien escaneó un QR y ya tenía sesión dejaría de atribuirse al cartón.
+          slugQr: marcaQr(),
+        })
+        notify.success(mensaje)
+        router.push(hrefCitas)
+      } catch (err) {
+        const fresco = await fetchMiPerfil()
+        setIdentidad(fresco ? "cliente" : "invitado")
+        if (fresco && !fresco.verificado) {
+          await pedirCodigoDeSesion(datos, fresco)
+          return
+        }
+        notify.error(getErrorMessage(err))
+      }
+    },
+    [
+      perfil,
+      sede,
+      inicio,
+      servicioIds,
+      cualquiera,
+      barberoId,
+      router,
+      hrefCitas,
+      fetchMiPerfil,
+      pedirCodigoDeSesion,
+      handleGuardarPreferenciaPortal,
+      handleReservarPortal,
+    ]
+  )
+
+  /**
+   * «No soy yo». El móvil de un amigo y el ordenador de casa son casos normales
+   * en una barbería: se cierra la sesión de verdad —la cookie la borra la api— y
+   * vuelve el formulario de invitado, sin salir del paso ni perder lo elegido.
+   */
+  const cerrarSesionCliente = useCallback(async () => {
+    try {
+      const mensaje = await handleCerrarSesionPortal()
+      setIdentidad("invitado")
+      notify.success(mensaje)
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }, [handleCerrarSesionPortal])
 
   const reiniciar = useCallback(() => {
     setPaso("servicio")
@@ -270,8 +445,6 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     setInicio(null)
     setContacto(null)
   }, [])
-
-  const hrefCitas = `/b/${slug}/mis-citas`
 
   if (loadingPortal) {
     return (
@@ -297,6 +470,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
         abiertoAhora={sede?.abiertoAhora ?? false}
         horarioHoy={sede ? horarioDeHoy(sede.horario, new Date().getDay()) : ""}
         hrefCitas={hrefCitas}
+        acceso={identidad === "comprobando" ? undefined : identidad}
       />
 
       <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pb-28 sm:px-6 lg:px-8 lg:pb-14">
@@ -385,7 +559,25 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
 
                       {paso === "datos" && (
                         <div className="max-w-lg">
-                          <PortalReservaForm onSubmit={enviarContacto} cargando={loadingAction} />
+                          {/* Todavía no se sabe quién está delante: se espera en
+                              vez de pedirle el nombre a quien ya lo dio. */}
+                          {identidad === "comprobando" && <DataSkeleton variant="form" />}
+
+                          {conSesion && perfil && (
+                            <PortalSesionForm
+                              nombre={perfil.nombre}
+                              email={perfil.email}
+                              verificado={perfil.verificado}
+                              aceptaPromosVigente={aceptaPromosVigente}
+                              cargando={loadingAction}
+                              onSubmit={confirmarConSesion}
+                              onNoSoyYo={() => void cerrarSesionCliente()}
+                            />
+                          )}
+
+                          {identidad === "invitado" && (
+                            <PortalReservaForm onSubmit={enviarContacto} cargando={loadingAction} />
+                          )}
                         </div>
                       )}
 

@@ -9,6 +9,7 @@ import { PortalCitasList } from "@features/portal/components/PortalCitasList"
 import { PortalNegocioCard } from "@features/portal/components/PortalNegocioCard"
 import { PortalOtpForm } from "@features/portal/components/PortalOtpForm"
 import { usePortal } from "@features/portal/hooks/usePortal"
+import { ordenarCitasCliente } from "@features/portal/utils/citas"
 import { type ContextoFormato } from "@features/portal/utils/formato"
 import { horarioDeHoy } from "@features/portal/utils/horarios"
 import { marcaQr } from "@features/portal/utils/qr"
@@ -93,6 +94,16 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
       locale: barberia?.locale,
     }),
     [sede?.zonaHoraria, barberia?.moneda, barberia?.locale]
+  )
+
+  /**
+   * Lo que le queda por delante primero. Quien acaba de reservar aterriza aquí y
+   * su cita tiene que estar a la vista, no debajo de dos años de historial — la
+   * api las devuelve en orden de agenda, que es el que quiere el panel.
+   */
+  const citasOrdenadas = useMemo(
+    () => ordenarCitasCliente(citas, new Date().toISOString()),
+    [citas]
   )
 
   const pedirCodigo = useCallback(
@@ -216,7 +227,7 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
 
               {fase === "citas" && (
                 <PortalCitasList
-                  citas={citas}
+                  citas={citasOrdenadas}
                   loading={loadingCitas}
                   cargandoAccion={loadingAction}
                   formato={formato}

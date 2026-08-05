@@ -175,9 +175,18 @@ export function usePortal() {
     }
   }, [])
 
-  const fetchMiPerfil = useCallback(async () => {
+  /**
+   * Su ficha y sus permisos de comunicación — y, de paso, **si hay sesión**: es lo
+   * que `/auth/me` es para el panel. Devuelve la ficha para que quien pregunte
+   * pueda leerla en el acto, sin esperar a que el estado se propague.
+   *
+   * Un 401 aquí **no es un error que enseñar**: es la respuesta normal de quien
+   * todavía no ha entrado, y por eso tampoco toca `error` — el escaparate lo usa
+   * para decidir si la barbería existe, y un invitado no puede teñir esa
+   * respuesta con un 404 que no le corresponde.
+   */
+  const fetchMiPerfil = useCallback(async (): Promise<Cliente | null> => {
     setLoadingCitas(true)
-    setError(null)
     try {
       const [resPerfil, resConsentimientos] = await Promise.all([
         portalService.obtenerMiPerfil(),
@@ -185,12 +194,37 @@ export function usePortal() {
       ])
       setPerfil(resPerfil.data)
       setConsentimientos(resConsentimientos.data)
-      return true
-    } catch (err) {
-      setError(getErrorMessage(err))
-      return false
+      return resPerfil.data
+    } catch {
+      setPerfil(null)
+      setConsentimientos(null)
+      return null
     } finally {
       setLoadingCitas(false)
+    }
+  }, [])
+
+  /**
+   * «No soy yo». Cierra la sesión de verdad —la cookie es httpOnly— y vacía todo
+   * lo que era de esa persona: dejar sus citas o su ficha en pantalla mientras la
+   * api ya no la reconoce es enseñarle los datos de alguien a quien acaba de
+   * decir que no es.
+   */
+  const handleCerrarSesionPortal = useCallback(async (): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await portalService.cerrarSesion()
+      setSesion(null)
+      setPerfil(null)
+      setConsentimientos(null)
+      setCitas([])
+      setFidelidad(null)
+      setPromociones([])
+      return res.message
+    } catch (err) {
+      throw new Error(getErrorMessage(err))
+    } finally {
+      setLoadingAction(false)
     }
   }, [])
 
@@ -336,6 +370,7 @@ export function usePortal() {
     fetchFidelidad,
     handleSolicitarCodigoPortal,
     handleVerificarCodigoPortal,
+    handleCerrarSesionPortal,
     handleReservarPortal,
     handleCancelarCitaPortal,
     handleReagendarCitaPortal,

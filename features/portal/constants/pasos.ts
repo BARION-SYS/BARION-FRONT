@@ -1,6 +1,6 @@
 import type { PasoReserva } from "@features/portal/types/portal.types"
 
-interface CopiaPaso {
+export interface CopiaPaso {
   titulo: string
   subtitulo: string
   /** Texto del botón que lleva al siguiente paso (vacío = lo dispara un formulario) */
@@ -35,6 +35,17 @@ export const copiaPorPaso: Record<PasoReserva, CopiaPaso> = {
     cta: "",
   },
   listo: { titulo: "Listo", subtitulo: "", cta: "" },
+}
+
+/**
+ * El mismo paso 4, pero para quien ya entró: no es un alta, es una confirmación.
+ * La copia de `datos` promete «sin registro» y pide tres campos que aquí no se
+ * piden, así que sería mentira dejarla.
+ */
+export const copiaDatosConSesion: CopiaPaso = {
+  titulo: "Confirma tu reserva",
+  subtitulo: "Ya te conocemos: solo falta lo que es de esta cita.",
+  cta: "",
 }
 
 /** Pasos que ve el cliente ("datos" y "codigo" cuentan como uno solo). */

@@ -3,7 +3,11 @@ import {
   esquemaGuardarMedioPago,
   type DatosGuardarMedioPago,
 } from "@features/pagos/schemas/pagos.schema"
-import type { ConfiguracionPasarela, MedioPago } from "@features/pagos/types/pagos.types"
+import type {
+  ConfiguracionPasarela,
+  EnlacePago,
+  MedioPago,
+} from "@features/pagos/types/pagos.types"
 import type { ApiResult } from "@shared/types/api.types"
 
 /**
@@ -41,5 +45,19 @@ export const pagosService = {
    */
   async retirarMedioPago(medioPagoId: string): Promise<ApiResult<MedioPago>> {
     return api.delete<MedioPago>(`/suscripcion/medio-pago/${medioPagoId}`)
+  },
+
+  /**
+   * Genera un enlace compartible para pagar la suscripción. **Sin cuerpo**: el
+   * importe es el de la tarifa vigente del plan y no se manda desde aquí —
+   * dejarlo elegir sería dejar elegir cuánto se paga.
+   */
+  async generarEnlacePago(): Promise<ApiResult<EnlacePago>> {
+    return api.post<EnlacePago>("/suscripcion/enlaces-pago")
+  },
+
+  /** El historial, del más reciente al más antiguo. No pagina. */
+  async listarEnlacesPago(): Promise<ApiResult<EnlacePago[]>> {
+    return api.get<EnlacePago[]>("/suscripcion/enlaces-pago")
   },
 }

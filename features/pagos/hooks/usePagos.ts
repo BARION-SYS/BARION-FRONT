@@ -9,6 +9,7 @@ import type { DatosTarjeta } from "@features/pagos/schemas/pagos.schema"
 import type {
   AceptacionesPasarela,
   ConfiguracionPasarela,
+  EnlacePago,
   MedioPago,
 } from "@features/pagos/types/pagos.types"
 
@@ -24,7 +25,9 @@ export function usePagos() {
   const [configuracion, setConfiguracion] = useState<ConfiguracionPasarela | null>(null)
   const [aceptaciones, setAceptaciones] = useState<AceptacionesPasarela | null>(null)
   const [errorConfiguracion, setErrorConfiguracion] = useState<string | null>(null)
+  const [enlaces, setEnlaces] = useState<EnlacePago[]>([])
   const [loadingMediosPago, setLoadingMediosPago] = useState(false)
+  const [loadingEnlaces, setLoadingEnlaces] = useState(false)
   const [loadingConfiguracion, setLoadingConfiguracion] = useState(false)
   const [loadingAction, setLoadingAction] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,6 +42,19 @@ export function usePagos() {
       setError(getErrorMessage(err))
     } finally {
       setLoadingMediosPago(false)
+    }
+  }, [])
+
+  const fetchEnlacesPago = useCallback(async () => {
+    setLoadingEnlaces(true)
+    setError(null)
+    try {
+      const res = await pagosService.listarEnlacesPago()
+      setEnlaces(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingEnlaces(false)
     }
   }, [])
 
@@ -122,18 +138,39 @@ export function usePagos() {
     }
   }, [])
 
+  /**
+   * Genera el enlace y devuelve el que acaba de nacer, no solo el mensaje: el
+   * padre lo necesita entero para poder ofrecer copiarlo de inmediato, que es
+   * justo lo que se hace con un enlace recién creado.
+   */
+  const handleGenerarEnlacePago = useCallback(async (): Promise<EnlacePago> => {
+    setLoadingAction(true)
+    try {
+      const res = await pagosService.generarEnlacePago()
+      return res.data
+    } catch (err) {
+      throw new Error(getErrorMessage(err))
+    } finally {
+      setLoadingAction(false)
+    }
+  }, [])
+
   return {
     mediosPago,
+    enlaces,
     configuracion,
     aceptaciones,
     errorConfiguracion,
     loadingMediosPago,
+    loadingEnlaces,
     loadingConfiguracion,
     loadingAction,
     error,
     fetchMediosPago,
+    fetchEnlacesPago,
     fetchConfiguracionPagos,
     handleGuardarMedioPago,
     handleRetirarMedioPago,
+    handleGenerarEnlacePago,
   }
 }

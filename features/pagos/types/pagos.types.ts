@@ -75,3 +75,35 @@ export interface AceptacionesPasarela {
   terminos: AceptacionPasarela
   datosPersonales: AceptacionPasarela
 }
+
+/** Estados por los que pasa un cobro, y por tanto un enlace de pago. */
+export type EstadoCobro =
+  "pendiente" | "procesando" | "aprobado" | "rechazado" | "error" | "anulado"
+
+/**
+ * Un enlace de pago que la barbería generó para mandárselo a quien vaya a pagar.
+ *
+ * `url` es de Barion, no de la pasarela: quien la abre acaba en el checkout, pero
+ * lo que viaja por WhatsApp es esta. Si mañana se cambia de proveedor, el enlace
+ * que alguien guardó en un chat sigue funcionando.
+ */
+export interface EnlacePago {
+  id: string
+  url: string
+  /** Lo que hay que buscar al conciliar: es lo que vuelve en el aviso de la pasarela. */
+  referencia: string
+  /** Unidad menor como cadena: la api nunca manda dinero en número. */
+  montoCentavos: string
+  moneda: string
+  estado: EstadoCobro
+  /**
+   * Ya no sirve, aunque siga `pendiente`. **Lo decide la api**: comparar
+   * `venceEn` con el reloj del navegador sería fiar a la máquina del cliente algo
+   * que determina si se puede cobrar.
+   */
+  vencido: boolean
+  venceEn: string | null
+  creadoEn: string
+  /** Correo de quien lo generó, o `null` si esa persona ya no está. */
+  creadoPor: string | null
+}

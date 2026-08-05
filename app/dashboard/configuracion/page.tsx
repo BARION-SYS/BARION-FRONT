@@ -8,6 +8,7 @@ import { ConfiguracionNav } from "@features/configuracion/components/Configuraci
 import { Notificaciones } from "@features/configuracion/components/Notificaciones"
 import { Seguridad } from "@features/configuracion/components/Seguridad"
 import { useConfiguracion } from "@features/configuracion/hooks/useConfiguracion"
+import { PagosEnlacesList } from "@features/pagos/components/PagosEnlacesList"
 import { PagosMedioPagoList } from "@features/pagos/components/PagosMedioPagoList"
 import { PagosTarjetaForm } from "@features/pagos/components/PagosTarjetaForm"
 import { usePagos } from "@features/pagos/hooks/usePagos"
@@ -28,7 +29,7 @@ import type {
   DatosSeguridad,
 } from "@features/configuracion/schemas/configuracion.schema"
 import type { DatosTarjeta } from "@features/pagos/schemas/pagos.schema"
-import type { MedioPago } from "@features/pagos/types/pagos.types"
+import type { EnlacePago, MedioPago } from "@features/pagos/types/pagos.types"
 import type { DatosElegirPlan } from "@features/suscripcion/schemas/suscripcion.schema"
 import type {
   CanalNotificacion,
@@ -66,16 +67,20 @@ export default function ConfiguracionPage() {
 
   const {
     mediosPago,
+    enlaces,
     configuracion: configuracionPasarela,
     aceptaciones,
     errorConfiguracion,
     loadingMediosPago,
+    loadingEnlaces,
     loadingConfiguracion: loadingPasarela,
     loadingAction: loadingPagosAction,
     fetchMediosPago,
+    fetchEnlacesPago,
     fetchConfiguracionPagos,
     handleGuardarMedioPago,
     handleRetirarMedioPago,
+    handleGenerarEnlacePago,
   } = usePagos()
 
   /**
@@ -88,6 +93,8 @@ export default function ConfiguracionPage() {
   const [seccionActiva, setSeccionActiva] = useState<IdSeccionConfiguracion>("general")
   const [agregandoTarjeta, setAgregandoTarjeta] = useState(false)
   const [medioARetirar, setMedioARetirar] = useState<MedioPago | null>(null)
+  /** Cuál se acaba de copiar: confirma en el botón sin un toast por cada clic. */
+  const [enlaceCopiadoId, setEnlaceCopiadoId] = useState<string | null>(null)
   /** Solo los canales que se tocaron aquí; el resto se lee de la api. */
   const [canalesTocados, setCanalesTocados] = useState<Partial<CanalesNotificacion>>({})
 
@@ -102,10 +109,18 @@ export default function ConfiguracionPage() {
     void fetchSuscripcion()
     void fetchFacturas()
     void fetchMediosPago()
+    void fetchEnlacesPago()
     // La configuración de la pasarela se pide junto a los medios y no al abrir
     // el formulario: es la que decide si ese formulario existe siquiera.
     void fetchConfiguracionPagos()
-  }, [seccionActiva, fetchSuscripcion, fetchFacturas, fetchMediosPago, fetchConfiguracionPagos])
+  }, [
+    seccionActiva,
+    fetchSuscripcion,
+    fetchFacturas,
+    fetchMediosPago,
+    fetchEnlacesPago,
+    fetchConfiguracionPagos,
+  ])
 
   /**
    * Los interruptores SALEN de lo que reporta la api, con encima lo que se haya
@@ -193,6 +208,32 @@ export default function ConfiguracionPage() {
     }
   }
 
+  /**
+   * Generar y copiar en el mismo gesto: un enlace recién creado no sirve de nada
+   * hasta que sale de la pantalla, así que se deja en el portapapeles sin pedir
+   * un segundo clic. Si el navegador no lo permite —contexto no seguro, permiso
+   * denegado— se avisa y el enlace sigue en la lista para copiarlo a mano.
+   */
+  const onGenerarEnlace = async () => {
+    try {
+      const enlace = await handleGenerarEnlacePago()
+      void fetchEnlacesPago()
+      await copiarAlPortapapeles(enlace)
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }
+
+  const copiarAlPortapapeles = async (enlace: EnlacePago) => {
+    try {
+      await navigator.clipboard.writeText(enlace.url)
+      setEnlaceCopiadoId(enlace.id)
+      notify.success("Enlace copiado. Ya puedes mandárselo a quien vaya a pagar")
+    } catch {
+      notify.info("Copia el enlace desde la lista: tu navegador no permitió hacerlo solo")
+    }
+  }
+
   const onSubmitSeguridad = async (datos: DatosSeguridad) => {
     try {
       notify.success(await handleActualizarContrasena(datos))
@@ -271,6 +312,15 @@ export default function ConfiguracionPage() {
                 renovacionActiva={!suscripcion.cancelaAlFinPeriodo && !suscripcion.canceladaEn}
                 onAgregar={() => setAgregandoTarjeta(true)}
                 onRetirar={setMedioARetirar}
+              />
+              <PagosEnlacesList
+                enlaces={enlaces}
+                cargando={loadingEnlaces}
+                cargandoAction={loadingPagosAction}
+                soloLectura={!gestiona}
+                copiadoId={enlaceCopiadoId}
+                onGenerar={() => void onGenerarEnlace()}
+                onCopiar={(enlace) => void copiarAlPortapapeles(enlace)}
               />
               <SuscripcionFacturasList facturas={facturas} cargando={loadingFacturas} />
             </>

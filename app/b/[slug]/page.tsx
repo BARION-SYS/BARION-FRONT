@@ -77,6 +77,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
   const router = useRouter()
   const {
     barberia,
+    sedeId,
     servicios,
     barberos,
     agenda,
@@ -110,8 +111,16 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
 
   const setMarca = useMarcaStore((s) => s.setMarca)
 
+  /**
+   * La marca del cartón QR se captura ANTES de pedir nada, y en el mismo efecto:
+   * de ella sale la SEDE, y de la sede dependen la carta y el equipo que se piden.
+   * Capturarla en un efecto aparte la dejaba llegar tarde a la primera carga.
+   *
+   * Leer la dirección del navegador aquí evita meter esta pantalla en una frontera
+   * de Suspense solo para un parámetro. Última marca gana.
+   */
   useEffect(() => {
-    void fetchPortal(slug)
+    void fetchPortal(slug, capturarMarcaQr(window.location.search))
   }, [fetchPortal, slug])
 
   /**
@@ -123,17 +132,6 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     void fetchMiPerfil().then((cliente) => setIdentidad(cliente ? "cliente" : "invitado"))
   }, [fetchMiPerfil])
 
-  /**
-   * La marca del cartón QR — `?qr={sede.slugQr}` — a una cookie de 30 días.
-   *
-   * Aquí y no en un `useSearchParams`: es un efecto de una sola vez que no pinta
-   * nada, y leer la dirección del navegador evita meter esta pantalla en una
-   * frontera de Suspense solo para capturar un parámetro. Última marca gana.
-   */
-  useEffect(() => {
-    capturarMarcaQr(window.location.search)
-  }, [])
-
   // La marca la define el tenant y el portal SOLO la refleja: el cliente jamás la
   // edita, así que se aplica al montar y no se persiste como preferencia suya.
   useEffect(() => {
@@ -144,9 +142,15 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
     })
   }, [barberia, setMarca])
 
-  // La barbería opera por SEDES. Mientras haya una sola, es la de trabajo; el
-  // selector de sede llega cuando el escaparate tenga que ofrecer varias.
-  const sede = barberia?.sedes[0] ?? null
+  /**
+   * La sede de trabajo: **la del cartón que escaneó el cliente**.
+   *
+   * No se vuelve a derivar aquí — se toma el `sedeId` que el hook ya resolvió al
+   * cargar, que es el mismo con el que pidió la carta y el equipo. Calcularlo por
+   * segunda vez arriba es exactamente cómo el escaparate acabó ofreciendo barberos
+   * que la api rechazaba: la api filtra por sede antes de mirar la oferta.
+   */
+  const sede = barberia?.sedes.find((candidata) => candidata.id === sedeId) ?? null
 
   const formato: ContextoFormato = useMemo(
     () => ({

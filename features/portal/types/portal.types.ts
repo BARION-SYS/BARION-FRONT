@@ -31,6 +31,8 @@ export interface SedePortal {
   nombre: string
   zonaHoraria: string
   direccion: Record<string, unknown> | null
+  /** La marca del cartón de ESTA sede: `?qr={slugQr}`. Resuelve dónde está el cliente. */
+  slugQr: string
   horario: TramoHorario[]
   abiertoAhora: boolean
 }

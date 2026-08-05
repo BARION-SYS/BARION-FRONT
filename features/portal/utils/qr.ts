@@ -23,6 +23,8 @@
  * como `'enlace'`. Se prefiere subestimar el QR antes que inflarlo.
  */
 
+import type { SedePortal } from "@features/portal/types/portal.types"
+
 const PARAM_QR = "qr"
 const COOKIE_QR = "barion_qr"
 const DIAS = 30
@@ -32,21 +34,29 @@ const SEGUNDOS = DIAS * 24 * 60 * 60
 const FORMATO = /^[a-z0-9][a-z0-9-]{0,79}$/i
 
 /**
- * Guarda la marca si la dirección trae `?qr=`. Idempotente y silenciosa: sin
- * parámetro no toca nada, y un valor con forma rara se ignora en vez de acabar
- * en una cookie que luego viaja en cada reserva.
+ * Guarda la marca si la dirección trae `?qr=` y **devuelve la que queda vigente**.
+ * Idempotente y silenciosa: sin parámetro no toca nada, y un valor con forma rara
+ * se ignora en vez de acabar en una cookie que luego viaja en cada reserva.
+ *
+ * Devuelve el valor en vez de `void` porque la marca ya no sirve solo para
+ * atribuir el origen: **de ella sale la SEDE**, y la sede decide qué carta y qué
+ * equipo se piden. Esperar a leerla de la cookie obligaría a una segunda vuelta, y
+ * quien tenga las cookies bloqueadas se quedaría sin sede resuelta pese a haber
+ * escaneado el cartón — el parámetro de la URL sigue estando ahí.
  */
-export function capturarMarcaQr(busqueda: string): void {
-  if (typeof document === "undefined") return
+export function capturarMarcaQr(busqueda: string): string | undefined {
+  if (typeof document === "undefined") return undefined
 
   const valor = new URLSearchParams(busqueda).get(PARAM_QR)?.trim()
-  if (!valor || !FORMATO.test(valor)) return
+  if (!valor || !FORMATO.test(valor)) return marcaQr()
 
   // `Lax` basta: la marca la pone una navegación de primer nivel desde la cámara
   // del móvil, y nada de esto es una credencial. `Secure` solo donde hay https,
   // o en desarrollo sobre http el navegador descartaría la cookie entera.
   const seguro = window.location.protocol === "https:" ? "; Secure" : ""
   document.cookie = `${COOKIE_QR}=${encodeURIComponent(valor)}; Path=/; Max-Age=${SEGUNDOS}; SameSite=Lax${seguro}`
+
+  return valor
 }
 
 /**
@@ -61,4 +71,24 @@ export function marcaQr(): string | undefined {
 
   const valor = decodeURIComponent(entrada.slice(COOKIE_QR.length + 1))
   return FORMATO.test(valor) ? valor : undefined
+}
+
+/**
+ * En qué sede está el cliente: la del cartón que escaneó.
+ *
+ * Es lo que resuelve el caso de varias sedes sin pedirle nada — quien escanea el
+ * cartón del centro ya dijo dónde está—. Y hace falta de verdad: la api valida la
+ * reserva filtrando los barberos por sede, así que trabajar contra la sede
+ * equivocada deja elegir a quien no atiende ahí.
+ *
+ * Sin marca —o con una de OTRA barbería, que se ignora igual que en la api— cae a
+ * la primera sede. Eso es correcto con una sola; con varias es una suposición, y
+ * ahí lo que falta es un selector.
+ */
+export function sedeDeLaMarca(sedes: SedePortal[], marca: string | undefined): SedePortal | null {
+  if (marca) {
+    const suya = sedes.find((sede) => sede.slugQr === marca)
+    if (suya) return suya
+  }
+  return sedes[0] ?? null
 }

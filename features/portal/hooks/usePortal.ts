@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react"
 import { portalService } from "@features/portal/services/portal.service"
+import { sedeDeLaMarca } from "@features/portal/utils/qr"
 import { getErrorMessage } from "@shared/utils/error"
 import type {
   DatosAccionEnlace,
@@ -36,6 +37,13 @@ import type {
  */
 export function usePortal() {
   const [barberia, setBarberia] = useState<BarberiaPortal | null>(null)
+  /**
+   * La sede con la que se está trabajando, resuelta desde la marca del cartón QR.
+   * Vive aquí y no en la página porque es la MISMA con la que se pidieron la carta
+   * y el equipo: derivarla otra vez arriba es cómo se desincronizaron antes el
+   * escaparate y lo que la api acepta al reservar.
+   */
+  const [sedeId, setSedeId] = useState<string | null>(null)
   const [servicios, setServicios] = useState<ServicioPortal[]>([])
   const [barberos, setBarberos] = useState<BarberoPortal[]>([])
   const [agenda, setAgenda] = useState<DiaAgenda[]>([])
@@ -55,22 +63,32 @@ export function usePortal() {
   const [error, setError] = useState<string | null>(null)
 
   /**
-   * Ficha, carta y equipo en una sola carga: el escaparate no sirve de nada a
-   * medio pintar, y son tres lecturas cacheables de la misma barbería.
+   * Ficha, carta y equipo. **En dos olas, y no por descuido**: la carta y el equipo
+   * se piden ACOTADOS A LA SEDE, y cuál es la sede solo se sabe leyendo la ficha.
+   *
+   * Pedir las tres en paralelo era más rápido y estaba mal: devolvía el equipo
+   * entero de la barbería mientras la reserva se valida contra UNA sede
+   * (`quienesOfrecen` filtra por `sedeId` antes de mirar la oferta). En una
+   * barbería con dos sedes eso deja elegir a un barbero de la otra y el choque solo
+   * aparece al reservar, con un 422 que además culpa a la oferta.
    *
    * Un 404 aquí significa que esa dirección no tiene escaparate —no existe, está
    * suspendida o no verificó su correo—, y la página lo trata como "no encontrada".
    */
-  const fetchPortal = useCallback(async (slug: string) => {
+  const fetchPortal = useCallback(async (slug: string, slugQr?: string) => {
     setLoadingPortal(true)
     setError(null)
     try {
-      const [resBarberia, resServicios, resBarberos] = await Promise.all([
-        portalService.obtenerBarberia(slug),
-        portalService.obtenerServicios(slug),
-        portalService.obtenerBarberos(slug),
+      const resBarberia = await portalService.obtenerBarberia(slug)
+      const sede = sedeDeLaMarca(resBarberia.data.sedes, slugQr)
+
+      const [resServicios, resBarberos] = await Promise.all([
+        portalService.obtenerServicios(slug, sede?.id),
+        portalService.obtenerBarberos(slug, sede?.id),
       ])
+
       setBarberia(resBarberia.data)
+      setSedeId(sede?.id ?? null)
       setServicios(resServicios.data)
       setBarberos(resBarberos.data)
     } catch (err) {
@@ -346,6 +364,7 @@ export function usePortal() {
 
   return {
     barberia,
+    sedeId,
     servicios,
     barberos,
     agenda,

@@ -64,4 +64,6 @@ export interface EnlaceQr {
   url: string
   nombreBarberia: string
   nombreSede: string
+  /** La marca de la sede dentro del enlace — es lo único que se puede rotar. */
+  slugQr: string
 }

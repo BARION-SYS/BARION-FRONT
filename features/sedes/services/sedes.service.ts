@@ -47,6 +47,18 @@ export const sedesService = {
     return api.post<Sede>(`/sedes/${id}/activar`, {})
   },
 
+  /**
+   * Genera un `slugQr` nuevo para la sede y devuelve la sede entera, ya rotada.
+   *
+   * **El código lo pone el servidor y no se manda uno propuesto**: es único entre
+   * TODAS las barberías, así que la unicidad no se puede comprobar desde aquí.
+   * Vive en este service —y no en el de `qr`— porque `/sedes/**` es de esta
+   * feature; quien lo usa es la pantalla del cartón.
+   */
+  async rotarSlugQr(sedeId: string): Promise<ApiResult<Sede>> {
+    return api.post<Sede>(`/sedes/${sedeId}/qr/rotar`, {})
+  },
+
   async obtenerHorario(sedeId: string): Promise<ApiResult<HorarioSemanal>> {
     return api.get<HorarioSemanal>(`/sedes/${sedeId}/horarios`)
   },

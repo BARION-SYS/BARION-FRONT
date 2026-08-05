@@ -14,7 +14,11 @@ import { ultimosDiasInstantes } from "@features/dashboard/utils/serie"
 import { puede } from "@features/auth/utils/permisos"
 import { StatCard } from "@shared/components/stats/StatCard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+import { Modal } from "@shared/components/modals/Modal"
+import { Button } from "@shared/components/ui/button"
 import { useFormato } from "@shared/hooks/useFormato"
+import { notify } from "@shared/services/notify"
+import { getErrorMessage } from "@shared/utils/error"
 import { useAuthStore } from "@store/auth.store"
 import { useSedeActual } from "@store/sede.store"
 import type { EnlaceQr } from "@features/qr/types/qr.types"
@@ -39,6 +43,12 @@ import type { EnlaceQr } from "@features/qr/types/qr.types"
  * Mientras el portal no marque el origen, todo esto es cero y el feed no tiene
  * entradas. **No es un fallo**, así que la pantalla lo dice con palabras en vez de
  * dejar huecos que se leen como algo roto.
+ *
+ * ── Rotar el código ─────────────────────────────────────────────────────────
+ * Se cambia la marca de la SEDE, y solo eso: los cartones repartidos siguen
+ * llevando a la barbería porque la ruta la manda el `slug` de la barbería. Lo que
+ * pierden es la atribución. Por eso la confirmación lo dice entero —tranquiliza y
+ * advierte— y nada del informe se reinicia: el desglose es por sede, no por código.
  */
 export default function QrPage() {
   const {
@@ -47,12 +57,17 @@ export default function QrPage() {
     actividad,
     loadingQr,
     loadingReportes,
+    loadingAction,
     fetchBarberiaQr,
     fetchReportesQr,
+    handleRotateSlugQr,
   } = useQr()
 
   const sesion = useAuthStore((estado) => estado.sesion)
   const veReportes = puede(sesion, "reportes.ver")
+  // Ocultar el botón no es seguridad —la api revalida—, pero a quien solo mira le
+  // evita un 403 sobre una pantalla que sí puede usar.
+  const gestionaSedes = puede(sesion, "sedes.gestionar")
 
   const sedeActual = useSedeActual()
   const { numero, timezone } = useFormato()
@@ -60,6 +75,9 @@ export default function QrPage() {
   // Estado de UI: confirmación transitoria del copiado.
   const [copiado, setCopiado] = useState(false)
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Estado de UI: la confirmación de rotar el código.
+  const [confirmandoRotacion, setConfirmandoRotacion] = useState(false)
 
   /**
    * El origen del portal, resuelto en el navegador. Va en estado y no calculado
@@ -96,6 +114,7 @@ export default function QrPage() {
       url: enlaceDelCarton(origen, barberia.slug, sedeActual.slugQr),
       nombreBarberia: barberia.nombreComercial,
       nombreSede: sedeActual.nombre,
+      slugQr: sedeActual.slugQr,
     }
   }, [origen, barberia, sedeActual])
 
@@ -106,6 +125,25 @@ export default function QrPage() {
     if (temporizador.current) clearTimeout(temporizador.current)
     temporizador.current = setTimeout(() => setCopiado(false), 2000)
   }, [enlace])
+
+  /**
+   * El código nuevo llega en la respuesta y el hook lo deja en el store de sedes,
+   * de donde salen el enlace y el QR: la pantalla se repinta sola, sin recargar
+   * ni recomponer nada a mano.
+   */
+  const rotarCodigoQr = useCallback(async () => {
+    if (!sedeActual) return
+    try {
+      const mensaje = await handleRotateSlugQr(sedeActual.id)
+      setConfirmandoRotacion(false)
+      notify.success(mensaje)
+      // Las cifras no se mueven —lo medido se queda—, pero el desglose enseña el
+      // código de cada sede y el de esta acaba de dejar de ser el que muestra.
+      if (veReportes) void fetchReportesQr(rango, LIMITE_ACTIVIDAD_QR)
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }, [sedeActual, handleRotateSlugQr, veReportes, fetchReportesQr, rango])
 
   const periodo = `Últimos ${DIAS_QR} días`
 
@@ -169,8 +207,11 @@ export default function QrPage() {
             <QrEnlaceCard
               url={enlace.url}
               nombreSede={enlace.nombreSede}
+              slugQr={enlace.slugQr}
               copiado={copiado}
               onCopiar={copiarEnlace}
+              gestiona={gestionaSedes}
+              onRotar={() => setConfirmandoRotacion(true)}
             />
           )}
           <QrCapacidadesCard capacidades={CAPACIDADES_QR} />
@@ -188,6 +229,51 @@ export default function QrPage() {
       <span aria-live="polite" className="sr-only">
         {copiado ? "Enlace copiado al portapapeles" : ""}
       </span>
+
+      {/*
+        La consecuencia se cuenta entera: lo que sigue funcionando, lo que se
+        pierde y lo que hay que hacer. Media verdad aquí asusta de más («¿mato los
+        cartones?») o de menos («¿por qué dejó de contar?»).
+      */}
+      <Modal
+        open={confirmandoRotacion}
+        onOpenChange={(abierto) => !abierto && setConfirmandoRotacion(false)}
+        titulo="Generar un código nuevo"
+        descripcion={`El cartón de ${enlace?.nombreSede ?? "esta sede"} pasará a llevar otro código.`}
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setConfirmandoRotacion(false)}
+              disabled={loadingAction}
+            >
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={() => void rotarCodigoQr()} disabled={loadingAction}>
+              Generar código nuevo
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-2.5 text-sm text-muted-foreground">
+          <p>
+            Los cartones que ya imprimiste{" "}
+            <span className="font-medium text-foreground">siguen funcionando</span>: quien los
+            escanee llega igual a tu barbería y puede reservar.
+          </p>
+          <p>
+            Lo único que pierden es la atribución: sus citas dejarán de contarse como venidas del QR
+            y pasarán a contar como llegadas por enlace.
+          </p>
+          <p>Para volver a medir esta sede hay que reimprimir el cartón con el código nuevo.</p>
+          <p>
+            Lo que ya se midió no se toca: el informe conserva las citas que el cartón trajo hasta
+            ahora.
+          </p>
+        </div>
+      </Modal>
     </main>
   )
 }

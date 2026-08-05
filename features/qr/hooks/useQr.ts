@@ -3,9 +3,11 @@
 import { useCallback, useState } from "react"
 import { configuracionService } from "@features/configuracion/services/configuracion.service"
 import { qrService } from "@features/qr/services/qr.service"
+import { sedesService } from "@features/sedes/services/sedes.service"
 import type { ActividadQr, RangoQr, ResumenQr } from "@features/qr/types/qr.types"
 import type { Barberia } from "@features/configuracion/types/configuracion.types"
 import { getErrorMessage } from "@shared/utils/error"
+import { useSedeStore } from "@store/sede.store"
 
 /**
  * Estado de API del feat `qr` — lo instancia SOLO su página.
@@ -18,13 +20,17 @@ import { getErrorMessage } from "@shared/utils/error"
  *
  * La barbería se lee con el service de `configuracion`, que es el feat DUEÑO de
  * `/barberias/mi`: duplicar la llamada aquí garantizaría que un día divergieran.
+ * Por lo mismo, rotar el código del cartón llama al service de `sedes`, dueño de
+ * `/sedes/**` — la acción es de esta pantalla, la ruta no.
  */
 export function useQr() {
+  const reemplazarSede = useSedeStore((estado) => estado.reemplazarSede)
   const [barberia, setBarberia] = useState<Barberia | null>(null)
   const [resumen, setResumen] = useState<ResumenQr | null>(null)
   const [actividad, setActividad] = useState<ActividadQr[]>([])
   const [loadingQr, setLoadingQr] = useState(false)
   const [loadingReportes, setLoadingReportes] = useState(false)
+  const [loadingAction, setLoadingAction] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchBarberiaQr = useCallback(async () => {
@@ -62,14 +68,40 @@ export function useQr() {
     }
   }, [])
 
+  /**
+   * Rota el `slugQr` de UNA sede — pide `sedes.gestionar`.
+   *
+   * La api devuelve la sede entera con el código ya rotado, así que se sustituye
+   * en el store de sedes: de ahí salen el enlace y el QR de la pantalla, y
+   * recomponerlos aquí a mano sería inventarse un código que solo el servidor
+   * puede generar (es único entre todas las barberías).
+   */
+  const handleRotateSlugQr = useCallback(
+    async (sedeId: string): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await sedesService.rotarSlugQr(sedeId)
+        reemplazarSede(res.data)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    [reemplazarSede]
+  )
+
   return {
     barberia,
     resumen,
     actividad,
     loadingQr,
     loadingReportes,
+    loadingAction,
     error,
     fetchBarberiaQr,
     fetchReportesQr,
+    handleRotateSlugQr,
   }
 }

@@ -7,6 +7,12 @@ interface SedeState {
   /** La llena `Navbar` al cargar `useSedes()`; el resto del panel solo lee. */
   setSedes: (sedes: Sede[]) => void
   setSedeActual: (id: string) => void
+  /**
+   * Sustituye UNA sede por la que acaba de devolver la api (rotar su `slugQr`,
+   * por ejemplo). Evita re-pedir la lista entera para refrescar un campo y deja
+   * una sola verdad: todo el panel lee estas sedes.
+   */
+  reemplazarSede: (sede: Sede) => void
 }
 
 // Sede activa del panel — transversal a listados y formateo de fecha/hora.
@@ -26,6 +32,8 @@ export const useSedeStore = create<SedeState>((set, get) => ({
     })
   },
   setSedeActual: (id) => set({ sedeActualId: id }),
+  reemplazarSede: (sede) =>
+    set({ sedes: get().sedes.map((actual) => (actual.id === sede.id ? sede : actual)) }),
 }))
 
 export function useSedeActual(): Sede | null {

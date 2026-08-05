@@ -11,13 +11,7 @@ import prettier from "eslint-config-prettier/flat"
  */
 const config = [
   {
-    ignores: [
-      ".next/**",
-      "node_modules/**",
-      "public/**",
-      "next-env.d.ts",
-      "tsconfig.tsbuildinfo",
-    ],
+    ignores: [".next/**", "node_modules/**", "public/**", "next-env.d.ts", "tsconfig.tsbuildinfo"],
   },
 
   ...next,

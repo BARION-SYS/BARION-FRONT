@@ -175,7 +175,7 @@ export default function CitasPage() {
         cargar()
       }
     },
-    [seleccionada, handleCambiarEstadoCita, cargar] // eslint-disable-line react-hooks/exhaustive-deps
+    [seleccionada, handleCambiarEstadoCita, cargar]  
   )
 
   const onReprogramar = useCallback(
@@ -193,7 +193,7 @@ export default function CitasPage() {
         cargar()
       }
     },
-    [reprogramando, handleReprogramarCita, cargar] // eslint-disable-line react-hooks/exhaustive-deps
+    [reprogramando, handleReprogramarCita, cargar]  
   )
 
   return (

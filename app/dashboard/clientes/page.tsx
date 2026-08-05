@@ -133,7 +133,7 @@ export default function ClientesPage() {
         void cargar()
       }
     },
-    [clienteEnEdicion, handleUpdateCliente, handleCreateCliente, cargar] // eslint-disable-line react-hooks/exhaustive-deps
+    [clienteEnEdicion, handleUpdateCliente, handleCreateCliente, cargar]  
   )
 
   const onConsentimiento = useCallback(
@@ -148,7 +148,7 @@ export default function ClientesPage() {
         })
       )
     },
-    [seleccionado, handleRegistrarConsentimiento] // eslint-disable-line react-hooks/exhaustive-deps
+    [seleccionado, handleRegistrarConsentimiento]  
   )
 
   const onConfirmarAnonimizar = useCallback(async () => {
@@ -157,7 +157,7 @@ export default function ClientesPage() {
       setClienteAAnonimizar(null)
       void cargar()
     }
-  }, [clienteAAnonimizar, handleAnonimizarCliente, cargar]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clienteAAnonimizar, handleAnonimizarCliente, cargar])  
 
   return (
     // Móvil: scroll de página. lg+: app-like — alto fijo, lista y detalle

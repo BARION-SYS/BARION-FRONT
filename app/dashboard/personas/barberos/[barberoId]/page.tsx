@@ -133,7 +133,7 @@ export default function PersonaEnAgendaPage({
         void recargar()
       }
     },
-    [barberoId, handleUpdateBarbero, recargar] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoId, handleUpdateBarbero, recargar]  
   )
 
   /**
@@ -171,14 +171,14 @@ export default function PersonaEnAgendaPage({
         void recargar()
       }
     },
-    [barberoId, handleReplaceOferta, recargar] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoId, handleReplaceOferta, recargar]  
   )
 
   const onGuardarJornada = useCallback(
     async (tramos: { diaSemana: number; inicio: string; fin: string }[]) => {
       await conAviso(() => handleReplaceJornada(barberoId, { tramos }))
     },
-    [barberoId, handleReplaceJornada] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoId, handleReplaceJornada]  
   )
 
   const onGuardarAusencia = useCallback(
@@ -190,7 +190,7 @@ export default function PersonaEnAgendaPage({
         void recargar()
       }
     },
-    [barberoId, handleCreateAusencia, fetchDisponibilidad, recargar] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoId, handleCreateAusencia, fetchDisponibilidad, recargar]  
   )
 
   const onGuardarExcepcion = useCallback(
@@ -201,7 +201,7 @@ export default function PersonaEnAgendaPage({
         void fetchDisponibilidad(barberoId)
       }
     },
-    [barberoId, handleGuardarExcepcion, fetchDisponibilidad] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoId, handleGuardarExcepcion, fetchDisponibilidad]  
   )
 
   const onEliminarExcepcion = useCallback(
@@ -210,7 +210,7 @@ export default function PersonaEnAgendaPage({
         void fetchDisponibilidad(barberoId)
       }
     },
-    [barberoId, handleEliminarExcepcion, fetchDisponibilidad] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoId, handleEliminarExcepcion, fetchDisponibilidad]  
   )
 
   const onAusenciaTocada = useCallback(
@@ -220,7 +220,7 @@ export default function PersonaEnAgendaPage({
         void recargar()
       }
     },
-    [barberoId, fetchDisponibilidad, recargar] // eslint-disable-line react-hooks/exhaustive-deps
+    [barberoId, fetchDisponibilidad, recargar]  
   )
 
   return (

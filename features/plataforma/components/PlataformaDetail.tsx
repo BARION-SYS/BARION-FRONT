@@ -8,7 +8,7 @@ import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { useFormato } from "@shared/hooks/useFormato"
 import { inicialesDe } from "@shared/utils/iniciales"
-import { EnlaceCopiable } from "@features/plataforma/components/EnlaceCopiable"
+import { EnlaceCopiable } from "@shared/components/enlaces/EnlaceCopiable"
 import {
   ESTADO_BARBERIA,
   MOTIVO_TRANSICION,

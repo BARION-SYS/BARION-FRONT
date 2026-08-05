@@ -1,6 +1,6 @@
 "use client"
 
-import { EnlaceCopiable } from "@features/plataforma/components/EnlaceCopiable"
+import { EnlaceCopiable } from "@shared/components/enlaces/EnlaceCopiable"
 import type { BarberiaFicha } from "@features/plataforma/types/plataforma.types"
 
 interface PlataformaEntregaProps {

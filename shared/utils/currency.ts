@@ -9,10 +9,9 @@ import { DEFAULT_LOCALE, getNumberFormat } from "@shared/utils/i18n"
  * dólar y el euro se guardan en centavos.
  *
  * **Esto NO son los decimales que se pintan**, y confundirlos cuesta un factor
- * cien. El peso colombiano se enseña sin decimales —CLDR dice 0 y por eso
- * `Intl` los quita solo— pero su unidad menor sigue siendo de dos: `8900000`
- * son $ 89.000, no $ 8.900.000. Los decimales visibles los decide el
- * formateador; la escala, esta tabla y solo esta.
+ * cien. El peso colombiano se enseña sin decimales pero su unidad menor sigue
+ * siendo de dos: `8900000` son $ 89.000, no $ 8.900.000. Los decimales visibles
+ * son `decimalesPorMoneda`; la escala, esta tabla y solo esta.
  *
  * Indexado por código y no por `CodigoMoneda`: la API cotiza por país —el
  * catálogo de planes trae una moneda por mercado— y una moneda que este front
@@ -36,6 +35,40 @@ function escalaDe(currency: string): number {
   return escalaPorMoneda[currency] ?? ESCALA_POR_DEFECTO
 }
 
+/**
+ * Cuántos decimales se PINTAN. Otra tabla, otra cosa.
+ *
+ * Son los valores de CLDR —el peso colombiano no lleva, el dólar y el euro sí—
+ * pero se declaran aquí en vez de dejárselos al formateador, y no por gusto:
+ * **`Intl` no da el mismo resultado en el servidor que en el navegador**. Cada
+ * uno trae su versión de ICU y sus datos de moneda cambian entre versiones; el
+ * mismo importe salía `$ 1.280.000` en Node 22 (ICU 78) y `$ 1.280.000,00` en el
+ * navegador. Todo lo que se sirva renderizado y se hidrate después revienta con
+ * eso: React ve dos textos distintos y repinta el árbol entero en el cliente.
+ *
+ * Hoy este front pide sus datos DESPUÉS de montar —el HTML del servidor lleva
+ * skeletons, no importes— así que el fallo no está a la vista. Depende de un
+ * detalle que puede cambiar el día que una pantalla renderice un precio en el
+ * servidor, y entonces el síntoma no señalaría a este archivo.
+ */
+const decimalesPorMoneda: Record<string, number> = {
+  COP: 0,
+  USD: 2,
+  EUR: 2,
+}
+
+/**
+ * Como la escala: la mayoría de monedas ISO 4217 se enseñan con dos decimales.
+ * Una moneda que este front todavía no opera se lee con el criterio de la
+ * mayoría —a lo sumo raro un día, nunca una pantalla que no carga— y **igual en
+ * los dos lados**, que es lo único que no se puede negociar aquí.
+ */
+const DECIMALES_POR_DEFECTO = 2
+
+function decimalesDe(currency: string): number {
+  return decimalesPorMoneda[currency] ?? DECIMALES_POR_DEFECTO
+}
+
 /** Unidad menor → unidad mayor. El único sitio donde se divide. */
 export function toMajorUnits(amountMinor: number, currency: string): number {
   return amountMinor / 10 ** escalaDe(currency)
@@ -52,17 +85,25 @@ export function toMinorUnits(amountMajor: number, currency: string): number {
 }
 
 /**
- * El importe para leer. Los decimales visibles los pone el formateador según
- * moneda y locale —CLDR ya sabe que el peso colombiano no los lleva y el euro
- * sí—, así que aquí no se fuerzan: forzarlos con la escala fue exactamente lo
- * que multiplicaba el precio por cien.
+ * El importe para leer. Los decimales salen de `decimalesPorMoneda` y **se le
+ * imponen al formateador**, para que el texto no dependa de qué ICU tenga
+ * delante.
+ *
+ * Que se fijen aquí no reabre el error del factor cien: los que se pintan y los
+ * que dividen son dos tablas distintas, y quien divide es `toMajorUnits` con
+ * `escalaPorMoneda`. Lo que multiplicaba el precio por cien era usar LA MISMA
+ * para las dos cosas.
  */
 export function formatMoney(
   amountMinor: number,
   currency: string,
   locale = DEFAULT_LOCALE
 ): string {
-  return getNumberFormat(locale, { style: "currency", currency }).format(
-    toMajorUnits(amountMinor, currency)
-  )
+  const decimales = decimalesDe(currency)
+  return getNumberFormat(locale, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
+  }).format(toMajorUnits(amountMinor, currency))
 }

@@ -17,6 +17,7 @@ import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { Modal } from "@shared/components/modals/Modal"
 import { Button } from "@shared/components/ui/button"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useOrigen } from "@shared/hooks/useOrigen"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useAuthStore } from "@store/auth.store"
@@ -79,15 +80,8 @@ export default function QrPage() {
   // Estado de UI: la confirmación de rotar el código.
   const [confirmandoRotacion, setConfirmandoRotacion] = useState(false)
 
-  /**
-   * El origen del portal, resuelto en el navegador. Va en estado y no calculado
-   * al vuelo porque en el servidor no existe: pintarlo directo dejaría el primer
-   * render con una dirección distinta a la del cliente.
-   */
-  const [origen, setOrigen] = useState("")
-  useEffect(() => {
-    setOrigen(window.location.origin)
-  }, [])
+  /** El dominio real por el que se entró: es el que se imprime en el cartón. */
+  const origen = useOrigen()
 
   const rango = useMemo(() => ultimosDiasInstantes(timezone, DIAS_QR), [timezone])
 

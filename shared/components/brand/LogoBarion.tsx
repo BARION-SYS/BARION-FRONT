@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import Image from "next/image"
 import { useTheme } from "next-themes"
 import { cn } from "@shared/utils/cn"
+import { useMontado } from "@shared/hooks/useMontado"
 
 // width/height = dimensiones reales del asset (ratio correcto, sin CLS);
 // el tamaño en pantalla lo controla la clase del consumidor.
@@ -31,8 +31,7 @@ interface LogoBarionProps {
 // Logo de marca según el tema activo — única fuente del asset en la UI.
 export function LogoBarion({ variante = "completo", className, priority }: LogoBarionProps) {
   const { resolvedTheme } = useTheme()
-  const [montado, setMontado] = useState(false)
-  useEffect(() => setMontado(true), [])
+  const montado = useMontado()
 
   const fuente = fuentes[variante]
   const src = montado && resolvedTheme === "light" ? fuente.light : fuente.dark

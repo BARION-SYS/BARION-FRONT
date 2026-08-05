@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useTheme } from "next-themes"
 import {
   CalendarDays,
@@ -14,6 +14,7 @@ import {
 import { Button } from "@shared/components/ui/button"
 import { Modal } from "@shared/components/modals/Modal"
 import { InfoTooltip } from "@shared/components/tooltips/InfoTooltip"
+import { useMontado } from "@shared/hooks/useMontado"
 import { coloresFondo, coloresMarca } from "@config/marca"
 import { foregroundPara, tokensDeTema } from "@shared/utils/color"
 import { useMarcaStore } from "@store/marca.store"
@@ -153,8 +154,7 @@ export function BrandStudio() {
   const setMarca = useMarcaStore((s) => s.setMarca)
 
   const { resolvedTheme } = useTheme()
-  const [montado, setMontado] = useState(false)
-  useEffect(() => setMontado(true), [])
+  const montado = useMontado()
   const temaOscuro = !montado || resolvedTheme !== "light"
 
   const [abierto, setAbierto] = useState(false)

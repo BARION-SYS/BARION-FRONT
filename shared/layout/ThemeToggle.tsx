@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import { Monitor, Moon, Sun } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
+import { useMontado } from "@shared/hooks/useMontado"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +14,9 @@ import {
 // Único control de tema de la app — no duplicarlo.
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
+  const montado = useMontado()
 
-  useEffect(() => setMounted(true), [])
-  if (!mounted) return <Button variant="outline" size="icon" aria-label="Tema" disabled />
+  if (!montado) return <Button variant="outline" size="icon" aria-label="Tema" disabled />
 
   return (
     <DropdownMenu>

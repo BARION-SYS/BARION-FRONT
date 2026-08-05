@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Apariencia } from "@features/configuracion/components/Apariencia"
 import { FichaPublica } from "@features/configuracion/components/FichaPublica"
 import { General } from "@features/configuracion/components/General"
@@ -88,12 +88,8 @@ export default function ConfiguracionPage() {
   const [seccionActiva, setSeccionActiva] = useState<IdSeccionConfiguracion>("general")
   const [agregandoTarjeta, setAgregandoTarjeta] = useState(false)
   const [medioARetirar, setMedioARetirar] = useState<MedioPago | null>(null)
-  const [canalesActivos, setCanalesActivos] = useState<CanalesNotificacion>({
-    whatsapp: false,
-    sms: false,
-    correo: false,
-    interno: false,
-  })
+  /** Solo los canales que se tocaron aquí; el resto se lee de la api. */
+  const [canalesTocados, setCanalesTocados] = useState<Partial<CanalesNotificacion>>({})
 
   useEffect(() => {
     void fetchConfiguracion()
@@ -111,17 +107,19 @@ export default function ConfiguracionPage() {
     void fetchConfiguracionPagos()
   }, [seccionActiva, fetchSuscripcion, fetchFacturas, fetchMediosPago, fetchConfiguracionPagos])
 
-  // Estado inicial de los toggles según lo que reporta la API
-  useEffect(() => {
-    setCanalesActivos((activos) => {
-      const siguientes = { ...activos }
-      for (const canal of canales) siguientes[canal.canal] = canal.activo
-      return siguientes
-    })
-  }, [canales])
+  /**
+   * Los interruptores SALEN de lo que reporta la api, con encima lo que se haya
+   * tocado en pantalla. Copiarlos a estado en un efecto dejaba todo en `false`
+   * hasta que llegaba la respuesta, y volvía a pisarlos en cada recarga.
+   */
+  const canalesActivos = useMemo<CanalesNotificacion>(() => {
+    const base: CanalesNotificacion = { whatsapp: false, sms: false, correo: false, interno: false }
+    for (const canal of canales) base[canal.canal] = canal.activo
+    return { ...base, ...canalesTocados }
+  }, [canales, canalesTocados])
 
   const alternarCanal = (canal: CanalNotificacion) =>
-    setCanalesActivos((activos) => ({ ...activos, [canal]: !activos[canal] }))
+    setCanalesTocados((tocados) => ({ ...tocados, [canal]: !canalesActivos[canal] }))
 
   const onSubmitGeneral = async (datos: DatosGeneral) => {
     try {

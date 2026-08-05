@@ -13,6 +13,7 @@ import { Checkbox } from "@shared/components/ui/checkbox"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
 import { env } from "@config/env"
+import { rutasPublicas } from "@routes/rutasPublicas"
 import { LogoGoogle } from "@shared/components/brand/LogoGoogle"
 import { esquemaLogin, type DatosLogin } from "@features/auth/schemas/auth.schema"
 
@@ -168,9 +169,8 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
               />
               Recordarme
             </label>
-            <Button type="button" variant="link" size="sm" className="px-0 text-sm">
-              ¿Olvidaste tu contraseña?
-            </Button>
+            {/* El enlace real de recuperación va debajo, con el slug de la
+                puerta. Aquí había un botón con el mismo texto y sin destino */}
           </motion.div>
 
           <AnimatePresence>
@@ -239,11 +239,17 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
           </a>
         </motion.div>
 
+        {/* El alta abierta es de ESTA aplicación (`/registro`), así que va con
+            next/link. Estuvo como botón sin destino: el sitio parecía tener
+            registro y la única forma de llegar era teclear la dirección */}
         <motion.p className="mt-7 text-center text-sm text-muted-foreground" variants={bloque}>
           ¿No tienes cuenta?{" "}
-          <Button variant="link" size="sm" className="px-0 text-sm">
+          <Link
+            href={rutasPublicas.registro}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
             Registra tu barbería gratis
-          </Button>
+          </Link>
         </motion.p>
       </div>
 

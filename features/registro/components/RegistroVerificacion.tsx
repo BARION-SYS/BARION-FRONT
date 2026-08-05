@@ -1,8 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { CheckCircle2, Loader2, XCircle } from "lucide-react"
+import { CheckCircle2, XCircle } from "lucide-react"
+import { rutasPublicas } from "@routes/rutasPublicas"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
+import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { Button } from "@shared/components/ui/button"
 
 export type EstadoVerificacion = "verificando" | "listo" | "invalido"
@@ -26,12 +28,12 @@ export function RegistroVerificacion({ estado, mensaje }: RegistroVerificacionPr
       <LogoBarion variante="completo" />
 
       {estado === "verificando" && (
-        <>
-          <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
-          <p className="text-sm text-muted-foreground" role="status">
+        <div className="w-full max-w-xs space-y-4">
+          <DataSkeleton variant="text" count={2} className="items-center" />
+          <p className="sr-only" role="status">
             Confirmando tu correo…
           </p>
-        </>
+        </div>
       )}
 
       {estado === "listo" && (
@@ -43,7 +45,7 @@ export function RegistroVerificacion({ estado, mensaje }: RegistroVerificacionPr
               {mensaje ?? "Tu barbería ya es visible para tus clientes."}
             </p>
           </div>
-          <Button size="lg" render={<Link href="/entrar" />}>
+          <Button size="lg" render={<Link href={rutasPublicas.entrar} />}>
             Entrar a mi panel
           </Button>
         </>
@@ -59,7 +61,11 @@ export function RegistroVerificacion({ estado, mensaje }: RegistroVerificacionPr
                 "Puede que haya caducado o que ya lo hayas usado. Entra a tu panel y pídelo de nuevo."}
             </p>
           </div>
-          <Button variant="outline" size="lg" render={<Link href="/entrar">Ir a entrar</Link>} />
+          {/* El texto va como children del Button: puesto dentro del elemento de
+              `render` se pierde y el botón sale vacío */}
+          <Button variant="outline" size="lg" render={<Link href={rutasPublicas.entrar} />}>
+            Ir a entrar
+          </Button>
         </>
       )}
     </main>

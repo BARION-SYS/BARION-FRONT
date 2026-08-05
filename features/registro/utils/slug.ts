@@ -5,6 +5,11 @@
  * Pedirlo es pedir una decisión técnica a quien vino a montar una barbería —y
  * la mitad de las veces acaba en algo con espacios, tildes o mayúsculas que hay
  * que rechazar. Se genera, se comprueba que esté libre y se enseña ya resuelto.
+ *
+ * **Las variantes de un nombre ya tomado (`-2`, `-3`…) las busca la API**, no
+ * este archivo: probarlas desde aquí costaba una petición por intento contra un
+ * cupo por IP de veinte por minuto, así que la comprobación se agotaba sola y el
+ * formulario acababa sin identificador que enseñar.
  */
 
 /** Máximo que acepta la api (`@Length(2, 60)` en su DTO). */
@@ -28,16 +33,6 @@ export function slugDesdeNombre(nombre: string): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, LARGO_MAXIMO)
     .replace(/-+$/g, "")
-}
-
-/**
- * Variante n-ésima cuando la base ya está ocupada: `barberia-el-corte-2`.
- * El sufijo se descuenta del largo para no pasarse del máximo.
- */
-export function varianteDeSlug(base: string, intento: number): string {
-  if (intento <= 1) return base
-  const sufijo = `-${intento}`
-  return `${base.slice(0, LARGO_MAXIMO - sufijo.length).replace(/-+$/g, "")}${sufijo}`
 }
 
 /** Si el nombre no deja ni dos caracteres útiles, no hay identificador válido. */

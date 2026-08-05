@@ -1,8 +1,8 @@
 /**
  * Lo que devuelve el registro abierto (`/publico/registro` de la api).
  *
- * Contrato leído del código de `BARION-API` (`registro.types.ts` y sus DTO):
- * ese módulo todavía NO publica su ficha en `docs/frontend/api-barion/`.
+ * Contrato publicado por la api en
+ * `BARION-API/docs/frontend/api-barion/registro/registro.md`.
  */
 
 export interface RegistroVista {
@@ -13,6 +13,12 @@ export interface RegistroVista {
 }
 
 export interface DisponibilidadSlug {
-  /** Booleano y nada más: decir de quién es convertiría esto en un directorio. */
+  /** Si el identificador preguntado está libre. Nunca dice de quién es el ocupado. */
   disponible: boolean
+  /**
+   * El primero libre entre el preguntado y sus variantes numeradas (`-2`, `-3`…),
+   * o `null` si ninguno lo está. Lo busca la API de una vez: pedir las variantes
+   * una por una gastaba cinco peticiones del cupo por IP en cada nombre tecleado.
+   */
+  sugerencia: string | null
 }

@@ -13,7 +13,11 @@ export const registroService = {
     return api.post<RegistroVista>("/publico/registro", esquemaRegistro.parse(datos))
   },
 
-  /** Si el identificador público está libre. La api responde solo el booleano. */
+  /**
+   * Si el identificador público está libre y, si no, cuál sí lo está: la api
+   * devuelve la primera variante numerada en la MISMA respuesta. Una petición
+   * por nombre — probando las variantes desde aquí se agotaba el cupo por IP.
+   */
   async verificarSlug(slug: string): Promise<ApiResult<DisponibilidadSlug>> {
     return api.get<DisponibilidadSlug>(`/publico/registro/disponible/${slug}`)
   },

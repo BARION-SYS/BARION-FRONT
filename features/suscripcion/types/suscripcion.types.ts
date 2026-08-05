@@ -52,6 +52,8 @@ export interface UsoContraTope {
 
 export interface Suscripcion {
   estado: EstadoSuscripcion
+  /** Cada cuánto se cobra lo contratado. La api lo manda; faltaba aquí. */
+  periodo: PeriodoCobro
   plan: PlanContratado
   /** Instantes UTC ISO-8601. `null` cuando ese dato no aplica al estado. */
   pruebaTerminaEn: string | null

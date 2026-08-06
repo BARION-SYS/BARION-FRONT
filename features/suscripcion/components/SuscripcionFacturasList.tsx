@@ -1,4 +1,4 @@
-import { Download } from "lucide-react"
+import { Download, Eye } from "lucide-react"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { SinDatos } from "@shared/components/feedback/SinDatos"
 import { Loadable } from "@shared/components/feedback/Loadable"
@@ -13,24 +13,21 @@ import {
   TableRow,
 } from "@shared/components/ui/table"
 import { useFormato } from "@shared/hooks/useFormato"
-import type { TonoEstado } from "@shared/types/ui.types"
-import type { EstadoFactura, Factura } from "@features/suscripcion/types/suscripcion.types"
+import { ESTADO_FACTURA } from "@features/suscripcion/utils/facturas"
+import type { Factura } from "@features/suscripcion/types/suscripcion.types"
 
 interface SuscripcionFacturasListProps {
   facturas: Factura[]
   cargando: boolean
-}
-
-const TONO_POR_ESTADO: Record<EstadoFactura, { etiqueta: string; tono: TonoEstado }> = {
-  borrador: { etiqueta: "Borrador", tono: "neutro" },
-  abierta: { etiqueta: "Pendiente", tono: "advertencia" },
-  pagada: { etiqueta: "Pagada", tono: "exito" },
-  anulada: { etiqueta: "Anulada", tono: "neutro" },
-  incobrable: { etiqueta: "Incobrable", tono: "peligro" },
+  onVer: (factura: Factura) => void
 }
 
 /** Lo que Barion le ha cobrado a la barbería. Solo lectura: no se emiten aquí. */
-export function SuscripcionFacturasList({ facturas, cargando }: SuscripcionFacturasListProps) {
+export function SuscripcionFacturasList({
+  facturas,
+  cargando,
+  onVer,
+}: SuscripcionFacturasListProps) {
   const { dineroEn, fecha } = useFormato()
 
   return (
@@ -60,37 +57,45 @@ export function SuscripcionFacturasList({ facturas, cargando }: SuscripcionFactu
             </TableHeader>
             <TableBody>
               {facturas.map((factura) => {
-                const estado = TONO_POR_ESTADO[factura.estado]
+                const estado = ESTADO_FACTURA[factura.estado]
                 return (
                   <TableRow key={factura.id}>
-                    <TableCell className="font-medium">{factura.numero}</TableCell>
+                    <TableCell className="font-medium tabular-nums">{factura.numero}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {fecha(factura.emitidaEn)}
                     </TableCell>
                     <TableCell>
                       <StatusBadge etiqueta={estado.etiqueta} tono={estado.tono} />
                     </TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="text-right font-medium tabular-nums">
                       {dineroEn(Number(factura.totalCentavos), factura.moneda)}
                     </TableCell>
                     <TableCell className="text-right">
-                      {/*
-                        El PDF lo publica la pasarela: mientras no exista, no hay
-                        botón. Uno deshabilitado prometería un documento que nadie
-                        ha emitido.
-                      */}
-                      {factura.pdfUrl && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          render={
-                            <a href={factura.pdfUrl} target="_blank" rel="noreferrer">
-                              <Download aria-hidden />
-                              <span className="sr-only">Descargar {factura.numero}</span>
-                            </a>
-                          }
-                        />
-                      )}
+                      <div className="flex justify-end gap-1">
+                        {/* El desglose no viaja en el listado: se abre por factura. */}
+                        <Button variant="ghost" size="sm" onClick={() => onVer(factura)}>
+                          <Eye aria-hidden />
+                          <span className="sr-only">Ver la factura {factura.numero}</span>
+                        </Button>
+
+                        {/*
+                          El PDF lo publica la pasarela: mientras no exista, no hay
+                          botón. Uno deshabilitado prometería un documento que nadie
+                          ha emitido.
+                        */}
+                        {factura.pdfUrl && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            render={
+                              <a href={factura.pdfUrl} target="_blank" rel="noreferrer">
+                                <Download aria-hidden />
+                                <span className="sr-only">Descargar {factura.numero}</span>
+                              </a>
+                            }
+                          />
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 )

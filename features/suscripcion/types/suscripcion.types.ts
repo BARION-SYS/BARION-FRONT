@@ -74,6 +74,46 @@ export interface Suscripcion {
   }
 }
 
+export type TipoPersonaFiscal = "natural" | "juridica"
+
+export type TipoDocumentoFiscal = "nit" | "cc" | "ce" | "pasaporte" | "nif" | "cif" | "ein"
+
+export interface DireccionFiscal {
+  calle: string
+  ciudad: string
+  region?: string
+  codigoPostal?: string
+  /** ISO 3166-1 alfa-2. */
+  pais: string
+}
+
+/** A quién le emite Barion las facturas de la suscripción. */
+export interface DatosFiscales {
+  tipoPersona: TipoPersonaFiscal
+  tipoDocumento: TipoDocumentoFiscal
+  numeroDocumento: string
+  razonSocial: string
+  responsabilidades: string[]
+  /** `null` si no se pidió: solo es obligatoria para una empresa. */
+  direccionFiscal: DireccionFiscal | null
+  codigoMunicipio: string | null
+  emailFacturacion: string | null
+  telefono: string | null
+  /** `null` = capturados y sin comprobar por nadie. */
+  verificadoEn: string | null
+}
+
+/**
+ * El país viaja **siempre**, aunque no haya datos: es quien decide qué campos
+ * pide el formulario, y deducirlo del documento guardado no sirve justo cuando
+ * todavía no hay ninguno.
+ */
+export interface DatosFiscalesDeLaBarberia {
+  codigoPais: string
+  /** `null` mientras nadie los haya capturado. No es un error: es lo normal en prueba. */
+  datosFiscales: DatosFiscales | null
+}
+
 export type EstadoFactura = "borrador" | "abierta" | "pagada" | "anulada" | "incobrable"
 
 export interface Factura {
@@ -89,6 +129,28 @@ export interface Factura {
   pagadaEn: string | null
   /** `null` mientras la pasarela no publique el documento. */
   pdfUrl: string | null
+}
+
+/**
+ * Una línea del desglose, tal como la guardó quien emitió la factura.
+ *
+ * `cantidad` es opcional porque el documento manda: una factura vieja o emitida
+ * por otra vía puede no traerla, y suponer un `1` sería inventarse el desglose.
+ */
+export interface LineaFactura {
+  concepto: string
+  cantidad?: number
+  montoCentavos: string
+}
+
+/**
+ * Lo que devuelve `GET /facturas/:id`. `lineas` viaja como `unknown` a
+ * propósito: la api las entrega **tal cual se guardaron**, sin filtrarlas ni
+ * sumarlas, así que aquí se leen con guarda (`lineasDeFactura`) en vez de
+ * afirmar una forma que el documento no garantiza.
+ */
+export interface FacturaDetalle extends Factura {
+  lineas?: unknown
 }
 
 export interface FiltrosFacturas {

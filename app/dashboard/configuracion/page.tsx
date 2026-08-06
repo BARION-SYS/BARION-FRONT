@@ -12,12 +12,20 @@ import { PagosEnlacesList } from "@features/pagos/components/PagosEnlacesList"
 import { PagosMedioPagoList } from "@features/pagos/components/PagosMedioPagoList"
 import { PagosTarjetaForm } from "@features/pagos/components/PagosTarjetaForm"
 import { usePagos } from "@features/pagos/hooks/usePagos"
+import { SuscripcionDatosFiscalesCard } from "@features/suscripcion/components/SuscripcionDatosFiscalesCard"
+import {
+  ID_FORM_DATOS_FISCALES,
+  SuscripcionDatosFiscalesForm,
+} from "@features/suscripcion/components/SuscripcionDatosFiscalesForm"
+import { SuscripcionFacturaDetail } from "@features/suscripcion/components/SuscripcionFacturaDetail"
 import { SuscripcionFacturasList } from "@features/suscripcion/components/SuscripcionFacturasList"
 import { SuscripcionPlanesList } from "@features/suscripcion/components/SuscripcionPlanesList"
 import { SuscripcionResumen } from "@features/suscripcion/components/SuscripcionResumen"
 import { useSuscripcion } from "@features/suscripcion/hooks/useSuscripcion"
+import { reglasFiscalesDe } from "@features/suscripcion/utils/fiscal"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { Modal } from "@shared/components/modals/Modal"
+import { SidePanel } from "@shared/components/modals/SidePanel"
 import { Button } from "@shared/components/ui/button"
 import { notify } from "@shared/services/notify"
 import { useAuthStore } from "@store/auth.store"
@@ -30,7 +38,11 @@ import type {
 } from "@features/configuracion/schemas/configuracion.schema"
 import type { DatosTarjeta } from "@features/pagos/schemas/pagos.schema"
 import type { EnlacePago, MedioPago } from "@features/pagos/types/pagos.types"
-import type { DatosElegirPlan } from "@features/suscripcion/schemas/suscripcion.schema"
+import type {
+  DatosDatosFiscales,
+  DatosElegirPlan,
+} from "@features/suscripcion/schemas/suscripcion.schema"
+import type { Factura } from "@features/suscripcion/types/suscripcion.types"
 import type {
   CanalNotificacion,
   CanalesNotificacion,
@@ -55,11 +67,19 @@ export default function ConfiguracionPage() {
     suscripcion,
     planes,
     facturas,
+    facturaDetalle,
+    datosFiscales,
+    paisFiscal,
     loadingSuscripcion,
     loadingFacturas,
+    loadingFacturaDetalle,
+    loadingDatosFiscales,
     loadingAction: loadingSuscripcionAction,
     fetchSuscripcion,
     fetchFacturas,
+    fetchFactura,
+    fetchDatosFiscales,
+    handleGuardarDatosFiscales,
     handleElegirPlanSuscripcion,
     handleCancelarSuscripcion,
     handleReanudarSuscripcion,
@@ -89,12 +109,21 @@ export default function ConfiguracionPage() {
    */
   const sesion = useAuthStore((estado) => estado.sesion)
   const gestiona = puede(sesion, "barberias.gestionar")
+  /** `null` = Barion todavía no factura en el país de esta barbería. */
+  const reglasFiscales = reglasFiscalesDe(paisFiscal)
 
   const [seccionActiva, setSeccionActiva] = useState<IdSeccionConfiguracion>("general")
   const [agregandoTarjeta, setAgregandoTarjeta] = useState(false)
   const [medioARetirar, setMedioARetirar] = useState<MedioPago | null>(null)
   /** Cuál se acaba de copiar: confirma en el botón sin un toast por cada clic. */
   const [enlaceCopiadoId, setEnlaceCopiadoId] = useState<string | null>(null)
+  /**
+   * La factura abierta en el panel. Se guarda la fila entera, no el id: el
+   * encabezado tiene que decir cuál se está mirando desde el primer fotograma,
+   * mientras el desglose todavía viaja.
+   */
+  const [facturaAbierta, setFacturaAbierta] = useState<Factura | null>(null)
+  const [editandoDatosFiscales, setEditandoDatosFiscales] = useState(false)
   /** Solo los canales que se tocaron aquí; el resto se lee de la api. */
   const [canalesTocados, setCanalesTocados] = useState<Partial<CanalesNotificacion>>({})
 
@@ -110,6 +139,7 @@ export default function ConfiguracionPage() {
     void fetchFacturas()
     void fetchMediosPago()
     void fetchEnlacesPago()
+    void fetchDatosFiscales()
     // La configuración de la pasarela se pide junto a los medios y no al abrir
     // el formulario: es la que decide si ese formulario existe siquiera.
     void fetchConfiguracionPagos()
@@ -119,6 +149,7 @@ export default function ConfiguracionPage() {
     fetchFacturas,
     fetchMediosPago,
     fetchEnlacesPago,
+    fetchDatosFiscales,
     fetchConfiguracionPagos,
   ])
 
@@ -234,6 +265,26 @@ export default function ConfiguracionPage() {
     }
   }
 
+  /**
+   * Los 422 de esta ruta son instrucciones, no averías: dicen cuál es el dígito
+   * de verificación correcto o qué campo sobra en este país. Se enseñan tal
+   * como los escribe la api.
+   */
+  const onGuardarDatosFiscales = async (datos: DatosDatosFiscales) => {
+    try {
+      const mensaje = await handleGuardarDatosFiscales(datos)
+      setEditandoDatosFiscales(false)
+      notify.success(mensaje)
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }
+
+  const onVerFactura = (factura: Factura) => {
+    setFacturaAbierta(factura)
+    void fetchFactura(factura.id)
+  }
+
   const onSubmitSeguridad = async (datos: DatosSeguridad) => {
     try {
       notify.success(await handleActualizarContrasena(datos))
@@ -322,7 +373,19 @@ export default function ConfiguracionPage() {
                 onGenerar={() => void onGenerarEnlace()}
                 onCopiar={(enlace) => void copiarAlPortapapeles(enlace)}
               />
-              <SuscripcionFacturasList facturas={facturas} cargando={loadingFacturas} />
+              <SuscripcionDatosFiscalesCard
+                datos={datosFiscales}
+                reglas={reglasFiscales}
+                codigoPais={paisFiscal}
+                cargando={loadingDatosFiscales}
+                soloLectura={!gestiona}
+                onEditar={() => setEditandoDatosFiscales(true)}
+              />
+              <SuscripcionFacturasList
+                facturas={facturas}
+                cargando={loadingFacturas}
+                onVer={onVerFactura}
+              />
             </>
           ))}
         {seccionActiva === "notificaciones" && (
@@ -330,6 +393,66 @@ export default function ConfiguracionPage() {
         )}
         {seccionActiva === "seguridad" && <Seguridad onSubmit={onSubmitSeguridad} />}
       </div>
+
+      {/*
+        Formulario largo → panel lateral, con el envío en el pie fijo. El país
+        NO es un campo: llega del servidor y decide qué se pide.
+      */}
+      {reglasFiscales && paisFiscal && (
+        <SidePanel
+          open={editandoDatosFiscales}
+          onOpenChange={setEditandoDatosFiscales}
+          titulo="Datos de facturación"
+          descripcion="Solo si necesitas la factura a nombre de una empresa. Si eres tú quien factura, con tu nombre y tu documento basta."
+          size="lg"
+          footer={
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditandoDatosFiscales(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                form={ID_FORM_DATOS_FISCALES}
+                disabled={loadingSuscripcionAction}
+              >
+                Guardar
+              </Button>
+            </>
+          }
+        >
+          <SuscripcionDatosFiscalesForm
+            // La clave lo remonta al cambiar lo guardado: un formulario con
+            // `defaultValues` viejos seguiría enseñando el dato anterior.
+            key={datosFiscales?.numeroDocumento ?? "sin-datos"}
+            datos={datosFiscales}
+            codigoPais={paisFiscal}
+            reglas={reglasFiscales}
+            onSubmit={onGuardarDatosFiscales}
+          />
+        </SidePanel>
+      )}
+
+      {/*
+        El documento se lee en un panel y no en un cuadro centrado: el desglose
+        crece con las líneas y una factura larga no puede quedar apretada.
+      */}
+      <SidePanel
+        open={facturaAbierta !== null}
+        onOpenChange={(abierto) => !abierto && setFacturaAbierta(null)}
+        titulo={facturaAbierta ? `Factura ${facturaAbierta.numero}` : "Factura"}
+        descripcion="Lo que Barion te cobró por tu suscripción"
+      >
+        <SuscripcionFacturaDetail
+          // Hasta que llegue LA factura pedida se enseña el esqueleto: el
+          // desglose de la anterior con este encabezado sería una cifra ajena.
+          factura={facturaDetalle?.id === facturaAbierta?.id ? facturaDetalle : null}
+          cargando={loadingFacturaDetalle}
+        />
+      </SidePanel>
 
       {/* Sin aceptaciones no hay formulario: el proveedor no guarda una tarjeta sin ellas. */}
       <Modal

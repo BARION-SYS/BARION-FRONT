@@ -2,11 +2,13 @@ import { api } from "@lib/http/instances"
 import { omitEmpty } from "@shared/utils/params"
 import {
   esquemaAltaBarberia,
+  esquemaAltaStaff,
   esquemaCambioEstado,
   esquemaCorreccionSuscripcion,
   esquemaPlanEdicion,
   esquemaPlanNuevo,
   type DatosAltaBarberia,
+  type DatosAltaStaff,
   type DatosCambioEstado,
   type DatosCorreccionSuscripcion,
   type DatosPlanEdicion,
@@ -20,6 +22,8 @@ import type {
   FiltrosSuscripciones,
   PlanAdmin,
   PlanPlataforma,
+  StaffCreado,
+  StaffPlataforma,
   SuscripcionPlataforma,
 } from "@features/plataforma/types/plataforma.types"
 import type { ApiResult } from "@shared/types/api.types"
@@ -125,5 +129,41 @@ export const plataformaService = {
       `/plataforma/suscripciones/${barberiaId}`,
       omitEmpty({ ...validos })
     )
+  },
+
+  // ── El equipo de Barion ───────────────────────────────────────────────────
+  // No administra clientes: administra a los de casa. Por eso cuelga de su
+  // propia capacidad (`plataforma.staff.gestionar`) y no de la de barberías.
+
+  async obtenerStaff(): Promise<ApiResult<StaffPlataforma[]>> {
+    // Sin paginar: el equipo de Barion son unas cuantas personas, no un
+    // catálogo que crezca.
+    return api.get<StaffPlataforma[]>("/plataforma/staff")
+  },
+
+  /**
+   * Da de alta a alguien del equipo. La contraseña la genera el servidor y
+   * viaja UNA vez en esta respuesta: no hay ninguna ruta que la consulte
+   * después.
+   */
+  async crearStaff(payload: DatosAltaStaff): Promise<ApiResult<StaffCreado>> {
+    return api.post<StaffCreado>("/plataforma/staff", esquemaAltaStaff.parse(payload))
+  },
+
+  async cambiarEstadoStaff(
+    usuarioId: string,
+    estado: "activo" | "inactivo"
+  ): Promise<ApiResult<StaffPlataforma>> {
+    return api.post<StaffPlataforma>(`/plataforma/staff/${usuarioId}/estado`, { estado })
+  },
+
+  /**
+   * Una contraseña nueva para quien perdió la suya. El staff de plataforma no
+   * puede usar el restablecimiento por correo —ese flujo resuelve la barbería
+   * del usuario y esta cuenta no tiene ninguna—, así que sin esto perder la
+   * contraseña deja a alguien fuera para siempre.
+   */
+  async regenerarContrasenaStaff(usuarioId: string): Promise<ApiResult<StaffCreado>> {
+    return api.post<StaffCreado>(`/plataforma/staff/${usuarioId}/contrasena`)
   },
 }

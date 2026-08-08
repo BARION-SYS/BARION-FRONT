@@ -1,4 +1,4 @@
-import { Building2, CreditCard, LayoutDashboard, Tags } from "lucide-react"
+import { Building2, CreditCard, LayoutDashboard, Tags, UserCog, Users } from "lucide-react"
 import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
 
 /**
@@ -66,12 +66,40 @@ export const rutasAdmin: RutaApp[] = [
     icono: CreditCard,
     entrada: "derecha",
   },
+  {
+    // Quién trabaja en Barion. Va en «Tu cuenta» y no en «Plataforma» porque no
+    // administra clientes: administra a los de casa.
+    clave: "admin-staff",
+    permisos: ["plataforma.staff.gestionar"],
+    seccion: "herramientas",
+    href: "/admin/staff",
+    etiqueta: "Equipo de Barion",
+    titulo: "Equipo de Barion",
+    subtitulo: "Quién puede entrar a la plataforma y con qué correo",
+    icono: Users,
+    entrada: "izquierda",
+  },
+  {
+    // SIN `permisos`, y a propósito: su propia cuenta la administra todo el
+    // mundo. Declarar aquí una capacidad la convertiría en algo que a alguien
+    // se le puede olvidar conceder, y el resultado sería una persona sin forma
+    // de cambiar su contraseña.
+    clave: "admin-cuenta",
+    seccion: "herramientas",
+    href: "/admin/cuenta",
+    etiqueta: "Mi cuenta",
+    titulo: "Mi cuenta",
+    subtitulo: "Tu contraseña y con qué entras",
+    icono: UserCog,
+    entrada: "izquierda",
+  },
 ]
 
 /**
  * Se reutilizan las secciones del panel en vez de inventar otras: son rótulos
- * de agrupación, y un área de tres entradas no necesita vocabulario propio.
+ * de agrupación, y un área pequeña no necesita vocabulario propio.
  */
 export const seccionesAdmin: { id: SeccionRuta; etiqueta: string }[] = [
   { id: "principal", etiqueta: "Plataforma" },
+  { id: "herramientas", etiqueta: "Tu cuenta" },
 ]

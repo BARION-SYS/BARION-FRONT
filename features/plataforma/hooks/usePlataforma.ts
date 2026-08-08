@@ -5,6 +5,7 @@ import { plataformaService } from "@features/plataforma/services/plataforma.serv
 import { getErrorMessage } from "@shared/utils/error"
 import type {
   DatosAltaBarberia,
+  DatosAltaStaff,
   DatosCambioEstado,
   DatosCorreccionSuscripcion,
   DatosPlanEdicion,
@@ -18,6 +19,8 @@ import type {
   FiltrosSuscripciones,
   PlanAdmin,
   PlanPlataforma,
+  StaffCreado,
+  StaffPlataforma,
   SuscripcionPlataforma,
 } from "@features/plataforma/types/plataforma.types"
 import type { PaginationInfo } from "@shared/types/api.types"
@@ -217,6 +220,74 @@ export function usePlataforma() {
   /** Cierra la ficha. Se limpia para que la siguiente no enseñe la anterior. */
   const limpiarFicha = useCallback(() => setFicha(null), [])
 
+  // ── El equipo de Barion ───────────────────────────────────────────────────
+  const [staff, setStaff] = useState<StaffPlataforma[]>([])
+  const [loadingStaff, setLoadingStaff] = useState(false)
+  /**
+   * La cuenta recién creada CON su contraseña.
+   *
+   * Vive aquí y no en la pantalla porque es dato de la API, y se conserva hasta
+   * que alguien la cierra: **es la única vez que esa contraseña existe fuera del
+   * hash**, y perderla al primer re-render obligaría a regenerarla.
+   */
+  const [staffCreado, setStaffCreado] = useState<StaffCreado | null>(null)
+
+  const fetchStaff = useCallback(async () => {
+    setLoadingStaff(true)
+    setError(null)
+    try {
+      const res = await plataformaService.obtenerStaff()
+      setStaff(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingStaff(false)
+    }
+  }, [])
+
+  const handleCreateStaff = useCallback(async (datos: DatosAltaStaff): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await plataformaService.crearStaff(datos)
+      setStaffCreado(res.data)
+      return res.message
+    } catch (err) {
+      throw new Error(getErrorMessage(err))
+    } finally {
+      setLoadingAction(false)
+    }
+  }, [])
+
+  const handleChangeEstadoStaff = useCallback(
+    async (usuarioId: string, estado: "activo" | "inactivo"): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await plataformaService.cambiarEstadoStaff(usuarioId, estado)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  const handleRegenerarContrasenaStaff = useCallback(async (usuarioId: string): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await plataformaService.regenerarContrasenaStaff(usuarioId)
+      setStaffCreado(res.data)
+      return res.message
+    } catch (err) {
+      throw new Error(getErrorMessage(err))
+    } finally {
+      setLoadingAction(false)
+    }
+  }, [])
+
+  const limpiarStaffCreado = useCallback(() => setStaffCreado(null), [])
+
   return {
     barberias,
     paginacion,
@@ -247,5 +318,13 @@ export function usePlataforma() {
     handleCorregirSuscripcion,
     limpiarRecienCreada,
     limpiarFicha,
+    staff,
+    staffCreado,
+    loadingStaff,
+    fetchStaff,
+    handleCreateStaff,
+    handleChangeEstadoStaff,
+    handleRegenerarContrasenaStaff,
+    limpiarStaffCreado,
   }
 }

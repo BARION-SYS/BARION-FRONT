@@ -76,6 +76,41 @@ export interface BarberiaFicha extends BarberiaInventario {
   zonaHoraria: string
   membresiasActivas: number
   pruebaTerminaEn: string | null
+  propietario: PropietarioFicha | null
+}
+
+/**
+ * Una cuenta del equipo de Barion.
+ *
+ * **No tiene nombre, y no falta nada.** El nombre de una persona vive en su
+ * membresía —con el que la conoce SU barbería— y este actor no tiene ninguna:
+ * existe fuera del multi-tenant. Su identidad es el correo con el que entra.
+ *
+ * De su contraseña solo se sabe si existe. `proveedores` vacío significa que
+ * entra con correo y contraseña, no que no pueda entrar.
+ */
+export interface StaffPlataforma {
+  id: string
+  email: string | null
+  estado: string
+  emailVerificado: boolean
+  tieneContrasena: boolean
+  debeCambiarContrasena: boolean
+  /** Instante UTC ISO-8601. `null` si no ha entrado nunca. */
+  ultimoAccesoEn: string | null
+  creadoEn: string
+  proveedores: string[]
+}
+
+/**
+ * Lo que devuelve dar de alta o regenerar: la cuenta y su contraseña.
+ *
+ * **La contraseña llega UNA sola vez.** No se guarda en claro en ningún sitio y
+ * no hay ninguna ruta que la consulte: si se pierde, se regenera.
+ */
+export interface StaffCreado {
+  staff: StaffPlataforma
+  contrasenaTemporal: string
 }
 
 export interface FiltrosInventario {

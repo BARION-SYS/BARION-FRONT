@@ -174,3 +174,25 @@ export const esquemaFormularioSuscripcion = z.object({
 })
 
 export type DatosFormularioSuscripcion = z.infer<typeof esquemaFormularioSuscripcion>
+
+/**
+ * Alta de alguien del equipo de Barion. **Un solo campo.**
+ *
+ * No hay nombre porque `usuarios` no tiene dónde guardarlo: el nombre de una
+ * persona vive en su membresía, con el que la conoce SU barbería, y el staff de
+ * plataforma no tiene ninguna. Su identidad es el correo con el que entra.
+ *
+ * Tampoco hay contraseña: la genera el servidor y llega UNA vez en la respuesta.
+ * Pedirla aquí sería dejar que quien da de alta la conozca para siempre.
+ */
+export const esquemaAltaStaff = z.object({
+  email: z.email("Ingresa un correo válido"),
+})
+
+export type DatosAltaStaff = z.infer<typeof esquemaAltaStaff>
+
+export const esquemaEstadoStaff = z.object({
+  estado: z.enum(["activo", "inactivo"]),
+})
+
+export type DatosEstadoStaff = z.infer<typeof esquemaEstadoStaff>

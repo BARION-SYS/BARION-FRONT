@@ -5,6 +5,7 @@ import { Button } from "@shared/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -171,22 +172,30 @@ export function PlataformaList({
                         {gestiona && (
                           <>
                             <DropdownMenuSeparator />
-                            <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
-                            {TRANSICIONES_ESTADO[barberia.estado].map((destino) => (
-                              <DropdownMenuItem
-                                key={destino}
-                                variant={destino === "suspendida" ? "destructive" : "default"}
-                                onClick={() => onCambiarEstado(barberia, destino)}
-                                className="flex-col items-start gap-0.5"
-                              >
-                                <span>
-                                  Pasar a {ESTADO_BARBERIA[destino].etiqueta.toLowerCase()}
-                                </span>
-                                <span className="text-[11px] text-muted-foreground">
-                                  {MOTIVO_TRANSICION[destino]}
-                                </span>
-                              </DropdownMenuItem>
-                            ))}
+                            {/* El título va DENTRO de un grupo, y no es cosmético:
+                                `DropdownMenuLabel` es el `GroupLabel` de Base UI y
+                                revienta en ejecución fuera de un `Menu.Group`
+                                —«MenuGroupContext is missing»—. El grupo además es
+                                lo que ata el título a sus opciones para un lector
+                                de pantalla, en vez de dejarlo suelto */}
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
+                              {TRANSICIONES_ESTADO[barberia.estado].map((destino) => (
+                                <DropdownMenuItem
+                                  key={destino}
+                                  variant={destino === "suspendida" ? "destructive" : "default"}
+                                  onClick={() => onCambiarEstado(barberia, destino)}
+                                  className="flex-col items-start gap-0.5"
+                                >
+                                  <span>
+                                    Pasar a {ESTADO_BARBERIA[destino].etiqueta.toLowerCase()}
+                                  </span>
+                                  <span className="text-[11px] text-muted-foreground">
+                                    {MOTIVO_TRANSICION[destino]}
+                                  </span>
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuGroup>
                           </>
                         )}
                       </DropdownMenuContent>

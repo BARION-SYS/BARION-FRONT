@@ -86,14 +86,14 @@ export default function SedesPage() {
         void fetchSedes()
       }
     },
-    [sedeEnEdicion, handleUpdateSede, handleCreateSede, fetchSedes]  
+    [sedeEnEdicion, handleUpdateSede, handleCreateSede, fetchSedes]
   )
 
   const onAlternarActiva = useCallback(
     async (sede: Sede) => {
       if (await conAviso(() => handleToggleSede(sede))) void fetchSedes()
     },
-    [handleToggleSede, fetchSedes]  
+    [handleToggleSede, fetchSedes]
   )
 
   const abrirCalendario = useCallback(
@@ -109,7 +109,7 @@ export default function SedesPage() {
       if (!sedeEnCalendario) return
       await conAviso(() => handleReplaceHorario(sedeEnCalendario.id, { tramos }))
     },
-    [sedeEnCalendario, handleReplaceHorario]  
+    [sedeEnCalendario, handleReplaceHorario]
   )
 
   const onGuardarCierre = useCallback(
@@ -125,7 +125,7 @@ export default function SedesPage() {
         void fetchCalendario(sedeEnCalendario.id)
       }
     },
-    [sedeEnCalendario, cierreEnEdicion, handleUpdateCierre, handleCreateCierre, fetchCalendario]  
+    [sedeEnCalendario, cierreEnEdicion, handleUpdateCierre, handleCreateCierre, fetchCalendario]
   )
 
   const onCancelarCierre = useCallback(
@@ -135,7 +135,7 @@ export default function SedesPage() {
         void fetchCalendario(sedeEnCalendario.id)
       }
     },
-    [sedeEnCalendario, handleCancelCierre, fetchCalendario]  
+    [sedeEnCalendario, handleCancelCierre, fetchCalendario]
   )
 
   return (

@@ -175,7 +175,7 @@ export default function CitasPage() {
         cargar()
       }
     },
-    [seleccionada, handleCambiarEstadoCita, cargar]  
+    [seleccionada, handleCambiarEstadoCita, cargar]
   )
 
   const onReprogramar = useCallback(
@@ -193,7 +193,7 @@ export default function CitasPage() {
         cargar()
       }
     },
-    [reprogramando, handleReprogramarCita, cargar]  
+    [reprogramando, handleReprogramarCita, cargar]
   )
 
   return (

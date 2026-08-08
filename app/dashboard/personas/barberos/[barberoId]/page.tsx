@@ -133,7 +133,7 @@ export default function PersonaEnAgendaPage({
         void recargar()
       }
     },
-    [barberoId, handleUpdateBarbero, recargar]  
+    [barberoId, handleUpdateBarbero, recargar]
   )
 
   /**
@@ -171,14 +171,14 @@ export default function PersonaEnAgendaPage({
         void recargar()
       }
     },
-    [barberoId, handleReplaceOferta, recargar]  
+    [barberoId, handleReplaceOferta, recargar]
   )
 
   const onGuardarJornada = useCallback(
     async (tramos: { diaSemana: number; inicio: string; fin: string }[]) => {
       await conAviso(() => handleReplaceJornada(barberoId, { tramos }))
     },
-    [barberoId, handleReplaceJornada]  
+    [barberoId, handleReplaceJornada]
   )
 
   const onGuardarAusencia = useCallback(
@@ -190,7 +190,7 @@ export default function PersonaEnAgendaPage({
         void recargar()
       }
     },
-    [barberoId, handleCreateAusencia, fetchDisponibilidad, recargar]  
+    [barberoId, handleCreateAusencia, fetchDisponibilidad, recargar]
   )
 
   const onGuardarExcepcion = useCallback(
@@ -201,7 +201,7 @@ export default function PersonaEnAgendaPage({
         void fetchDisponibilidad(barberoId)
       }
     },
-    [barberoId, handleGuardarExcepcion, fetchDisponibilidad]  
+    [barberoId, handleGuardarExcepcion, fetchDisponibilidad]
   )
 
   const onEliminarExcepcion = useCallback(
@@ -210,7 +210,7 @@ export default function PersonaEnAgendaPage({
         void fetchDisponibilidad(barberoId)
       }
     },
-    [barberoId, handleEliminarExcepcion, fetchDisponibilidad]  
+    [barberoId, handleEliminarExcepcion, fetchDisponibilidad]
   )
 
   const onAusenciaTocada = useCallback(
@@ -220,7 +220,7 @@ export default function PersonaEnAgendaPage({
         void recargar()
       }
     },
-    [barberoId, fetchDisponibilidad, recargar]  
+    [barberoId, fetchDisponibilidad, recargar]
   )
 
   return (

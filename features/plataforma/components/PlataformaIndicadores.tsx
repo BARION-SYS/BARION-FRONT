@@ -1,6 +1,14 @@
 "use client"
 
-import { Building2, PauseCircle, Scissors, Store, TimerReset } from "lucide-react"
+import {
+  CalendarClock,
+  MoonStar,
+  PauseCircle,
+  Scissors,
+  Store,
+  TimerReset,
+  Users,
+} from "lucide-react"
 import { StatCard } from "@shared/components/stats/StatCard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { useFormato } from "@shared/hooks/useFormato"
@@ -23,12 +31,12 @@ interface PlataformaIndicadoresProps {
 export function PlataformaIndicadores({ resumen, loading }: PlataformaIndicadoresProps) {
   const { numero } = useFormato()
 
-  if (loading) return <DataSkeleton variant="stats" count={5} />
+  if (loading) return <DataSkeleton variant="stats" count={7} />
 
   const atencion = resumen.porEstado.suspendida + resumen.porEstado.solo_lectura
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-7">
       <StatCard
         titulo="Barberías"
         valor={numero(resumen.total)}
@@ -52,16 +60,38 @@ export function PlataformaIndicadores({ resumen, loading }: PlataformaIndicadore
         subtitulo={`${numero(resumen.porEstado.suspendida)} suspendidas · ${numero(resumen.porEstado.solo_lectura)} en solo lectura`}
         icono={PauseCircle}
       />
+      {/* La clientela de las barberías, sumada. Es el tamaño real de lo que
+          sostiene Barion: veinte barberías con dos mil personas debajo es otro
+          producto que veinte con cincuenta */}
       <StatCard
-        titulo="Sedes activas"
-        valor={numero(resumen.sedesActivas)}
-        subtitulo="Sumando todas las barberías"
-        icono={Building2}
+        titulo="Clientes"
+        valor={numero(resumen.clientesTotal)}
+        subtitulo={
+          resumen.clientesNuevos30d > 0
+            ? `${numero(resumen.clientesNuevos30d)} nuevos en 30 días`
+            : "Ninguno nuevo en 30 días"
+        }
+        icono={Users}
+      />
+      <StatCard
+        titulo="Citas · 30 días"
+        valor={numero(resumen.citas30d)}
+        subtitulo={`${numero(resumen.citasTotal)} desde el principio`}
+        icono={CalendarClock}
+      />
+      {/* Va junto a lo demás y no escondido: es la señal que se adelanta al
+          impago. Una barbería deja de usar Barion meses antes de dejar de
+          pagarlo, y para entonces ya no hay nada que hacer */}
+      <StatCard
+        titulo="Sin actividad"
+        valor={numero(resumen.inactivas30d)}
+        subtitulo="Ninguna cita creada en 30 días"
+        icono={MoonStar}
       />
       <StatCard
         titulo="Barberos activos"
         valor={numero(resumen.barberosActivos)}
-        subtitulo="Quienes atienden hoy en la plataforma"
+        subtitulo={`En ${numero(resumen.sedesActivas)} sedes`}
         icono={Scissors}
       />
     </div>

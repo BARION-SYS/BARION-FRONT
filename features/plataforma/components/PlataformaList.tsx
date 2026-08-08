@@ -92,10 +92,12 @@ export function PlataformaList({
             <TableRow>
               <TableHead>Barbería</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead className="hidden lg:table-cell">Propietario</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead className="hidden md:table-cell">País</TableHead>
-              <TableHead className="hidden text-right lg:table-cell">Sedes</TableHead>
-              <TableHead className="hidden text-right lg:table-cell">Barberos</TableHead>
+              <TableHead className="hidden text-right md:table-cell">Clientes</TableHead>
+              <TableHead className="hidden text-right lg:table-cell">Citas 30 d</TableHead>
+              <TableHead className="hidden text-right xl:table-cell">Barberos</TableHead>
               <TableHead className="hidden text-right sm:table-cell">Alta</TableHead>
               <TableHead className="w-10" />
             </TableRow>
@@ -126,6 +128,20 @@ export function PlataformaList({
                   <TableCell>
                     <StatusBadge tono={estado.tono} etiqueta={estado.etiqueta} />
                   </TableCell>
+                  {/* A quién llama soporte. Es la contraparte del contrato con
+                      Barion, no un cliente de la barbería */}
+                  <TableCell className="hidden max-w-[14rem] lg:table-cell">
+                    {barberia.propietario ? (
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate text-sm">{barberia.propietario.nombre}</span>
+                        <span className="truncate text-xs text-muted-foreground">
+                          {barberia.propietario.email ?? "Sin correo"}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-(--advertencia)">Sin propietario</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm">
                     {barberia.suscripcion ? (
                       <span className="flex flex-col">
@@ -143,10 +159,20 @@ export function PlataformaList({
                   <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
                     {nombreDePais(barberia.codigoPais)}
                   </TableCell>
-                  <TableCell className="hidden text-right text-sm tabular-nums lg:table-cell">
-                    {numero(barberia.sedesActivas)}
+                  <TableCell className="hidden text-right text-sm tabular-nums md:table-cell">
+                    {numero(barberia.uso.clientesTotal)}
                   </TableCell>
+                  {/* Cero citas en 30 días se dice con palabras y no con un `0`
+                      suelto: un cero en una columna de números se lee como ruido
+                      y esto es la señal que se adelanta al impago */}
                   <TableCell className="hidden text-right text-sm tabular-nums lg:table-cell">
+                    {barberia.uso.citas30d === 0 ? (
+                      <span className="text-xs text-(--advertencia)">Sin actividad</span>
+                    ) : (
+                      numero(barberia.uso.citas30d)
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden text-right text-sm tabular-nums xl:table-cell">
                     {numero(barberia.barberosActivos)}
                   </TableCell>
                   <TableCell className="hidden text-right text-xs text-muted-foreground tabular-nums sm:table-cell">

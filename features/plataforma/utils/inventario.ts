@@ -5,6 +5,7 @@ import type {
   EstadoBarberia,
   ResumenPlataforma,
   SegmentoInventario,
+  UsoPais,
 } from "@features/plataforma/types/plataforma.types"
 import type { TonoEstado } from "@shared/types/ui.types"
 
@@ -68,6 +69,11 @@ export function resumirInventario(barberias: BarberiaInventario[]): ResumenPlata
   let barberosActivos = 0
   let sinSuscripcion = 0
   let enPrueba = 0
+  let clientesTotal = 0
+  let clientesNuevos30d = 0
+  let citasTotal = 0
+  let citas30d = 0
+  let inactivas30d = 0
 
   for (const barberia of barberias) {
     porEstado[barberia.estado] += 1
@@ -75,6 +81,14 @@ export function resumirInventario(barberias: BarberiaInventario[]): ResumenPlata
     barberosActivos += barberia.barberosActivos
     if (!barberia.suscripcion) sinSuscripcion += 1
     else if (barberia.suscripcion.estado === "prueba") enPrueba += 1
+
+    clientesTotal += barberia.uso.clientesTotal
+    clientesNuevos30d += barberia.uso.clientesNuevos30d
+    citasTotal += barberia.uso.citasTotal
+    citas30d += barberia.uso.citas30d
+    // Cero citas en 30 días y «nunca tuvo ninguna» cuentan igual: las dos son
+    // una barbería que no está usando lo que contrató.
+    if (barberia.uso.citas30d === 0) inactivas30d += 1
   }
 
   return {
@@ -84,6 +98,11 @@ export function resumirInventario(barberias: BarberiaInventario[]): ResumenPlata
     barberosActivos,
     sinSuscripcion,
     enPrueba,
+    clientesTotal,
+    clientesNuevos30d,
+    citasTotal,
+    citas30d,
+    inactivas30d,
   }
 }
 
@@ -97,8 +116,51 @@ export function distribucionPorEstado(barberias: BarberiaInventario[]): Segmento
   }))
 }
 
-export function distribucionPorPais(barberias: BarberiaInventario[]): SegmentoInventario[] {
-  return agrupar(barberias, (b) => b.codigoPais, nombreDePais)
+/**
+ * El uso por país: cuánto se vendió ahí, cuánta gente hay debajo y si se mueve.
+ *
+ * **Sustituye a la gráfica de barras que contaba solo barberías.** Aquella
+ * respondía «dónde se vendió» y se leía como «dónde se usa», que no es lo mismo:
+ * cuatro barberías españolas con más clientela que dieciocho colombianas dormidas
+ * es exactamente el caso que una sola barra tapa.
+ *
+ * Ordenado por clientela y no por número de barberías, porque es la cifra que
+ * dice dónde está de verdad el producto.
+ */
+export function usoPorPais(barberias: BarberiaInventario[]): UsoPais[] {
+  const cuentas = new Map<string, UsoPais>()
+
+  for (const barberia of barberias) {
+    const codigo = barberia.codigoPais
+    const fila = cuentas.get(codigo) ?? {
+      codigo,
+      nombre: nombreDePais(codigo),
+      barberias: 0,
+      clientes: 0,
+      citas30d: 0,
+    }
+    fila.barberias += 1
+    fila.clientes += barberia.uso.clientesTotal
+    fila.citas30d += barberia.uso.citas30d
+    cuentas.set(codigo, fila)
+  }
+
+  return [...cuentas.values()].sort((a, b) => b.clientes - a.clientes || b.barberias - a.barberias)
+}
+
+/**
+ * Las barberías con más clientela.
+ *
+ * **Se excluyen las que tienen cero**, y no por estética: una tabla de «top»
+ * rellena con ceros hasta llegar a cinco filas sugiere un ranking donde no hay
+ * nada que ordenar. Sin clientela la lista se queda corta, o vacía, y eso ya es
+ * la respuesta.
+ */
+export function topClientela(barberias: BarberiaInventario[], cuantas = 6): BarberiaInventario[] {
+  return barberias
+    .filter((barberia) => barberia.uso.clientesTotal > 0)
+    .sort((a, b) => b.uso.clientesTotal - a.uso.clientesTotal || b.uso.citas30d - a.uso.citas30d)
+    .slice(0, cuantas)
 }
 
 /** Sin suscripción es su propio grupo: es la cifra que hay que perseguir. */

@@ -50,7 +50,10 @@ export function PlataformaToolbar({
             type="search"
             value={busqueda}
             onChange={(e) => onBuscar(e.target.value)}
-            placeholder="Buscar por nombre o identificador"
+            // Por el correo del dueño entra la mitad de los casos de soporte:
+            // quien escribe pidiendo ayuda firma con su correo, no con el
+            // identificador de su barbería.
+            placeholder="Buscar por nombre, identificador o correo del dueño"
             className="pl-9"
             aria-label="Buscar barbería"
           />

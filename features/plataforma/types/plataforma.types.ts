@@ -8,6 +8,50 @@ export interface SuscripcionResumen {
   planCodigo: string | null
 }
 
+/**
+ * Cuánto se usa una barbería. **Conteos, nunca filas.**
+ *
+ * La API no publica ninguna ruta que devuelva los clientes ni las citas de una
+ * barbería al staff de Barion, y no es un hueco: saber cuánta clientela tiene
+ * dice si su plan se le queda corto o si lleva tres meses parada; saber quiénes
+ * son no responde ninguna pregunta del negocio de Barion.
+ *
+ * Los acumulados y la ventana de 30 días van juntos porque el total solo no
+ * distingue una barbería viva de una muerta: cuatrocientos clientes ganados hace
+ * dos años y cuatrocientos con dieciocho nuevos este mes se leen igual.
+ */
+export interface UsoBarberia {
+  clientesTotal: number
+  clientesNuevos30d: number
+  citasTotal: number
+  citas30d: number
+  /**
+   * Cuándo se CREÓ la última cita, no cuándo ocurre. Es la señal de si alguien
+   * sigue abriendo el panel. `null` si nunca hubo ninguna.
+   */
+  ultimaCitaCreadaEn: string | null
+}
+
+/** El propietario, tal como viaja en la fila del inventario. */
+export interface PropietarioResumen {
+  nombre: string
+  email: string | null
+}
+
+/**
+ * El propietario con su contacto, solo en la ficha.
+ *
+ * Es la contraparte del contrato con Barion —a quien se le cobra y a quien
+ * llama soporte—, no un cliente de la barbería: por eso sale con teléfono
+ * mientras que de la clientela solo salen conteos.
+ */
+export interface PropietarioFicha extends PropietarioResumen {
+  telefonoE164: string | null
+  ultimoAccesoEn: string | null
+  /** Con qué entra. **Vacío = correo y contraseña**, no «sin forma de entrar». */
+  proveedores: string[]
+}
+
 /** Fila del inventario que ve el staff de Barion. */
 export interface BarberiaInventario {
   id: string
@@ -21,6 +65,9 @@ export interface BarberiaInventario {
   barberosActivos: number
   /** `null` mientras la barbería no tenga suscripción. */
   suscripcion: SuscripcionResumen | null
+  uso: UsoBarberia
+  /** `null` si no queda ninguna membresía activa de propietario. */
+  propietario: PropietarioResumen | null
 }
 
 /** La ficha añade lo que no cabe en una fila de tabla. */
@@ -186,11 +233,36 @@ export interface ResumenPlataforma {
   sinSuscripcion: number
   /** Las que están en prueba, según el estado de su suscripción. */
   enPrueba: number
+  /** Clientela sumada de todas las barberías: cuánta gente usa Barion por debajo. */
+  clientesTotal: number
+  clientesNuevos30d: number
+  citasTotal: number
+  citas30d: number
+  /**
+   * Las que no crearon **ninguna** cita en 30 días, incluidas las que nunca
+   * crearon una. Es el número que dice quién se está yendo antes de que lo diga
+   * el impago: una barbería deja de usar Barion meses antes de dejar de pagarlo.
+   */
+  inactivas30d: number
 }
 
-/** Un corte del inventario por una dimensión (estado, país, plan). */
+/** Un corte del inventario por una dimensión (estado, plan). */
 export interface SegmentoInventario {
   clave: string
   etiqueta: string
   total: number
+}
+
+/**
+ * El uso de un país. Tres cifras y no una, porque separan preguntas distintas:
+ * **cuánto se vendió** ahí (barberías), **cuánta gente hay debajo** (clientes) y
+ * **si se está moviendo** (citas de 30 días). Un país con muchas barberías y
+ * pocas citas es un problema que un solo número esconde.
+ */
+export interface UsoPais {
+  codigo: string
+  nombre: string
+  barberias: number
+  clientes: number
+  citas30d: number
 }

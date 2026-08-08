@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Globe, Tags } from "lucide-react"
+import { ArrowRight, Tags } from "lucide-react"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { Modal } from "@shared/components/modals/Modal"
 import { Button } from "@shared/components/ui/button"
@@ -12,16 +12,19 @@ import { puede } from "@features/auth/utils/permisos"
 import { useAuthStore } from "@store/auth.store"
 import { usePlataforma } from "@features/plataforma/hooks/usePlataforma"
 import { PlataformaAltasList } from "@features/plataforma/components/PlataformaAltasList"
+import { PlataformaClientelaList } from "@features/plataforma/components/PlataformaClientelaList"
 import { PlataformaDetail } from "@features/plataforma/components/PlataformaDetail"
 import { PlataformaEstadoChart } from "@features/plataforma/components/PlataformaEstadoChart"
 import { PlataformaIndicadores } from "@features/plataforma/components/PlataformaIndicadores"
+import { PlataformaPaisesList } from "@features/plataforma/components/PlataformaPaisesList"
 import { PlataformaSegmentosChart } from "@features/plataforma/components/PlataformaSegmentosChart"
 import {
   distribucionPorEstado,
-  distribucionPorPais,
   distribucionPorPlan,
   resumirInventario,
+  topClientela,
   ultimasAltas,
+  usoPorPais,
 } from "@features/plataforma/utils/inventario"
 import type { EstadoBarberia } from "@features/plataforma/types/plataforma.types"
 
@@ -66,9 +69,10 @@ export default function AdminPage() {
 
   const resumen = useMemo(() => resumirInventario(barberias), [barberias])
   const porEstado = useMemo(() => distribucionPorEstado(barberias), [barberias])
-  const porPais = useMemo(() => distribucionPorPais(barberias), [barberias])
+  const porPais = useMemo(() => usoPorPais(barberias), [barberias])
   const porPlan = useMemo(() => distribucionPorPlan(barberias), [barberias])
   const recientes = useMemo(() => ultimasAltas(barberias), [barberias])
+  const conMasClientela = useMemo(() => topClientela(barberias), [barberias])
 
   const onAbrir = useCallback(
     (id: string) => {
@@ -107,17 +111,9 @@ export default function AdminPage() {
 
       <div className="grid gap-4 xl:grid-cols-3">
         <PlataformaEstadoChart segmentos={porEstado} total={resumen.total} />
-        <PlataformaSegmentosChart
-          titulo="Por país"
-          subtitulo="Dónde opera lo vendido"
-          segmentos={porPais}
-          color="var(--chart-3)"
-          vacio={{
-            titulo: "Sin barberías todavía",
-            detalle: "El reparto por país aparece con la primera alta.",
-            icono: Globe,
-          }}
-        />
+        {/* El país dejó de ser una barra: «dónde se vendió» y «dónde se usa» no
+            son la misma pregunta, y tres cifras por país no caben en un eje */}
+        <PlataformaPaisesList paises={porPais} loading={loadingLista} />
         <PlataformaSegmentosChart
           titulo="Por plan"
           subtitulo="Qué tiene contratado cada quien"
@@ -131,22 +127,32 @@ export default function AdminPage() {
         />
       </div>
 
-      <SectionCard
-        titulo="Últimas altas"
-        subtitulo="Lo que entró más recientemente"
-        accion={
-          <Button variant="outline" size="sm" render={<Link href="/admin/barberias" />}>
-            Ver el inventario
-            <ArrowRight className="size-4" aria-hidden />
-          </Button>
-        }
-      >
-        <PlataformaAltasList
-          barberias={recientes}
-          loading={loadingLista}
-          onAbrir={(barberia) => onAbrir(barberia.id)}
-        />
-      </SectionCard>
+      <div className="grid gap-4 xl:grid-cols-2">
+        <SectionCard
+          titulo="Con más clientela"
+          subtitulo="A quién no se puede perder"
+          accion={
+            <Button variant="outline" size="sm" render={<Link href="/admin/barberias" />}>
+              Ver el inventario
+              <ArrowRight className="size-4" aria-hidden />
+            </Button>
+          }
+        >
+          <PlataformaClientelaList
+            barberias={conMasClientela}
+            loading={loadingLista}
+            onAbrir={(barberia) => onAbrir(barberia.id)}
+          />
+        </SectionCard>
+
+        <SectionCard titulo="Últimas altas" subtitulo="Lo que entró más recientemente">
+          <PlataformaAltasList
+            barberias={recientes}
+            loading={loadingLista}
+            onAbrir={(barberia) => onAbrir(barberia.id)}
+          />
+        </SectionCard>
+      </div>
 
       <Modal
         open={abierta}

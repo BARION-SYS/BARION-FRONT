@@ -1,6 +1,16 @@
 "use client"
 
-import { Building2, CalendarClock, Coins, Globe, MapPin, Scissors, Users } from "lucide-react"
+import {
+  Activity,
+  Building2,
+  CalendarClock,
+  Coins,
+  Globe,
+  MapPin,
+  MoonStar,
+  Scissors,
+  Users,
+} from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
@@ -43,7 +53,7 @@ export function PlataformaDetail({
   cargandoAccion,
   onCambiarEstado,
 }: PlataformaDetailProps) {
-  const { fechaCorta, numero } = useFormato()
+  const { fechaCorta, numero, relativo } = useFormato()
 
   if (loading || !ficha) return <DataSkeleton variant="form" count={5} />
 
@@ -84,6 +94,85 @@ export function PlataformaDetail({
           }
         />
       </dl>
+
+      {/* Cuánto se usa, en conteos. Barion sabe CUÁNTA clientela sostiene una
+          barbería —es lo que dice si su plan se le queda corto o si lleva tres
+          meses parada— y no QUIÉN la compone: la api no publica ninguna ruta que
+          devuelva esas filas, y esa raya está escrita en `02-rls.sql` */}
+      <section className="flex flex-col gap-3 border-t border-border pt-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Cómo la usan
+          </p>
+          {ficha.uso.citas30d === 0 && (
+            <span className="flex items-center gap-1 text-xs font-medium text-(--advertencia)">
+              <MoonStar className="size-3.5" aria-hidden />
+              Sin actividad en 30 días
+            </span>
+          )}
+        </div>
+
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <Dato
+            icono={Users}
+            etiqueta="Clientes"
+            valor={numero(ficha.uso.clientesTotal)}
+            nota={`${numero(ficha.uso.clientesNuevos30d)} nuevos en 30 días`}
+          />
+          <Dato
+            icono={CalendarClock}
+            etiqueta="Citas · 30 d"
+            valor={numero(ficha.uso.citas30d)}
+            nota={`${numero(ficha.uso.citasTotal)} en total`}
+          />
+          <Dato
+            icono={Activity}
+            etiqueta="Última cita"
+            // «Nunca» y no un guion: que jamás se haya creado una cita es un
+            // dato, y el guion se lee como «no lo sabemos».
+            valor={ficha.uso.ultimaCitaCreadaEn ? relativo(ficha.uso.ultimaCitaCreadaEn) : "Nunca"}
+            nota="Cuándo se agendó, no cuándo ocurre"
+          />
+        </dl>
+      </section>
+
+      {/* El propietario es la contraparte del contrato con Barion —a quien se le
+          cobra y a quien llama soporte—, no un cliente de la barbería. Por eso
+          sale con su contacto mientras que de la clientela solo salen conteos */}
+      <section className="flex flex-col gap-3 border-t border-border pt-5">
+        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          Propietario
+        </p>
+
+        {ficha.propietario ? (
+          <div className="flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3">
+            <InitialsAvatar iniciales={inicialesDe(ficha.propietario.nombre)} />
+            <div className="min-w-0 flex-1 space-y-0.5">
+              <p className="truncate text-sm font-medium">{ficha.propietario.nombre}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {ficha.propietario.email ?? "Sin correo"}
+                {ficha.propietario.telefonoE164 ? ` · ${ficha.propietario.telefonoE164}` : ""}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {ficha.propietario.ultimoAccesoEn
+                  ? `Último acceso ${relativo(ficha.propietario.ultimoAccesoEn)}`
+                  : "No ha entrado nunca"}
+                {" · "}
+                {/* Sin proveedor vinculado entra con contraseña. Se dice para que
+                    soporte no mande a restablecer una clave que nunca puso quien
+                    abrió su barbería con Google */}
+                {ficha.propietario.proveedores.length > 0
+                  ? `Entra con ${ficha.propietario.proveedores.join(", ")}`
+                  : "Entra con correo y contraseña"}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="rounded-lg border border-(--advertencia)/40 bg-[color-mix(in_srgb,var(--advertencia)_8%,transparent)] px-3 py-2 text-xs text-foreground">
+            Esta barbería no tiene ninguna cuenta de propietario activa. Nadie puede administrarla.
+          </p>
+        )}
+      </section>
 
       <div className="flex flex-col gap-4 border-t border-border pt-5">
         <EnlaceCopiable

@@ -8,6 +8,7 @@ import {
   esquemaPerfilCliente,
   esquemaPreferencia,
   esquemaReagendar,
+  esquemaRegistrarClienteGoogle,
   esquemaReserva,
   esquemaSolicitarCodigo,
   esquemaVerificarCodigo,
@@ -18,6 +19,7 @@ import {
   type DatosPerfilCliente,
   type DatosPreferencia,
   type DatosReagendar,
+  type DatosRegistrarClienteGoogle,
   type DatosReserva,
   type DatosSolicitarCodigo,
   type DatosVerificarCodigo,
@@ -33,6 +35,7 @@ import type {
   DisponibilidadPortal,
   FidelidadPortal,
   FiltrosCitasCliente,
+  PreregistroClientePortal,
   PromocionPortal,
   SeguimientoPortal,
   ServicioPortal,
@@ -111,6 +114,33 @@ export const portalService = {
     const validos = esquemaVerificarCodigo.parse(payload)
     return api.post<SesionCliente>(
       `/publico/barberias/${slug}/otp/verificar`,
+      omitEmpty({ ...validos })
+    )
+  },
+
+  /**
+   * Con qué cuenta vuelve de Google, para prellenar y poder decirlo.
+   *
+   * Un 401 significa que no hay pase —o caducó— y la pantalla vuelve a ofrecer
+   * el código de siempre.
+   */
+  async obtenerPreregistroCliente(slug: string): Promise<ApiResult<PreregistroClientePortal>> {
+    return api.get<PreregistroClientePortal>(`/publico/barberias/${slug}/oauth/google`)
+  },
+
+  /**
+   * Termina el alta del cliente que entró con Google. Deja la misma cookie de
+   * sesión que verificar un código: es el mismo desenlace por otro camino.
+   *
+   * El correo NO viaja aquí: lo pone la api desde la cookie firmada.
+   */
+  async registrarClienteConGoogle(
+    slug: string,
+    payload: DatosRegistrarClienteGoogle
+  ): Promise<ApiResult<SesionCliente>> {
+    const validos = esquemaRegistrarClienteGoogle.parse(payload)
+    return api.post<SesionCliente>(
+      `/publico/barberias/${slug}/oauth/google/registrar`,
       omitEmpty({ ...validos })
     )
   },

@@ -56,6 +56,24 @@ export const esquemaVerificarCodigo = z.object({
   slugQr,
 })
 
+/**
+ * Terminar el alta cuando el correo lo probó Google en vez del código.
+ *
+ * **Sin correo y sin código, y esa ausencia es la garantía**: el correo sale de
+ * la cookie firmada que dejó la vuelta del proveedor, así que mandarlo desde
+ * aquí permitiría darse de alta a nombre de una dirección ajena. El código no
+ * existe porque la prueba ya la dio Google.
+ *
+ * Nombre y teléfono son obligatorios, no opcionales como al verificar: este
+ * camino es solo para quien todavía no tiene ficha en esa barbería.
+ */
+export const esquemaRegistrarClienteGoogle = z.object({
+  nombre: z.string().trim().min(2, "Ingresa tu nombre"),
+  telefonoE164: telefono,
+  aceptaPromos: z.boolean().optional(),
+  slugQr,
+})
+
 /** Los datos que el cliente escribe antes de recibir el código. */
 export const esquemaContacto = z.object({
   nombre: z.string().trim().min(2, "Ingresa tu nombre"),
@@ -168,6 +186,7 @@ export const esquemaCanje = z.object({ premioId: z.uuid() })
 
 export type DatosSolicitarCodigo = z.input<typeof esquemaSolicitarCodigo>
 export type DatosVerificarCodigo = z.input<typeof esquemaVerificarCodigo>
+export type DatosRegistrarClienteGoogle = z.input<typeof esquemaRegistrarClienteGoogle>
 export type DatosContacto = z.input<typeof esquemaContacto>
 export type DatosReservaConSesion = z.input<typeof esquemaReservaConSesion>
 export type DatosReserva = z.input<typeof esquemaReserva>

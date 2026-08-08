@@ -1,11 +1,14 @@
 "use client"
 
-import { use, useCallback, useEffect, useMemo, useState } from "react"
+import { Suspense, use, useCallback, useEffect, useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { MotionConfig } from "motion/react"
 import { Gift, Star } from "lucide-react"
+import { regionDePais } from "@config/regiones"
 import { PortalAccesoForm } from "@features/portal/components/PortalAccesoForm"
 import { PortalCabeceraNav } from "@features/portal/components/PortalCabeceraNav"
 import { PortalCitasList } from "@features/portal/components/PortalCitasList"
+import { PortalGoogleForm } from "@features/portal/components/PortalGoogleForm"
 import { PortalNegocioCard } from "@features/portal/components/PortalNegocioCard"
 import { PortalOtpForm } from "@features/portal/components/PortalOtpForm"
 import { usePortal } from "@features/portal/hooks/usePortal"
@@ -13,6 +16,7 @@ import { ordenarCitasCliente } from "@features/portal/utils/citas"
 import { type ContextoFormato } from "@features/portal/utils/formato"
 import { horarioDeHoy } from "@features/portal/utils/horarios"
 import { marcaQr } from "@features/portal/utils/qr"
+import { mensajeDeErrorOauth } from "@features/auth/utils/errores-oauth"
 import { resumenServicios } from "@features/citas/utils/servicios"
 import { Button } from "@shared/components/ui/button"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
@@ -20,11 +24,14 @@ import { Modal } from "@shared/components/modals/Modal"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useMarcaStore } from "@store/marca.store"
-import type { DatosSolicitarCodigo } from "@features/portal/schemas/portal.schema"
+import type {
+  DatosRegistrarClienteGoogle,
+  DatosSolicitarCodigo,
+} from "@features/portal/schemas/portal.schema"
 import type { Cita } from "@features/portal/types/portal.types"
 
 /** Qué se pinta: pedir el correo, escribir el código, o ya lo suyo. */
-type FaseAcceso = "correo" | "codigo" | "citas"
+type FaseAcceso = "correo" | "codigo" | "google" | "citas"
 
 /**
  * El área del cliente: sus citas, sus puntos y sus permisos de comunicación.
@@ -37,6 +44,19 @@ type FaseAcceso = "correo" | "codigo" | "citas"
  */
 export default function MisCitasPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
+  return (
+    <Suspense>
+      <ContenedorMisCitas slug={slug} />
+    </Suspense>
+  )
+}
+
+/**
+ * `useSearchParams` obliga a vivir bajo un `Suspense`: sin él Next no puede
+ * prerenderizar la página y el build falla. Se aísla aquí para que el límite no
+ * se pierda al tocar el contenedor.
+ */
+function ContenedorMisCitas({ slug }: { slug: string }) {
   const {
     barberia,
     citas,
@@ -47,8 +67,12 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
     fetchPortal,
     fetchMisCitas,
     fetchFidelidad,
+    preregistro,
+    loadingPreregistro,
+    fetchPreregistroCliente,
     handleSolicitarCodigoPortal,
     handleVerificarCodigoPortal,
+    handleRegistrarClienteGooglePortal,
     handleCancelarCitaPortal,
     handleCalificarCitaPortal,
   } = usePortal()
@@ -61,9 +85,26 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
 
   const setMarca = useMarcaStore((s) => s.setMarca)
 
+  // La api devuelve aquí tras el viaje al proveedor: `google=listo` cuando dejó
+  // el pase, `error=…` cuando no pudo. El pase NO viaja por la dirección —va en
+  // cookie firmada—, así que este parámetro solo dice si hay que ir a buscarlo.
+  const parametros = useSearchParams()
+  const vueltaDeGoogle = parametros.get("google") === "listo"
+  const errorOauth = mensajeDeErrorOauth(parametros.get("error"))
+
   useEffect(() => {
     void fetchPortal(slug)
   }, [fetchPortal, slug])
+
+  useEffect(() => {
+    if (vueltaDeGoogle) void fetchPreregistroCliente(slug)
+  }, [vueltaDeGoogle, fetchPreregistroCliente, slug])
+
+  // El fallo del proveedor llega por una navegación, sin nada en pantalla que
+  // lo explique: se dice al aterrizar y no se guarda para después.
+  useEffect(() => {
+    if (errorOauth) notify.error(errorOauth)
+  }, [errorOauth])
 
   useEffect(() => {
     if (!barberia) return
@@ -84,6 +125,16 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
       void fetchFidelidad()
     })
   }, [fetchMisCitas, fetchFidelidad])
+
+  /**
+   * La fase que se pinta, DERIVADA y no copiada a estado.
+   *
+   * Sin ficha en esta barbería hay que completar dos datos antes de entrar, y
+   * eso lo dice tener pase —no un `setFase` dentro de un efecto, que provoca un
+   * render en cascada—. «Citas» gana siempre: una vez dentro, el pase ya se
+   * consumió y volver a enseñar su formulario sería un paso hacia atrás.
+   */
+  const faseEfectiva: FaseAcceso = fase === "citas" ? "citas" : preregistro ? "google" : fase
 
   const sede = barberia?.sedes[0] ?? null
 
@@ -118,6 +169,25 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
       }
     },
     [slug, handleSolicitarCodigoPortal]
+  )
+
+  const registrarConGoogle = useCallback(
+    async (datos: DatosRegistrarClienteGoogle) => {
+      try {
+        await handleRegistrarClienteGooglePortal(slug, {
+          ...datos,
+          // La misma marca del cartón que usa el alta por código: atribución,
+          // nunca autorización.
+          slugQr: marcaQr() ?? undefined,
+        })
+        setFase("citas")
+        void fetchMisCitas()
+        void fetchFidelidad()
+      } catch (err) {
+        notify.error(getErrorMessage(err))
+      }
+    },
+    [slug, handleRegistrarClienteGooglePortal, fetchMisCitas, fetchFidelidad]
   )
 
   const reenviarCodigo = useCallback(async () => {
@@ -205,18 +275,33 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
                 Mis citas
               </h1>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                {fase === "citas"
+                {faseEfectiva === "citas"
                   ? "Tus citas en esta barbería. Puedes cancelar y calificar lo atendido."
                   : "Entra con el correo con el que reservaste — sin contraseñas."}
               </p>
             </header>
 
             <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
-              {fase === "correo" && (
-                <PortalAccesoForm onSubmit={pedirCodigo} cargando={loadingAction} />
+              {faseEfectiva === "correo" &&
+                (vueltaDeGoogle && loadingPreregistro ? (
+                  // Volviendo del proveedor se espera al pase antes de pintar:
+                  // enseñar el formulario del código y cambiarlo medio segundo
+                  // después es peor que esperar medio segundo.
+                  <DataSkeleton variant="form" />
+                ) : (
+                  <PortalAccesoForm onSubmit={pedirCodigo} slug={slug} cargando={loadingAction} />
+                ))}
+
+              {faseEfectiva === "google" && preregistro && (
+                <PortalGoogleForm
+                  onSubmit={registrarConGoogle}
+                  preregistro={preregistro}
+                  paisSugerido={regionDePais(barberia.pais)}
+                  cargando={loadingAction}
+                />
               )}
 
-              {fase === "codigo" && (
+              {faseEfectiva === "codigo" && (
                 <PortalOtpForm
                   destino={correo}
                   onSubmit={verificarCodigo}
@@ -225,7 +310,7 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
                 />
               )}
 
-              {fase === "citas" && (
+              {faseEfectiva === "citas" && (
                 <PortalCitasList
                   citas={citasOrdenadas}
                   loading={loadingCitas}
@@ -242,7 +327,7 @@ export default function MisCitasPage({ params }: { params: Promise<{ slug: strin
 
             {/* Fidelización: solo si la barbería tiene programa. Sin él no se pinta
                 nada — una sección vacía sugeriría que hay puntos que no existen. */}
-            {fase === "citas" && fidelidad?.programa && (
+            {faseEfectiva === "citas" && fidelidad?.programa && (
               <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
                 <div className="flex items-baseline justify-between gap-3">
                   <div>

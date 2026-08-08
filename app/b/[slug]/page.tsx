@@ -3,6 +3,7 @@
 import { use, useCallback, useEffect, useMemo, useState } from "react"
 import { notFound, useRouter } from "next/navigation"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
+import { regionDePais } from "@config/regiones"
 import { PortalAgendaList } from "@features/portal/components/PortalAgendaList"
 import { PortalBarberosList } from "@features/portal/components/PortalBarberosList"
 import { PortalCabeceraNav } from "@features/portal/components/PortalCabeceraNav"
@@ -663,7 +664,11 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                           )}
 
                           {identidad === "invitado" && (
-                            <PortalReservaForm onSubmit={enviarContacto} cargando={loadingAction} />
+                            <PortalReservaForm
+                              onSubmit={enviarContacto}
+                              paisSugerido={regionDePais(barberia.pais)}
+                              cargando={loadingAction}
+                            />
                           )}
                         </div>
                       )}

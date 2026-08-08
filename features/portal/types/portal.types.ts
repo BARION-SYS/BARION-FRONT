@@ -166,6 +166,17 @@ export interface CodigoEmitido {
 }
 
 /**
+ * Quién vuelve de Google cuando todavía no tiene ficha en esta barbería.
+ *
+ * Solo lo que hay que enseñar —«continuarás como X»— y prellenar. El pase real
+ * vive en una cookie firmada que este código no puede leer ni reenviar.
+ */
+export interface PreregistroClientePortal {
+  email: string
+  nombre: string | null
+}
+
+/**
  * Lo que devuelve verificar el código. La sesión vive en la cookie httpOnly: esto
  * es solo lo que la pantalla necesita saber de quién entró.
  */

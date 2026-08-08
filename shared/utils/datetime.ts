@@ -3,15 +3,26 @@ import { DEFAULT_LOCALE, getDateTimeFormat, getRelativeTimeFormat } from "@share
 // Formateo de fechas/horas — SIEMPRE en la timezone de la sede (parámetro),
 // nunca la del navegador. La API entrega timestamps UTC (ISO 8601).
 
+/**
+ * La hora de un instante, en la zona de la SEDE.
+ *
+ * `hora12` decide el reloj, y no es cosmético: **quien lee decide cuál sirve**.
+ * En el panel manda el de 24 h —una agenda es una columna densa de horas y
+ * `14:30` ocupa menos y no se confunde—; al CLIENTE hay que hablarle en el reloj
+ * que usa, que en Colombia, España y EE. UU. es el de 12 h. Un «10:00» suelto en
+ * un correo no se lee como las diez de la mañana: se lee como una duda, y quien
+ * la tiene llama a la barbería a preguntar.
+ */
 export function formatTime(
   value: string | Date,
   timeZone: string,
-  locale = DEFAULT_LOCALE
+  locale = DEFAULT_LOCALE,
+  hora12 = false
 ): string {
   return getDateTimeFormat(locale, {
-    hour: "2-digit",
+    hour: hora12 ? "numeric" : "2-digit",
     minute: "2-digit",
-    hour12: false,
+    hour12: hora12,
     timeZone,
   }).format(typeof value === "string" ? new Date(value) : value)
 }

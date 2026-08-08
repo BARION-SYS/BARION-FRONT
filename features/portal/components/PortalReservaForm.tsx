@@ -3,6 +3,8 @@
 import { useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Loader2, ShieldCheck } from "lucide-react"
+import { type CodigoRegion } from "@config/regiones"
+import { CampoTelefono } from "@shared/components/forms/CampoTelefono"
 import { Button } from "@shared/components/ui/button"
 import { Checkbox } from "@shared/components/ui/checkbox"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
@@ -12,6 +14,12 @@ import { esquemaContacto, type DatosContacto } from "@features/portal/schemas/po
 
 interface PortalReservaFormProps {
   onSubmit: (datos: DatosContacto) => Promise<void>
+  /**
+   * País de la barbería, para sugerir el indicativo. `undefined` cuando la api
+   * devuelve uno que este repo no declara: se cae a la lista, nunca a un
+   * indicativo inventado.
+   */
+  paisSugerido?: CodigoRegion
   cargando?: boolean
 }
 
@@ -31,7 +39,7 @@ interface PortalReservaFormProps {
  * «Quiero recibir novedades» es un **consentimiento**, no una casilla de interfaz:
  * la api lo guarda con su origen, su versión de política, la IP y el user agent.
  */
-export function PortalReservaForm({ onSubmit, cargando }: PortalReservaFormProps) {
+export function PortalReservaForm({ onSubmit, paisSugerido, cargando }: PortalReservaFormProps) {
   const {
     register,
     control,
@@ -59,18 +67,27 @@ export function PortalReservaForm({ onSubmit, cargando }: PortalReservaFormProps
         <FieldError errors={[errors.nombre]} />
       </Field>
 
+      {/* Indicativo de una lista y número a secas. Es el paso donde más caro
+          sale un rechazo de formato: quien está delante es alguien que ya eligió
+          barbero, servicio y hora, y el error «Formato internacional:
+          +573001112233» le pide que descifre un estándar para no perder la
+          reserva */}
       <Field data-invalid={!!errors.telefonoE164}>
         <FieldLabel htmlFor="telefonoE164">Celular</FieldLabel>
-        <Input
-          id="telefonoE164"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="+57 300 123 4567"
-          aria-invalid={!!errors.telefonoE164}
-          aria-describedby="ayuda-telefono"
-          className="h-11 text-base"
-          {...register("telefonoE164")}
+        <Controller
+          control={control}
+          name="telefonoE164"
+          render={({ field }) => (
+            <CampoTelefono
+              id="telefonoE164"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              paisSugerido={paisSugerido}
+              invalido={!!errors.telefonoE164}
+              disabled={deshabilitado}
+            />
+          )}
         />
         <p id="ayuda-telefono" className="text-xs text-muted-foreground">
           Para que la barbería pueda llamarte si algo cambia.

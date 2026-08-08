@@ -53,8 +53,16 @@ function monedaConocida(moneda: string): CodigoMoneda {
     : MONEDA_POR_DEFECTO
 }
 
+/**
+ * **En reloj de 12 horas, y esto es del portal, no del panel.**
+ *
+ * Quien lee aquí es el cliente final, no un barbero mirando su columna del día:
+ * un «10:00» a secas no se lee como las diez de la mañana, se lee como una duda
+ * —y quien la tiene acaba llamando a la barbería a preguntar—. El panel se queda
+ * en 24 h a propósito, que es donde una agenda densa lo agradece.
+ */
 export function horaDe(instante: string, contexto: ContextoFormato): string {
-  return formatTime(instante, contexto.zonaHoraria, contexto.locale ?? LOCALE_POR_DEFECTO)
+  return formatTime(instante, contexto.zonaHoraria, contexto.locale ?? LOCALE_POR_DEFECTO, true)
 }
 
 export function fechaCortaDe(instante: string, contexto: ContextoFormato): string {

@@ -3,12 +3,13 @@
 import { useCallback, useState } from "react"
 import { portalService } from "@features/portal/services/portal.service"
 import { sedeDeLaMarca } from "@features/portal/utils/qr"
-import { getErrorMessage } from "@shared/utils/error"
+import { getErrorMessage, motivoDeError } from "@shared/utils/error"
 import type {
   DatosAccionEnlace,
   DatosCalificar,
   DatosPreferencia,
   DatosReagendar,
+  DatosRegistrarClienteGoogle,
   DatosReserva,
   DatosVerificarCodigo,
 } from "@features/portal/schemas/portal.schema"
@@ -21,7 +22,9 @@ import type {
   DiaAgenda,
   FidelidadPortal,
   FiltrosCitasCliente,
+  PreregistroClientePortal,
   PromocionPortal,
+  SeguimientoPortal,
   ServicioPortal,
   SesionCliente,
 } from "@features/portal/types/portal.types"
@@ -49,6 +52,20 @@ export function usePortal() {
   const [agenda, setAgenda] = useState<DiaAgenda[]>([])
   const [reserva, setReserva] = useState<Cita | null>(null)
   const [sesion, setSesion] = useState<SesionCliente | null>(null)
+  /** La cita del enlace de seguimiento. `null` = no se pidió o no existe. */
+  const [seguimiento, setSeguimiento] = useState<SeguimientoPortal | null>(null)
+  /**
+   * Empieza en `true`, al revés que los demás, y es deliberado: quien abre el
+   * enlace de un correo llega directo a esta pantalla, así que en el primer
+   * render todavía no hay cita **y tampoco se ha preguntado**. Naciendo en
+   * `false`, ese instante se pintaba como «no encontramos esta cita» y el
+   * comprobante aparecía medio segundo después — que es exactamente lo que hace
+   * dudar de un enlace que sí funciona.
+   */
+  const [loadingSeguimiento, setLoadingSeguimiento] = useState(true)
+  /** Quién vuelve de Google sin ficha todavía. `null` = no se pasó por ahí. */
+  const [preregistro, setPreregistro] = useState<PreregistroClientePortal | null>(null)
+  const [loadingPreregistro, setLoadingPreregistro] = useState(false)
   const [citas, setCitas] = useState<Cita[]>([])
   const [perfil, setPerfil] = useState<Cliente | null>(null)
   const [consentimientos, setConsentimientos] = useState<Consentimientos | null>(null)
@@ -127,6 +144,28 @@ export function usePortal() {
     []
   )
 
+  /**
+   * La cita de un código de seguimiento, **sin sesión**.
+   *
+   * Es lo que abre el botón «Ver mi cita» de cada correo de confirmación, así
+   * que quien llega aquí puede no haber entrado nunca al portal. Un 404 no es un
+   * error que enseñar como avería: significa que ese código no corresponde a
+   * ninguna cita de esta barbería —caducado, mal copiado o de otra— y la página
+   * lo dice con sus palabras.
+   */
+  const fetchSeguimiento = useCallback(async (slug: string, codigo: string) => {
+    setLoadingSeguimiento(true)
+    setSeguimiento(null)
+    try {
+      const res = await portalService.obtenerSeguimiento(slug, codigo)
+      setSeguimiento(res.data)
+    } catch {
+      setSeguimiento(null)
+    } finally {
+      setLoadingSeguimiento(false)
+    }
+  }, [])
+
   /** El código sale por correo, y solo por correo: es el único canal que lo manda. */
   const handleSolicitarCodigoPortal = useCallback(
     async (slug: string, email: string): Promise<string> => {
@@ -152,6 +191,54 @@ export function usePortal() {
         setSesion(res.data)
         return res.data
       } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  /**
+   * Con qué cuenta vuelve de Google.
+   *
+   * Su fallo NO es un error que enseñar: significa que no hay pase —nunca lo
+   * hubo, o caducó— y lo único que hay que hacer es dejar la pantalla en su modo
+   * de siempre, con el código. Contarlo como error alarmaría a quien entró a
+   * pedir su código por su cuenta.
+   */
+  const fetchPreregistroCliente = useCallback(async (slug: string) => {
+    setLoadingPreregistro(true)
+    try {
+      const res = await portalService.obtenerPreregistroCliente(slug)
+      setPreregistro(res.data)
+    } catch {
+      setPreregistro(null)
+    } finally {
+      setLoadingPreregistro(false)
+    }
+  }, [])
+
+  /**
+   * El mismo desenlace que verificar un código, por el otro camino.
+   *
+   * **El pase muerto se trata aparte, y no es un error más.** Cuando caduca —o
+   * es de otra barbería— el formulario ya está en pantalla y lleno: reenviarlo
+   * devuelve el mismo 401 siempre. Retirando el pase, `faseEfectiva` cae sola a
+   * la puerta de siempre, el código por correo, que es la principal y **sigue
+   * funcionando**; el botón de Google está ahí mismo para quien prefiera
+   * reintentarlo. El aviso sale igual, para que la pantalla no cambie sin que
+   * nadie explique por qué.
+   */
+  const handleRegistrarClienteGooglePortal = useCallback(
+    async (slug: string, payload: DatosRegistrarClienteGoogle): Promise<SesionCliente> => {
+      setLoadingAction(true)
+      try {
+        const res = await portalService.registrarClienteConGoogle(slug, payload)
+        setSesion(res.data)
+        return res.data
+      } catch (err) {
+        if (motivoDeError(err) === "preregistro_invalido") setPreregistro(null)
         throw new Error(getErrorMessage(err))
       } finally {
         setLoadingAction(false)
@@ -370,6 +457,8 @@ export function usePortal() {
     agenda,
     reserva,
     sesion,
+    seguimiento,
+    preregistro,
     citas,
     perfil,
     consentimientos,
@@ -381,14 +470,19 @@ export function usePortal() {
     loadingCitas,
     loadingAction,
     loadingAccion,
+    loadingSeguimiento,
+    loadingPreregistro,
     error,
     fetchPortal,
     fetchAgenda,
     fetchMisCitas,
+    fetchSeguimiento,
     fetchMiPerfil,
     fetchFidelidad,
     handleSolicitarCodigoPortal,
     handleVerificarCodigoPortal,
+    fetchPreregistroCliente,
+    handleRegistrarClienteGooglePortal,
     handleCerrarSesionPortal,
     handleReservarPortal,
     handleCancelarCitaPortal,

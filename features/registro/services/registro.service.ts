@@ -1,5 +1,14 @@
-import { esquemaRegistro, type DatosRegistro } from "@features/registro/schemas/registro.schema"
-import type { DisponibilidadSlug, RegistroVista } from "@features/registro/types/registro.types"
+import {
+  esquemaRegistro,
+  esquemaRegistroGoogle,
+  type DatosRegistro,
+  type DatosRegistroGoogle,
+} from "@features/registro/schemas/registro.schema"
+import type {
+  DisponibilidadSlug,
+  PreregistroGoogle,
+  RegistroVista,
+} from "@features/registro/types/registro.types"
 import { api } from "@lib/http/instances"
 import type { ApiResult } from "@shared/types/api.types"
 
@@ -11,6 +20,24 @@ export const registroService = {
   async registrarBarberia(datos: DatosRegistro): Promise<ApiResult<RegistroVista>> {
     // `parse` antes de enviar: descarta claves ajenas, recorta y normaliza.
     return api.post<RegistroVista>("/publico/registro", esquemaRegistro.parse(datos))
+  },
+
+  /**
+   * Con quién se va a registrar, leído de la cookie que dejó la vuelta de
+   * Google. Un 401 significa que no hay pase —o caducó— y el formulario tiene
+   * que volver a ofrecer el botón del proveedor.
+   */
+  async obtenerPreregistroGoogle(): Promise<ApiResult<PreregistroGoogle>> {
+    return api.get<PreregistroGoogle>("/publico/registro/google")
+  },
+
+  /**
+   * El alta con la identidad ya comprobada. El correo NO viaja aquí: lo pone la
+   * api desde la cookie firmada, que es lo único que impide registrar una
+   * barbería a nombre de otra persona.
+   */
+  async registrarConGoogle(datos: DatosRegistroGoogle): Promise<ApiResult<RegistroVista>> {
+    return api.post<RegistroVista>("/publico/registro/google", esquemaRegistroGoogle.parse(datos))
   },
 
   /**

@@ -44,3 +44,27 @@ export type DatosRegistro = z.infer<typeof esquemaRegistro>
 export const esquemaFormularioRegistro = esquemaRegistro.omit({ slug: true })
 
 export type DatosFormularioRegistro = z.infer<typeof esquemaFormularioRegistro>
+
+/**
+ * El alta cuando la identidad la aporta Google.
+ *
+ * **Sin correo y sin contraseña, y esa ausencia es la garantía**: el correo sale
+ * de la cookie firmada que dejó la vuelta del proveedor, así que enviarlo desde
+ * aquí permitiría abrir una barbería a nombre de una dirección ajena con solo
+ * escribirla. Contraseña no hay ninguna: la cuenta nace solo con proveedor y
+ * quien quiera una la pone después por el restablecimiento de siempre.
+ *
+ * El teléfono se queda porque Google no lo entrega y a una barbería hay que
+ * poder llamarla.
+ */
+export const esquemaRegistroGoogle = esquemaRegistro.omit({
+  propietarioEmail: true,
+  contrasena: true,
+})
+
+export type DatosRegistroGoogle = z.infer<typeof esquemaRegistroGoogle>
+
+/** Lo mismo sin el identificador: se genera del nombre, no se teclea. */
+export const esquemaFormularioRegistroGoogle = esquemaRegistroGoogle.omit({ slug: true })
+
+export type DatosFormularioRegistroGoogle = z.infer<typeof esquemaFormularioRegistroGoogle>

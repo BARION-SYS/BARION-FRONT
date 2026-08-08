@@ -28,6 +28,7 @@ import { Modal } from "@shared/components/modals/Modal"
 import { SidePanel } from "@shared/components/modals/SidePanel"
 import { Button } from "@shared/components/ui/button"
 import { notify } from "@shared/services/notify"
+import { useAuth } from "@features/auth/hooks/useAuth"
 import { useAuthStore } from "@store/auth.store"
 import { puede } from "@features/auth/utils/permisos"
 import { getErrorMessage } from "@shared/utils/error"
@@ -108,6 +109,9 @@ export default function ConfiguracionPage() {
    * petición—, pero evita ofrecer un guardado que va a terminar en 403.
    */
   const sesion = useAuthStore((estado) => estado.sesion)
+  // Desvincular toca la sesión, así que vive en `auth`: hay que volver a
+  // resolverla o la tarjeta seguiría diciendo «Conectada».
+  const { handleDesvincularProveedorAuth, loadingContrasena } = useAuth()
   const gestiona = puede(sesion, "barberias.gestionar")
   /** `null` = Barion todavía no factura en el país de esta barbería. */
   const reglasFiscales = reglasFiscalesDe(paisFiscal)
@@ -285,6 +289,14 @@ export default function ConfiguracionPage() {
     void fetchFactura(factura.id)
   }
 
+  const onDesconectarProveedor = async (proveedor: string) => {
+    try {
+      notify.success(await handleDesvincularProveedorAuth(proveedor))
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }
+
   const onSubmitSeguridad = async (datos: DatosSeguridad) => {
     try {
       notify.success(await handleActualizarContrasena(datos))
@@ -391,7 +403,14 @@ export default function ConfiguracionPage() {
         {seccionActiva === "notificaciones" && (
           <Notificaciones canales={canales} activos={canalesActivos} alAlternar={alternarCanal} />
         )}
-        {seccionActiva === "seguridad" && <Seguridad onSubmit={onSubmitSeguridad} />}
+        {seccionActiva === "seguridad" && (
+          <Seguridad
+            onSubmit={onSubmitSeguridad}
+            proveedores={sesion?.usuario.proveedores ?? []}
+            onDesconectar={onDesconectarProveedor}
+            cargandoDesconexion={loadingContrasena}
+          />
+        )}
       </div>
 
       {/*

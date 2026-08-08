@@ -55,11 +55,26 @@ export interface RolSesion {
  */
 export type TipoSesion = "staff" | "cliente" | "plataforma"
 
+/**
+ * Un proveedor externo conectado a la cuenta.
+ *
+ * **`email` puede NO ser el de la cuenta de Barion**, y no es un error: vincular
+ * ocurre con la sesión ya abierta, así que quien lo hace ya controla la cuenta y
+ * le está añadiendo otra llave suya. Se enseña justamente para que se pueda ver
+ * que se conectó la equivocada.
+ */
+export interface ProveedorVinculado {
+  proveedor: string
+  email: string | null
+}
+
 export interface Sesion {
   usuario: {
     id: string
     nombre: string | null
     email: string | null
+    /** Con qué proveedores entra AHORA. Vacío = solo con contraseña. */
+    proveedores: ProveedorVinculado[]
   }
   barberia: BarberiaSesion | null
   membresiaId: string | null

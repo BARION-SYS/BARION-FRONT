@@ -18,6 +18,21 @@ const MENSAJES: Record<string, string> = {
   oauth_inactiva: "Tu cuenta o tu barbería están inactivas. Ponte en contacto con administración.",
   oauth_no_configurado:
     "El acceso con Google no está disponible en este momento. Entra con tu correo y contraseña.",
+  // Solo aparece en el alta abierta, y es el único motivo que no oculta nada:
+  // quien llega aquí acaba de demostrarle a Google que ese correo es suyo, así
+  // que ya sabía si tenía cuenta. Lo que hacía falta era decirle qué hacer.
+  oauth_ya_registrado:
+    "Ya tienes una cuenta de Barion con ese correo. Inicia sesión en vez de registrarte.",
+  // Antes este caso caía en `oauth_sin_acceso`, que decía justo lo contrario de
+  // la verdad —«ese correo no tiene acceso, pide que te inviten»— a alguien que
+  // sí lo tiene, y lo mandaba a pedirle permiso a nadie. La cuenta existe: lo
+  // que falta es probar que el correo es suyo, y eso se hace entrando una vez.
+  // Sin nombrar una pantalla concreta, y hubo que corregirlo: decía
+  // «Configuración → Seguridad», que existe en el panel de una barbería y NO en
+  // el área del staff de Barion. A ese actor se le daba una instrucción hacia un
+  // sitio al que no puede llegar, justo en la puerta de entrada.
+  oauth_vincular_pendiente:
+    "Tu cuenta existe, pero todavía usa contraseña. Entra con ella una vez y conecta Google desde la seguridad de tu cuenta; después ya podrás entrar directo.",
 }
 
 /** `null` cuando no hay error, o cuando llega uno que no reconocemos. */

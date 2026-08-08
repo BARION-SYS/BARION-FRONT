@@ -1,13 +1,29 @@
+import { cn } from "@shared/utils/cn"
+
 /**
  * Logotipo de Google para el botón de acceso.
  *
  * Va como SVG en línea y no como imagen remota: la marca exige sus colores
  * exactos —no se tiñen con el tema— y cargarlo desde un dominio ajeno mete una
  * petición externa en la primera pantalla, justo donde más se nota.
+ *
+ * **El tamaño se COMPONE con lo que llegue, no se sustituye.**
+ *
+ * Antes era `className ?? "size-4"`, y ese `??` era una trampa: pasarle
+ * cualquier clase —un `mt-0.5` para alinearlo— borraba el tamaño y el SVG se
+ * estiraba hasta llenar su contenedor. Dentro de un botón no se notaba, porque
+ * los de shadcn imponen `[&_svg]:size-4`; fuera de uno, el logotipo salía
+ * gigante. Con `cn()` el tamaño es la base y quien lo necesite distinto lo pisa
+ * a propósito, no por accidente.
  */
 export function LogoGoogle({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className ?? "size-4"} aria-hidden focusable="false">
+    <svg
+      viewBox="0 0 24 24"
+      className={cn("size-4 shrink-0", className)}
+      aria-hidden
+      focusable="false"
+    >
       <path
         fill="#4285F4"
         d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.63h6.46a5.53 5.53 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.58-5.17 3.58-8.81Z"

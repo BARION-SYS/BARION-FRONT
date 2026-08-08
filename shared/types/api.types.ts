@@ -25,9 +25,12 @@ export interface ApiEnvelope<T> {
  *
  * `token_invalido` es UNO SOLO para «no existe», «ya se usó» y «caducó»: son
  * indistinguibles a propósito, o el endpoint sería un oráculo de qué enlaces
- * ajenos siguen vivos.
+ * ajenos siguen vivos. `preregistro_invalido` sigue el mismo criterio con el
+ * pase que deja la vuelta de Google, y lo que ramifica con él es la pantalla del
+ * alta: sin el motivo se quedaba reenviando el formulario contra un pase muerto.
  */
-export type MotivoError = "falta_puntaje" | "requiere_confirmacion" | "token_invalido"
+export type MotivoError =
+  "falta_puntaje" | "requiere_confirmacion" | "token_invalido" | "preregistro_invalido"
 
 /**
  * Contrato de error de la API: `{ error: { message, status, codigo?, motivo? }, meta }`.

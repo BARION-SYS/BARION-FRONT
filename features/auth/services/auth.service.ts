@@ -81,4 +81,13 @@ export const authService = {
     const { contrasenaNueva } = esquemaNuevaContrasena.parse(datos)
     return api.post<null>("/auth/restablecer-contrasena/confirmar", { token, contrasenaNueva })
   },
+
+  /**
+   * Suelta un proveedor de la cuenta. La api rechaza con 422 si es la única
+   * forma de entrar que queda: quien abrió su barbería con Google nace SIN
+   * contraseña, y soltar su único proveedor lo dejaría fuera para siempre.
+   */
+  async desvincularProveedor(proveedor: string): Promise<ApiResult<null>> {
+    return api.delete<null>(`/auth/oauth/${encodeURIComponent(proveedor)}`)
+  },
 }

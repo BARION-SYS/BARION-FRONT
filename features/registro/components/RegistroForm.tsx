@@ -4,13 +4,16 @@ import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react"
+import { env } from "@config/env"
 import { nombresDeRegion, regiones, type CodigoRegion } from "@config/regiones"
 import { DireccionPublica } from "@features/registro/components/DireccionPublica"
+import { CampoTelefono } from "@shared/components/forms/CampoTelefono"
 import {
   esquemaFormularioRegistro,
   type DatosFormularioRegistro,
 } from "@features/registro/schemas/registro.schema"
-import { Button } from "@shared/components/ui/button"
+import { LogoGoogle } from "@shared/components/brand/LogoGoogle"
+import { Button, buttonVariants } from "@shared/components/ui/button"
 import {
   Field,
   FieldDescription,
@@ -27,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@shared/components/ui/select"
+import { cn } from "@shared/utils/cn"
 
 interface RegistroFormProps {
   onSubmit: (datos: DatosFormularioRegistro) => Promise<void>
@@ -98,6 +102,30 @@ export function RegistroForm({
       className="space-y-8"
       noValidate
     >
+      {/* Arriba del todo, antes del primer campo: es el camino corto —Google
+          entrega el correo ya comprobado, así que se ahorra la contraseña y el
+          enlace de verificación— y ofrecerlo después de siete campos es
+          ofrecerlo a quien ya no lo necesita.
+
+          Enlace y no botón con fetch: es una NAVEGACIÓN del navegador hasta
+          Google y de vuelta a la API, que es quien deja el pase firmado. Una
+          petición desde este código no puede seguir ese viaje. */}
+      <div className="space-y-4">
+        <a
+          href={`${env.apiUrl}/auth/oauth/google/registro`}
+          className={cn(buttonVariants({ variant: "outline" }), "h-11 w-full text-sm font-medium")}
+        >
+          <LogoGoogle aria-hidden />
+          Registrarme con Google
+        </a>
+
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" aria-hidden />
+          <span className="text-xs text-muted-foreground">o con tu correo</span>
+          <span className="h-px flex-1 bg-border" aria-hidden />
+        </div>
+      </div>
+
       <FieldSet className="gap-5">
         <FieldLegend variant="label">Tu barbería</FieldLegend>
 
@@ -182,7 +210,11 @@ export function RegistroForm({
           temporal por correo.
         </FieldDescription>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {/* Una sola columna: el teléfono son DOS controles —indicativo y
+            número— y a media fila el indicativo se come el campo. Dos campos de
+            ancho distinto uno al lado del otro se leen apretados en cuanto uno
+            de ellos no es un `input` a secas */}
+        <div className="space-y-5">
           <Field data-invalid={!!errors.propietarioNombre}>
             <FieldLabel htmlFor="propietarioNombre">Tu nombre</FieldLabel>
             <Input
@@ -198,17 +230,25 @@ export function RegistroForm({
 
           <Field data-invalid={!!errors.propietarioTelefonoE164}>
             <FieldLabel htmlFor="propietarioTelefonoE164">Teléfono</FieldLabel>
-            <Input
-              id="propietarioTelefonoE164"
-              type="tel"
-              inputMode="tel"
-              placeholder="+573001112233"
-              autoComplete="tel"
-              className="h-11"
-              aria-invalid={!!errors.propietarioTelefonoE164}
-              {...register("propietarioTelefonoE164")}
+            {/* El indicativo se elige de una lista y el número se escribe a
+                secas: pedir el E.164 entero llevaba al error «formato
+                E.164 (+573001112233)», que no dice nada a quien acaba de
+                teclear su número de siempre */}
+            <Controller
+              control={control}
+              name="propietarioTelefonoE164"
+              render={({ field }) => (
+                <CampoTelefono
+                  id="propietarioTelefonoE164"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  paisSugerido={paisElegido}
+                  invalido={!!errors.propietarioTelefonoE164}
+                  disabled={deshabilitado}
+                />
+              )}
             />
-            <FieldDescription>Con el indicativo del país delante.</FieldDescription>
             <FieldError errors={[errors.propietarioTelefonoE164]} />
           </Field>
         </div>

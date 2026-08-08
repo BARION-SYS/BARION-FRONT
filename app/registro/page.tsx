@@ -1,21 +1,29 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { Suspense, useCallback, useEffect, useState } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { MotionConfig, motion, type Variants } from "motion/react"
 import { CalendarCheck, Check, ShieldCheck, Store } from "lucide-react"
 import { REGION_DEFAULT, type CodigoRegion } from "@config/regiones"
+import { mensajeDeErrorOauth } from "@features/auth/utils/errores-oauth"
 import { RegistroExito } from "@features/registro/components/RegistroExito"
 import { RegistroForm } from "@features/registro/components/RegistroForm"
+import { RegistroFormGoogle } from "@features/registro/components/RegistroFormGoogle"
+import { RegistroPaseCaducado } from "@features/registro/components/RegistroPaseCaducado"
 import { useRegistro } from "@features/registro/hooks/useRegistro"
-import type { DatosFormularioRegistro } from "@features/registro/schemas/registro.schema"
+import type {
+  DatosFormularioRegistro,
+  DatosFormularioRegistroGoogle,
+} from "@features/registro/schemas/registro.schema"
 import { slugDesdeNombre } from "@features/registro/utils/slug"
+import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { rutasPublicas, rutasWeb } from "@routes/rutasPublicas"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { useOrigen } from "@shared/hooks/useOrigen"
 import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { notify } from "@shared/services/notify"
-import { getErrorMessage } from "@shared/utils/error"
+import { getErrorMessage, motivoDeError } from "@shared/utils/error"
 
 const incluye = [
   { icono: Store, texto: "Tu escaparate público desde el primer día" },
@@ -34,6 +42,20 @@ const cascada: Variants = {
 }
 
 /**
+ * `useSearchParams` obliga a que quien lo use viva bajo un `Suspense`: sin él,
+ * Next no puede prerenderizar la página y el build falla. Se aísla en este
+ * envoltorio para que el límite quede donde tiene que estar y no se pierda al
+ * tocar el contenedor.
+ */
+export default function RegistroPage() {
+  return (
+    <Suspense>
+      <ContenedorRegistro />
+    </Suspense>
+  )
+}
+
+/**
  * Alta abierta: una barbería nace sin que nadie de Barion intervenga.
  *
  * El alta es de la APLICACIÓN, no del sitio de venta: quien la termina entra al
@@ -41,16 +63,25 @@ const cascada: Variants = {
  * suya —logo y tema— con el logo de vuelta al sitio público, que está en otro
  * dominio. Es la página padre: consume el hook, guarda el estado de interfaz y
  * le pasa a los hijos datos y callbacks.
+ *
+ * **Dos caminos de alta, y la página elige cuál montar**: con contraseña, o con
+ * la identidad que Google ya comprobó. El segundo llega aquí de vuelta del
+ * proveedor y se reconoce por el pase que dejó la api, no por la dirección.
  */
-export default function RegistroPage() {
+function ContenedorRegistro() {
   const {
     registro,
     slug,
     slugAjustado,
+    preregistro,
+    paseCaducado,
+    loadingPreregistro,
     loadingRegistro,
     loadingSlug,
     error,
     handleRegistrarBarberia,
+    handleRegistrarConGoogle,
+    fetchPreregistroGoogle,
     fetchSlugLibre,
     limpiarSlug,
   } = useRegistro()
@@ -62,6 +93,18 @@ export default function RegistroPage() {
   // Región de partida del selector. Cosmética: lo que factura es lo que se elija
   // en el formulario, y eso ya viaja en el alta.
   const [regionInicial] = useState<CodigoRegion>(REGION_DEFAULT)
+
+  // La api devuelve aquí tras el viaje al proveedor: `google=listo` cuando dejó
+  // el pase, `error=…` cuando no pudo. El pase en sí NO viaja por la dirección
+  // —va en cookie firmada—, así que este parámetro solo dice si hay que ir a
+  // buscarlo; falsearlo no consigue nada porque la cookie seguirá sin estar.
+  const parametros = useSearchParams()
+  const vueltaDeGoogle = parametros.get("google") === "listo"
+  const errorOauth = mensajeDeErrorOauth(parametros.get("error"))
+
+  useEffect(() => {
+    if (vueltaDeGoogle) void fetchPreregistroGoogle()
+  }, [vueltaDeGoogle, fetchPreregistroGoogle])
 
   const alRegistrar = useCallback(
     async (datos: DatosFormularioRegistro) => {
@@ -79,6 +122,24 @@ export default function RegistroPage() {
       }
     },
     [handleRegistrarBarberia, slug]
+  )
+
+  const alRegistrarConGoogle = useCallback(
+    async (datos: DatosFormularioRegistroGoogle) => {
+      try {
+        const message = await handleRegistrarConGoogle({
+          ...datos,
+          slug: slug ?? slugDesdeNombre(datos.nombreComercial),
+        })
+        notify.success(message)
+      } catch (err) {
+        // El pase caducado ya se explica con la pantalla entera: un toast encima
+        // sería el mismo texto dos veces, y el de la pantalla es el que trae el
+        // botón para arreglarlo.
+        if (motivoDeError(err) !== "preregistro_invalido") notify.error(getErrorMessage(err))
+      }
+    },
+    [handleRegistrarConGoogle, slug]
   )
 
   return (
@@ -159,18 +220,48 @@ export default function RegistroPage() {
                   className="order-1 rounded-2xl border border-border bg-card p-6 sm:p-8 lg:order-2"
                   variants={bloque}
                 >
-                  <RegistroForm
-                    onSubmit={alRegistrar}
-                    onResolverSlug={fetchSlugLibre}
-                    onEditarNombre={limpiarSlug}
-                    slug={slug}
-                    slugAjustado={slugAjustado}
-                    resolviendoSlug={loadingSlug}
-                    origen={origen}
-                    regionInicial={regionInicial}
-                    cargando={loadingRegistro}
-                    error={error}
-                  />
+                  {/* Volviendo del proveedor se espera al pase antes de pintar:
+                      enseñar el formulario con contraseña y cambiarlo medio
+                      segundo después es peor que esperar medio segundo */}
+                  {/* El pase murió con el formulario ya montado: reenviarlo
+                      devolvería el mismo 401, así que se retira y se ofrece
+                      rehacer el viaje al proveedor, que es lo único que lo
+                      arregla */}
+                  {paseCaducado ? (
+                    <RegistroPaseCaducado />
+                  ) : vueltaDeGoogle && loadingPreregistro ? (
+                    <DataSkeleton variant="form" />
+                  ) : preregistro ? (
+                    <RegistroFormGoogle
+                      onSubmit={alRegistrarConGoogle}
+                      preregistro={preregistro}
+                      onResolverSlug={fetchSlugLibre}
+                      onEditarNombre={limpiarSlug}
+                      slug={slug}
+                      slugAjustado={slugAjustado}
+                      resolviendoSlug={loadingSlug}
+                      origen={origen}
+                      regionInicial={regionInicial}
+                      cargando={loadingRegistro}
+                      error={error}
+                    />
+                  ) : (
+                    <RegistroForm
+                      onSubmit={alRegistrar}
+                      onResolverSlug={fetchSlugLibre}
+                      onEditarNombre={limpiarSlug}
+                      slug={slug}
+                      slugAjustado={slugAjustado}
+                      resolviendoSlug={loadingSlug}
+                      origen={origen}
+                      regionInicial={regionInicial}
+                      // El fallo del proveedor manda aquí sin haber enviado
+                      // nada, así que se enseña en el formulario y no en un
+                      // toast: al volver de una navegación no hay nada en
+                      // pantalla que explique por qué se está viendo esto.
+                      error={errorOauth ?? error}
+                    />
+                  )}
                 </motion.div>
               </motion.div>
             )}

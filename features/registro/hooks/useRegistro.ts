@@ -3,9 +3,9 @@
 import { useCallback, useState } from "react"
 import { registroService } from "@features/registro/services/registro.service"
 import { esSlugUtilizable, slugDesdeNombre } from "@features/registro/utils/slug"
-import type { DatosRegistro } from "@features/registro/schemas/registro.schema"
-import type { RegistroVista } from "@features/registro/types/registro.types"
-import { getErrorMessage } from "@shared/utils/error"
+import type { DatosRegistro, DatosRegistroGoogle } from "@features/registro/schemas/registro.schema"
+import type { PreregistroGoogle, RegistroVista } from "@features/registro/types/registro.types"
+import { getErrorMessage, motivoDeError } from "@shared/utils/error"
 
 /** Único hook del feature: solo estado de API. La UI vive en la página. */
 export function useRegistro() {
@@ -13,6 +13,18 @@ export function useRegistro() {
   const [slug, setSlug] = useState<string | null>(null)
   /** La dirección que salió del nombre estaba tomada y la API dio otra. */
   const [slugAjustado, setSlugAjustado] = useState(false)
+  /** Quién vuelve de Google. `null` mientras no se haya pasado por ahí. */
+  const [preregistro, setPreregistro] = useState<PreregistroGoogle | null>(null)
+  /**
+   * El pase de Google murió con el formulario ya en pantalla.
+   *
+   * Se distingue del `error` normal porque **no se arregla reintentando**: lo
+   * que hay que ofrecer es rehacer el viaje al proveedor, no volver a enviar los
+   * mismos datos. Sin esta rama, la pantalla se quedaba pidiendo un envío que
+   * siempre iba a devolver el mismo 401.
+   */
+  const [paseCaducado, setPaseCaducado] = useState(false)
+  const [loadingPreregistro, setLoadingPreregistro] = useState(false)
   const [loadingRegistro, setLoadingRegistro] = useState(false)
   const [loadingSlug, setLoadingSlug] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -31,6 +43,53 @@ export function useRegistro() {
       setLoadingRegistro(false)
     }
   }, [])
+
+  /**
+   * Con qué cuenta vuelve de Google.
+   *
+   * Su fallo NO es un error que enseñar: significa que no hay pase —nunca lo
+   * hubo, o caducó mientras se rellenaba— y lo único que hay que hacer es
+   * dejar el formulario en su modo de siempre, con contraseña. Contarlo como
+   * error pintaría una alerta a quien entró a registrarse por su cuenta.
+   */
+  const fetchPreregistroGoogle = useCallback(async () => {
+    setLoadingPreregistro(true)
+    try {
+      const res = await registroService.obtenerPreregistroGoogle()
+      setPreregistro(res.data)
+    } catch {
+      setPreregistro(null)
+    } finally {
+      setLoadingPreregistro(false)
+    }
+  }, [])
+
+  const handleRegistrarConGoogle = useCallback(
+    async (datos: DatosRegistroGoogle): Promise<string> => {
+      setLoadingRegistro(true)
+      setError(null)
+      try {
+        const res = await registroService.registrarConGoogle(datos)
+        setRegistro(res.data)
+        return res.message
+      } catch (err) {
+        // El pase caducado NO es un error del formulario: los datos escritos
+        // están bien y reenviarlos volvería a fallar igual. Se retira el
+        // formulario —`preregistro` a `null`— y la página ofrece rehacer el
+        // viaje a Google, que es lo único que lo arregla.
+        if (motivoDeError(err) === "preregistro_invalido") {
+          setPreregistro(null)
+          setPaseCaducado(true)
+        } else {
+          setError(getErrorMessage(err))
+        }
+        throw err
+      } finally {
+        setLoadingRegistro(false)
+      }
+    },
+    []
+  )
 
   /**
    * Identificador libre a partir del nombre. **Una sola petición**: si la
@@ -90,11 +149,16 @@ export function useRegistro() {
     registro,
     slug,
     slugAjustado,
+    preregistro,
+    paseCaducado,
+    loadingPreregistro,
     loadingRegistro,
     loadingSlug,
     error,
     handleRegistrarBarberia,
+    handleRegistrarConGoogle,
     handleVerificarCorreoRegistro,
+    fetchPreregistroGoogle,
     fetchSlugLibre,
     limpiarSlug,
   }

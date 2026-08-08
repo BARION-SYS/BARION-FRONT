@@ -18,7 +18,12 @@ export function getErrorMessage(err: unknown): string {
  * El catálogo, como valor: hace falta en ejecución para descartar un `motivo`
  * que esta versión del front no conoce todavía.
  */
-const MOTIVOS: readonly MotivoError[] = ["falta_puntaje", "requiere_confirmacion", "token_invalido"]
+const MOTIVOS: readonly MotivoError[] = [
+  "falta_puntaje",
+  "requiere_confirmacion",
+  "token_invalido",
+  "preregistro_invalido",
+]
 
 /**
  * Un `motivo` que este front sabe interpretar.

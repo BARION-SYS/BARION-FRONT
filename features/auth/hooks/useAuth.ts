@@ -124,6 +124,26 @@ export function useAuth() {
     [fetchSesion]
   )
 
+  /**
+   * Suelta un proveedor y vuelve a resolver la sesión: sin ese segundo paso la
+   * pantalla seguiría diciendo «Conectada» sobre algo que acaba de soltarse.
+   */
+  const handleDesvincularProveedorAuth = useCallback(
+    async (proveedor: string): Promise<string> => {
+      setLoadingContrasena(true)
+      try {
+        const res = await authService.desvincularProveedor(proveedor)
+        await fetchSesion()
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingContrasena(false)
+      }
+    },
+    [fetchSesion]
+  )
+
   const handleSolicitarRecuperacionAuth = useCallback(
     async (datos: DatosSolicitudRecuperacion): Promise<string> => {
       setLoadingContrasena(true)
@@ -163,6 +183,7 @@ export function useAuth() {
     handleLoginAuth,
     handleLogoutAuth,
     handleCambiarContrasenaAuth,
+    handleDesvincularProveedorAuth,
     handleSolicitarRecuperacionAuth,
     handleConfirmarRecuperacionAuth,
     fetchSesion,

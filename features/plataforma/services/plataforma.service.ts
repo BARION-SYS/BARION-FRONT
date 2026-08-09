@@ -21,6 +21,7 @@ import type {
   FiltrosPlanes,
   FiltrosSuscripciones,
   PlanAdmin,
+  PaisAdmin,
   PlanPlataforma,
   StaffCreado,
   StaffPlataforma,
@@ -165,5 +166,25 @@ export const plataformaService = {
    */
   async regenerarContrasenaStaff(usuarioId: string): Promise<ApiResult<StaffCreado>> {
     return api.post<StaffCreado>(`/plataforma/staff/${usuarioId}/contrasena`)
+  },
+
+  // ── Dónde opera Barion ────────────────────────────────────────────────────
+
+  async obtenerPaises(): Promise<ApiResult<PaisAdmin[]>> {
+    // Incluye los cerrados: hay que verlos para poder abrirlos.
+    return api.get<PaisAdmin[]>("/plataforma/paises")
+  },
+
+  /**
+   * Abre o cierra un país y fija con qué impuesto factura Barion allí.
+   *
+   * `impuestoSaasBps: null` es un valor con significado —«aquí no se cobra»— y
+   * no «no lo mandes»: por eso el service NO lo limpia con `omitEmpty`.
+   */
+  async actualizarPais(
+    codigo: string,
+    cambios: { activo?: boolean; impuestoSaasBps?: number | null }
+  ): Promise<ApiResult<PaisAdmin>> {
+    return api.patch<PaisAdmin>(`/plataforma/paises/${codigo}`, cambios)
   },
 }

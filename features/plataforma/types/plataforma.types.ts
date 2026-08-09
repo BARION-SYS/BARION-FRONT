@@ -301,3 +301,27 @@ export interface UsoPais {
   clientes: number
   citas30d: number
 }
+
+/**
+ * Un país donde Barion opera o podría operar.
+ *
+ * **Las dos tasas viajan juntas porque son DOS contribuyentes**, y verlas en la
+ * misma fila es exactamente lo que evita volver a confundirlos: `impuestoSaasBps`
+ * es lo que Barion le factura a la barbería por el software;
+ * `impuestoPorDefectoBps` es lo que la barbería le cobra a sus clientes por un
+ * corte. La primera se administra desde aquí; la segunda no.
+ */
+export interface PaisAdmin {
+  codigo: string
+  nombre: string
+  moneda: string
+  locale: string
+  zonaHoraria: string
+  prefijoTelefono: string
+  activo: boolean
+  /** `null` = Barion no cobra impuesto aquí. Es un valor, no «sin configurar». */
+  impuestoSaasBps: number | null
+  modoImpuestoSaas: string
+  impuestoPorDefectoBps: number | null
+  modoImpuesto: string
+}

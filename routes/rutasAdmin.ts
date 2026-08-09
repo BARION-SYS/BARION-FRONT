@@ -1,4 +1,4 @@
-import { Building2, CreditCard, LayoutDashboard, Tags, UserCog, Users } from "lucide-react"
+import { Building2, CreditCard, Globe, LayoutDashboard, Tags, UserCog, Users } from "lucide-react"
 import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
 
 /**
@@ -65,6 +65,19 @@ export const rutasAdmin: RutaApp[] = [
     subtitulo: "Qué tiene contratado cada barbería y hasta cuándo le vale",
     icono: CreditCard,
     entrada: "derecha",
+  },
+  {
+    // Dónde opera Barion y con qué impuesto factura allí. Va en «Plataforma» y
+    // no en «Tu cuenta» porque es configuración del producto, no de quien mira.
+    clave: "admin-mercados",
+    permisos: ["plataforma.paises.gestionar"],
+    seccion: "principal",
+    href: "/admin/mercados",
+    etiqueta: "Mercados",
+    titulo: "Mercados",
+    subtitulo: "Dónde se opera y con qué impuesto se factura",
+    icono: Globe,
+    entrada: "izquierda",
   },
   {
     // Quién trabaja en Barion. Va en «Tu cuenta» y no en «Plataforma» porque no

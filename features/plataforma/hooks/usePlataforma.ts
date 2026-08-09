@@ -18,6 +18,7 @@ import type {
   FiltrosPlanes,
   FiltrosSuscripciones,
   PlanAdmin,
+  PaisAdmin,
   PlanPlataforma,
   StaffCreado,
   StaffPlataforma,
@@ -288,6 +289,41 @@ export function usePlataforma() {
 
   const limpiarStaffCreado = useCallback(() => setStaffCreado(null), [])
 
+  // ── Dónde opera Barion ────────────────────────────────────────────────────
+  const [paises, setPaises] = useState<PaisAdmin[]>([])
+  const [loadingPaises, setLoadingPaises] = useState(false)
+
+  const fetchPaises = useCallback(async () => {
+    setLoadingPaises(true)
+    setError(null)
+    try {
+      const res = await plataformaService.obtenerPaises()
+      setPaises(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingPaises(false)
+    }
+  }, [])
+
+  const handleUpdatePais = useCallback(
+    async (
+      codigo: string,
+      cambios: { activo?: boolean; impuestoSaasBps?: number | null }
+    ): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await plataformaService.actualizarPais(codigo, cambios)
+        return res.message
+      } catch (err) {
+        throw new Error(getErrorMessage(err))
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
   return {
     barberias,
     paginacion,
@@ -326,5 +362,9 @@ export function usePlataforma() {
     handleChangeEstadoStaff,
     handleRegenerarContrasenaStaff,
     limpiarStaffCreado,
+    paises,
+    loadingPaises,
+    fetchPaises,
+    handleUpdatePais,
   }
 }

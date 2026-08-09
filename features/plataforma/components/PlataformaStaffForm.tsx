@@ -56,7 +56,7 @@ export function PlataformaStaffForm({ onSubmit, cargando }: PlataformaStaffFormP
           type="email"
           inputMode="email"
           autoComplete="off"
-          placeholder="soporte@barion.app"
+          placeholder="soporte@buildrion.com"
           className="h-11"
           aria-invalid={!!errors.email}
           {...register("email")}

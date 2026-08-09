@@ -109,7 +109,7 @@ export function RegistroExito({ registro, origen }: RegistroExitoProps) {
           <div className="min-w-0 flex-1">
             <dt className="text-xs text-muted-foreground">Tu prueba</dt>
             <dd className="text-sm font-semibold text-foreground">
-              15 días · sin tarjeta
+              7 días · sin tarjeta
               <span className="ml-1.5 font-normal text-muted-foreground">
                 El plan se elige al terminarla
               </span>

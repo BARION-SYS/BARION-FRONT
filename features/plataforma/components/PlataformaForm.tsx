@@ -54,7 +54,7 @@ export function PlataformaForm({ planes, cargando, onSubmit }: PlataformaFormPro
     formState: { errors },
   } = useForm<DatosAltaBarberia>({
     resolver: standardSchemaResolver(esquemaAltaBarberia),
-    defaultValues: { codigoPais: "CO", planCodigo: planes[0]?.codigo ?? "", diasPrueba: 15 },
+    defaultValues: { codigoPais: "CO", planCodigo: planes[0]?.codigo ?? "", diasPrueba: 7 },
   })
 
   const codigoPais = watch("codigoPais")

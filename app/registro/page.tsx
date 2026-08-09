@@ -185,7 +185,7 @@ function ContenedorRegistro() {
                     Tu barbería, montada en dos minutos
                   </h1>
                   <p className="mt-5 text-base leading-relaxed text-muted-foreground">
-                    Empiezas con 15 días de prueba y sin tarjeta. El plan se elige al terminarla,
+                    Empiezas con 7 días de prueba y sin tarjeta. El plan se elige al terminarla,
                     cuando ya sepas si Barion te sirve.
                   </p>
 

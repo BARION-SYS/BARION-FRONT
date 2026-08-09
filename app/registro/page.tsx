@@ -1,11 +1,11 @@
 "use client"
 
-import { Suspense, useCallback, useEffect, useState } from "react"
+import { Suspense, useCallback, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { MotionConfig, motion, type Variants } from "motion/react"
 import { CalendarCheck, Check, ShieldCheck, Store } from "lucide-react"
-import { REGION_DEFAULT, type CodigoRegion } from "@config/regiones"
+import { REGION_DEFAULT, regionesOfrecidas } from "@config/regiones"
 import { mensajeDeErrorOauth } from "@features/auth/utils/errores-oauth"
 import { RegistroExito } from "@features/registro/components/RegistroExito"
 import { RegistroForm } from "@features/registro/components/RegistroForm"
@@ -74,6 +74,8 @@ function ContenedorRegistro() {
     slug,
     slugAjustado,
     preregistro,
+    paises,
+    fetchPaises,
     paseCaducado,
     loadingPreregistro,
     loadingRegistro,
@@ -90,10 +92,6 @@ function ContenedorRegistro() {
   // escrito en el código manda a la gente a compartir un enlace que no existe.
   const origen = useOrigen()
 
-  // Región de partida del selector. Cosmética: lo que factura es lo que se elija
-  // en el formulario, y eso ya viaja en el alta.
-  const [regionInicial] = useState<CodigoRegion>(REGION_DEFAULT)
-
   // La api devuelve aquí tras el viaje al proveedor: `google=listo` cuando dejó
   // el pase, `error=…` cuando no pudo. El pase en sí NO viaja por la dirección
   // —va en cookie firmada—, así que este parámetro solo dice si hay que ir a
@@ -105,6 +103,23 @@ function ContenedorRegistro() {
   useEffect(() => {
     if (vueltaDeGoogle) void fetchPreregistroGoogle()
   }, [vueltaDeGoogle, fetchPreregistroGoogle])
+
+  // Dónde opera Barion lo decide la api, no una constante de este repo: es la
+  // MISMA lista que consume el sitio de venta, y por eso los dos no pueden
+  // ofrecer países distintos.
+  useEffect(() => {
+    void fetchPaises()
+  }, [fetchPaises])
+
+  const ofrecidas = useMemo(
+    () => regionesOfrecidas(paises?.map((pais) => pais.codigo) ?? null),
+    [paises]
+  )
+
+  // El país de partida tiene que ser uno que se pueda elegir: si Colombia
+  // estuviera cerrada, arrancar ahí dejaría el selector enseñando algo que no
+  // está en su propia lista.
+  const regionInicial = ofrecidas.includes(REGION_DEFAULT) ? REGION_DEFAULT : ofrecidas[0]
 
   const alRegistrar = useCallback(
     async (datos: DatosFormularioRegistro) => {
@@ -242,6 +257,7 @@ function ContenedorRegistro() {
                       resolviendoSlug={loadingSlug}
                       origen={origen}
                       regionInicial={regionInicial}
+                      paisesOfrecidos={ofrecidas}
                       cargando={loadingRegistro}
                       error={error}
                     />
@@ -255,6 +271,7 @@ function ContenedorRegistro() {
                       resolviendoSlug={loadingSlug}
                       origen={origen}
                       regionInicial={regionInicial}
+                      paisesOfrecidos={ofrecidas}
                       // El fallo del proveedor manda aquí sin haber enviado
                       // nada, así que se enseña en el formulario y no en un
                       // toast: al volver de una navegación no hay nada en

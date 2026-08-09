@@ -76,3 +76,24 @@ export const nombresDeRegion: Record<CodigoRegion, string> = {
   US: "Estados Unidos",
   ES: "España",
 }
+
+/**
+ * Los códigos que este repositorio sabe FORMATEAR. No es lo mismo que dónde
+ * opera Barion —eso lo dice la api, y por eso son dos listas—: esta cambia
+ * cuando se añade soporte de moneda y locale; aquella, cuando se abre un
+ * mercado.
+ */
+export const REGIONES_CONOCIDAS = Object.keys(regiones) as CodigoRegion[]
+
+/**
+ * Cruza lo que la api dice que está abierto con lo que este repo sabe pintar.
+ *
+ * Sin lista de la api (`null`) devuelve todo lo conocido: es preferible ofrecer
+ * un país que el alta luego rechace con un 422 explicado, a dejar el selector
+ * vacío y que nadie pueda registrarse porque una lectura de catálogo falló.
+ */
+export function regionesOfrecidas(codigos: string[] | null): CodigoRegion[] {
+  if (!codigos) return REGIONES_CONOCIDAS
+  const ofrecidas = codigos.filter((codigo): codigo is CodigoRegion => codigo in regiones)
+  return ofrecidas.length > 0 ? ofrecidas : REGIONES_CONOCIDAS
+}

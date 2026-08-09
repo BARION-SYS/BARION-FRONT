@@ -46,6 +46,12 @@ interface RegistroFormGoogleProps {
   /** Dominio por el que se sirve la aplicación, para enseñar la dirección real. */
   origen: string
   regionInicial: CodigoRegion
+  /**
+   * Los países donde Barion opera HOY, según la api. Se recibe por props y no
+   * se lee de `config/regiones.ts` porque esa constante dice qué monedas sabe
+   * pintar este repo, no dónde se puede dar de alta.
+   */
+  paisesOfrecidos: CodigoRegion[]
   cargando?: boolean
   error?: string | null
 }
@@ -73,6 +79,7 @@ export function RegistroFormGoogle({
   resolviendoSlug,
   origen,
   regionInicial,
+  paisesOfrecidos,
   cargando,
   error,
 }: RegistroFormGoogleProps) {
@@ -188,9 +195,9 @@ export function RegistroFormGoogle({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(regiones).map(([codigo, config]) => (
+                    {paisesOfrecidos.map((codigo) => (
                       <SelectItem key={codigo} value={codigo}>
-                        {nombresDeRegion[codigo as CodigoRegion]} ({config.moneda})
+                        {nombresDeRegion[codigo]} ({regiones[codigo].moneda})
                       </SelectItem>
                     ))}
                   </SelectContent>

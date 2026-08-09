@@ -6,6 +6,7 @@ import {
 } from "@features/registro/schemas/registro.schema"
 import type {
   DisponibilidadSlug,
+  PaisOperado,
   PreregistroGoogle,
   RegistroVista,
 } from "@features/registro/types/registro.types"
@@ -58,5 +59,20 @@ export const registroService = {
    */
   async verificarCorreo(token: string): Promise<ApiResult<null>> {
     return api.post<null>(`/publico/registro/verificar/${encodeURIComponent(token)}`)
+  },
+
+  /**
+   * Dónde opera Barion HOY.
+   *
+   * **Es la misma lectura que consume el sitio de venta**, y ese es el punto:
+   * hasta ahora cada uno declaraba su propia lista de países, así que la landing
+   * ofrecía mercados donde esta alta responde 422 — y el rechazo llegaba después
+   * de rellenar el formulario entero.
+   *
+   * Lectura anónima, sin sesión. No devuelve nada del impuesto de Barion: esa es
+   * su posición tributaria, no algo que quien se registra necesite saber.
+   */
+  async obtenerPaisesOperados(): Promise<ApiResult<PaisOperado[]>> {
+    return api.get<PaisOperado[]>("/publico/paises")
   },
 }

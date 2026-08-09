@@ -4,7 +4,11 @@ import { useCallback, useState } from "react"
 import { registroService } from "@features/registro/services/registro.service"
 import { esSlugUtilizable, slugDesdeNombre } from "@features/registro/utils/slug"
 import type { DatosRegistro, DatosRegistroGoogle } from "@features/registro/schemas/registro.schema"
-import type { PreregistroGoogle, RegistroVista } from "@features/registro/types/registro.types"
+import type {
+  PaisOperado,
+  PreregistroGoogle,
+  RegistroVista,
+} from "@features/registro/types/registro.types"
 import { getErrorMessage, motivoDeError } from "@shared/utils/error"
 
 /** Único hook del feature: solo estado de API. La UI vive en la página. */
@@ -28,6 +32,27 @@ export function useRegistro() {
   const [loadingRegistro, setLoadingRegistro] = useState(false)
   const [loadingSlug, setLoadingSlug] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /**
+   * Dónde opera Barion. `null` mientras no se sepa —**distinto de una lista
+   * vacía**, que significaría que no opera en ningún sitio—: con `null` el
+   * selector cae a lo que este repo sabe formatear, que enseña de más antes que
+   * dejar a alguien sin poder elegir su país.
+   */
+  const [paises, setPaises] = useState<PaisOperado[] | null>(null)
+
+  /**
+   * Su fallo NO es un error del formulario: sin lista, el selector se queda con
+   * las regiones conocidas y el alta responde 422 si el país no está abierto,
+   * que es su trabajo. Asustar por una lectura de catálogo sería peor.
+   */
+  const fetchPaises = useCallback(async () => {
+    try {
+      const res = await registroService.obtenerPaisesOperados()
+      setPaises(res.data)
+    } catch {
+      setPaises(null)
+    }
+  }, [])
 
   const handleRegistrarBarberia = useCallback(async (datos: DatosRegistro): Promise<string> => {
     setLoadingRegistro(true)
@@ -150,6 +175,8 @@ export function useRegistro() {
     slug,
     slugAjustado,
     preregistro,
+    paises,
+    fetchPaises,
     paseCaducado,
     loadingPreregistro,
     loadingRegistro,

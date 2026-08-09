@@ -41,3 +41,21 @@ export interface DisponibilidadSlug {
    */
   sugerencia: string | null
 }
+
+/**
+ * Un país donde se puede dar de alta una barbería, según la api.
+ *
+ * **Sustituye a la lista fija del selector.** `config/regiones.ts` no
+ * desaparece —allí vive cómo se FORMATEA cada región: moneda, locale, huso,
+ * indicativo, y eso es asunto del cliente— pero **cuáles se ofrecen** pasa a
+ * decidirlo la api, que es la misma respuesta que lee el sitio de venta. Por eso
+ * los dos ya no pueden discrepar.
+ */
+export interface PaisOperado {
+  codigo: string
+  nombre: string
+  moneda: string
+  locale: string
+  zonaHoraria: string
+  prefijoTelefono: string
+}

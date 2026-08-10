@@ -1,12 +1,16 @@
 import type { LucideIcon } from "lucide-react"
+import type { IDS_SECCION_CONFIGURACION } from "@features/configuracion/constants/secciones"
 
 /**
  * Sin `horarios`: el horario comercial es de la SEDE, no de la barbería, y vive
  * en `/dashboard/sedes`. Una cadena que abre en dos ciudades tiene dos semanas
  * distintas y no caben en un único formulario de configuración.
+ *
+ * El union se DERIVA de la lista de apartados: el apartado activo viaja en la
+ * dirección y hay que validarlo en ejecución, así que la lista tiene que existir
+ * como valor. Escribir el union a mano además dejaría dos verdades.
  */
-export type IdSeccionConfiguracion =
-  "general" | "apariencia" | "plan" | "notificaciones" | "seguridad"
+export type IdSeccionConfiguracion = (typeof IDS_SECCION_CONFIGURACION)[number]
 
 export interface SeccionConfiguracion {
   id: IdSeccionConfiguracion

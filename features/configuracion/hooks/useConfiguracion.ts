@@ -14,34 +14,60 @@ import type {
 } from "@features/configuracion/types/configuracion.types"
 import { getErrorMessage } from "@shared/utils/error"
 
-// Solo estado de API — el estado de UI (sección activa, color, edición) vive en el padre.
+/**
+ * Solo estado de API — el estado de UI (modales, edición) vive en el padre.
+ *
+ * Las lecturas van por SEPARADO y no en un único `fetchConfiguracion` porque cada
+ * apartado de Configuración es ahora su propia ruta: el menú necesita el catálogo
+ * de apartados, «General» la barbería y «Notificaciones» los canales. Pedirlo todo
+ * junto significaría que el chrome del apartado y su contenido se disputan la
+ * misma llamada, y que entrar a «Seguridad» pide una barbería que nadie va a
+ * mirar.
+ */
 export function useConfiguracion() {
   const [secciones, setSecciones] = useState<SeccionConfiguracion[]>([])
   const [barberia, setBarberia] = useState<Barberia | null>(null)
-  const [coloresPreset, setColoresPreset] = useState<string[]>([])
   const [canales, setCanales] = useState<InfoCanalNotificacion[]>([])
-  const [loadingConfiguracion, setLoadingConfiguracion] = useState(false)
+  const [loadingSecciones, setLoadingSecciones] = useState(false)
+  const [loadingBarberia, setLoadingBarberia] = useState(false)
+  const [loadingCanales, setLoadingCanales] = useState(false)
   const [loadingAction, setLoadingAction] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchConfiguracion = useCallback(async () => {
-    setLoadingConfiguracion(true)
-    setError(null)
+  const fetchSecciones = useCallback(async () => {
+    setLoadingSecciones(true)
     try {
-      const [resSecciones, resBarberia, resColores, resCanales] = await Promise.all([
-        configuracionService.obtenerSecciones(),
-        configuracionService.obtenerBarberia(),
-        configuracionService.obtenerColoresPreset(),
-        configuracionService.obtenerCanales(),
-      ])
-      setSecciones(resSecciones.data)
-      setBarberia(resBarberia.data)
-      setColoresPreset(resColores.data)
-      setCanales(resCanales.data)
+      const res = await configuracionService.obtenerSecciones()
+      setSecciones(res.data)
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
-      setLoadingConfiguracion(false)
+      setLoadingSecciones(false)
+    }
+  }, [])
+
+  const fetchBarberia = useCallback(async () => {
+    setLoadingBarberia(true)
+    setError(null)
+    try {
+      const res = await configuracionService.obtenerBarberia()
+      setBarberia(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingBarberia(false)
+    }
+  }, [])
+
+  const fetchCanales = useCallback(async () => {
+    setLoadingCanales(true)
+    try {
+      const res = await configuracionService.obtenerCanales()
+      setCanales(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingCanales(false)
     }
   }, [])
 
@@ -96,12 +122,15 @@ export function useConfiguracion() {
   return {
     secciones,
     barberia,
-    coloresPreset,
     canales,
-    loadingConfiguracion,
+    loadingSecciones,
+    loadingBarberia,
+    loadingCanales,
     loadingAction,
     error,
-    fetchConfiguracion,
+    fetchSecciones,
+    fetchBarberia,
+    fetchCanales,
     handleGuardarGeneral,
     handleGuardarFicha,
     handleActualizarContrasena,

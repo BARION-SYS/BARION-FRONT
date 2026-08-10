@@ -155,6 +155,9 @@ export const rutasDashboard: RutaApp[] = [
     entrada: "fundido",
   },
   {
+    // Apunta a la RAÍZ y no a `/general`, aunque la raíz solo redirija: `href` es
+    // a la vez el destino del enlace y lo que decide el resaltado, y con el
+    // apartado dentro la entrada dejaría de marcarse estando en cualquier otro.
     clave: "configuracion",
     permisos: ["barberias.gestionar"],
     seccion: "herramientas",

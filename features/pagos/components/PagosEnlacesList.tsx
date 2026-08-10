@@ -1,6 +1,6 @@
 "use client"
 
-import { Check, Copy, Link2, Plus } from "lucide-react"
+import { Check, Copy, ExternalLink, Link2, Plus } from "lucide-react"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
@@ -107,17 +107,35 @@ export function PagosEnlacesList({
 
                 <StatusBadge etiqueta={estado.etiqueta} tono={estado.tono} />
 
-                {/* Copiar solo lo que todavía sirve: ofrecerlo en uno caducado
-                    manda a alguien a una dirección que no cobra. */}
+                {/* Copiar y abrir solo en lo que todavía sirve: ofrecerlos en uno
+                    caducado manda a alguien a una dirección que no cobra. */}
                 {enlace.estado === "pendiente" && !enlace.vencido && (
-                  <Button
-                    variant="outline"
-                    className="min-h-11 shrink-0"
-                    onClick={() => onCopiar(enlace)}
-                  >
-                    {copiado ? <Check aria-hidden /> : <Copy aria-hidden />}
-                    {copiado ? "Copiado" : "Copiar"}
-                  </Button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <Button variant="outline" className="min-h-11" onClick={() => onCopiar(enlace)}>
+                      {copiado ? <Check aria-hidden /> : <Copy aria-hidden />}
+                      {copiado ? "Copiado" : "Copiar"}
+                    </Button>
+                    {/*
+                      Copiar sirve para MANDARLO; abrir, para pagarlo uno mismo —y
+                      es el caso más frecuente cuando la barbería genera el enlace
+                      para pagar su propia suscripción—. Sin esto había que pegar
+                      la dirección en otra pestaña a mano.
+
+                      Pestaña nueva a propósito: el panel se queda donde estaba,
+                      así que al volver del checkout no se pierde nada de lo que
+                      había abierto.
+                    */}
+                    <Button
+                      variant="default"
+                      className="min-h-11"
+                      render={
+                        <a href={enlace.url} target="_blank" rel="noreferrer">
+                          <ExternalLink aria-hidden />
+                          Pagar
+                        </a>
+                      }
+                    />
+                  </div>
                 )}
               </li>
             )

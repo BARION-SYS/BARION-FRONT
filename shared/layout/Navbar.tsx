@@ -50,9 +50,12 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   /**
    * El área de plataforma comparte chrome con el panel, pero no comparte datos:
    * el staff de Barion no pertenece a ninguna barbería, así que ni tiene sedes
-   * entre las que elegir, ni bandeja de avisos, ni colores de marca que ajustar.
-   * Pedirlos igualmente sería un 403 por recarga y un menú que lleva a rutas que
-   * esa sesión no puede abrir.
+   * entre las que elegir ni bandeja de avisos. Pedirlos igualmente sería un 403
+   * por recarga y un menú que lleva a rutas que esa sesión no puede abrir.
+   *
+   * Los colores del panel quedan FUERA de esta bandera: no son dato de ninguna
+   * barbería, sino la preferencia de quien mira la pantalla, guardada en este
+   * navegador. El staff también pasa el día aquí dentro.
    */
   const esAdmin = pathname.startsWith("/admin")
 
@@ -206,7 +209,9 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
           </DropdownMenu>
         )}
 
-        {!esAdmin && <BrandStudio />}
+        {/* Colores del panel — como el tema, disponible para cualquiera que use
+            el panel: no hay petición que hacer ni permiso que comprobar */}
+        <BrandStudio />
         <ThemeToggle />
 
         <div className="mx-1 hidden h-6 w-px bg-border md:block" aria-hidden />

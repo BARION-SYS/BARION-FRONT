@@ -19,8 +19,8 @@ import type {
 import type { ApiResult } from "@shared/types/api.types"
 
 // La barbería, su ficha y el cambio de contraseña van contra la API. Siguen en
-// mock las secciones sin contrato: el catálogo de secciones, los presets de
-// color y los canales de notificación.
+// mock las secciones sin contrato: el catálogo de secciones y los canales de
+// notificación.
 //
 // Los COLORES del panel no están aquí y no lo estarán: son preferencia de quien
 // mira la pantalla y viven en `store/marca.store.ts`, en este navegador.
@@ -55,11 +55,6 @@ export const configuracionService = {
 
   async obtenerBarberia(): Promise<ApiResult<Barberia>> {
     return api.get<Barberia>("/barberias/mi")
-  },
-
-  // Presets de tema del tenant: el hex aquí es dato, no color de UI.
-  async obtenerColoresPreset(): Promise<ApiResult<string[]>> {
-    return ok(datos.coloresPreset as string[])
   },
 
   async obtenerCanales(): Promise<ApiResult<InfoCanalNotificacion[]>> {

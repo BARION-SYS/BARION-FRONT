@@ -6,8 +6,10 @@ interface AparienciaProps {
   nombreBarberia: string
 }
 
-// Apariencia del portal de reservas: logotipo y vista previa. El color de marca
-// se administra desde el navbar (BrandColorPicker) y aplica a panel + portal.
+// Identidad del NEGOCIO: su logotipo y cómo luce el portal de reservas. La vista
+// previa se pinta con los tokens del panel, que son preferencia de quien mira —
+// por eso es orientativa: el color real del portal es el de la barbería y viaja
+// con su ficha desde la api.
 export function Apariencia({ nombreBarberia }: AparienciaProps) {
   return (
     <div className="space-y-4">
@@ -33,7 +35,7 @@ export function Apariencia({ nombreBarberia }: AparienciaProps) {
 
       <SectionCard
         titulo="Vista previa del portal de clientes"
-        subtitulo="Usa el color de marca del negocio — cámbialo desde la paleta del menú superior"
+        subtitulo="Orientativa: se pinta con los colores de tu panel, no con los del portal real"
       >
         {/* Simulación decorativa del portal público — no interactiva */}
         <div aria-hidden className="rounded-xl border border-border bg-background p-4">

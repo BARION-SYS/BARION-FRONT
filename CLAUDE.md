@@ -212,6 +212,15 @@ Usar siempre el más específico; rutas relativas y barriles (`index.ts`) PROHIB
 - `pnpm format:check` — solo verifica (CI / pre-merge).
 - No cambiar reglas de `.prettierrc` por preferencia personal; un cambio de formato = PR propio que reformatea todo el repo en un solo commit.
 
+## Pruebas
+
+`vitest` con entorno **`node`, sin `jsdom`**: lo que hay cubierto son funciones puras, y montar un DOM para comprobar una división es pagar su arranque en cada corrida sin ganar nada. El día que se prueben componentes se añade `@testing-library/react` y el entorno se declara **por archivo** (`// @vitest-environment jsdom`), nunca para todos.
+
+- Los alias se resuelven leyendo `tsconfig.json` (`resolve.tsconfigPaths`), no repitiendo la lista de rutas en la config de pruebas: dos listas son dos verdades y la que se desincroniza es siempre la de pruebas.
+- El `.spec.ts` va **junto al código que prueba**, igual que en la api.
+- **Por dónde se empieza: por donde un fallo se multiplica por todas las pantallas.** Los formateadores de `shared/utils/` (dinero, fechas) van primero — el fallo de los importes ×100 y el de la zona horaria de la sede son exactamente lo que una prueba de estas caza y `tsc --noEmit` no ve.
+- **Lo que todavía NO hay**: ni un componente, ni un hook. Es un comienzo, no una red.
+
 ## Responsividad (obligatorio)
 
 Mobile-first: clases base = móvil; `sm: md: lg: xl:` añaden. Sin scroll horizontal (probar 375/768/1024/1440). `min-h-dvh`/`h-dvh`, nunca `100vh`. Touch targets ≥ 44px. Texto base ≥ 16px en móvil. Layouts fluidos (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`), nada de anchos fijos en px. Tablas con `overflow-x-auto` o tarjetas en móvil. Sidebar colapsable en desktop + drawer en móvil. Respetar `prefers-reduced-motion` (`motion-reduce:transition-none`).
@@ -256,8 +265,10 @@ Las dependencias se instalan SIEMPRE desde el host (`pnpm add` en este repo): el
 pnpm dev        # desarrollo (API local: docker compose del repo padre)
 pnpm build      # build de producción
 pnpm start      # servir el build
-pnpm lint       # OJO: eslint NO está en devDependencies — este script falla hoy.
-                # Lo que sí verifica tipos: ./node_modules/.bin/tsc --noEmit
+pnpm lint       # eslint (config flat de Next + typescript-eslint) && tsc --noEmit
+                # Falla el build con `any` explícito, rutas relativas y barriles.
+                # `eslint-config-prettier` va al final: el formato es de Prettier
+pnpm test       # vitest run — entorno node, sin jsdom (ver § Pruebas)
 pnpm format     # prettier --write (todo el repo)
 pnpm format:check # prettier --check (verifica sin modificar)
 ```

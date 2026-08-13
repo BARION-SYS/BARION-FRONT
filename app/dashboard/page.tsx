@@ -22,6 +22,7 @@ import { pasosDeSesion, todoHecho } from "@features/primeros-pasos/utils/pasos"
 import { puede } from "@features/auth/utils/permisos"
 import { StatCard } from "@shared/components/stats/StatCard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+import { FuncionDelPlan } from "@shared/components/feedback/FuncionDelPlan"
 import { useFormato } from "@shared/hooks/useFormato"
 import { useAuthStore } from "@store/auth.store"
 import { useSedeActual } from "@store/sede.store"
@@ -50,7 +51,7 @@ import { useSedeActual } from "@store/sede.store"
  * asistida que lo guíe. Se retira sola en cuanto no queda nada pendiente.
  */
 export default function DashboardPage() {
-  const { pulso, serie, metas, loadingPulso, error, fetchPulso, fetchSerie, fetchMetas } =
+  const { pulso, serie, metas, loadingPulso, error, sinPlan, fetchPulso, fetchSerie, fetchMetas } =
     useDashboard()
   const { citas, fetchCitas } = useCitas()
   const { resumen, fetchResumen } = useNomina()
@@ -160,7 +161,16 @@ export default function DashboardPage() {
       )}
 
       <section aria-label="Indicadores de hoy">
-        {veReportes ? (
+        {/* Tres estados, y solo uno es un fallo: sin la capacidad se enseñan las
+            cifras propias, sin el plan se enseña qué plan las trae, y el bloque
+            rojo se reserva para lo que de verdad se rompió. */}
+        {sinPlan ? (
+          <FuncionDelPlan
+            titulo="Los indicadores del día"
+            detalle="Ingresos, ticket promedio, propinas y clientes nuevos entran con un plan superior. Tu agenda y tus clientes siguen funcionando igual."
+            alto={180}
+          />
+        ) : veReportes ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
             <StatCard
               titulo="Citas hoy"

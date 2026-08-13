@@ -30,7 +30,12 @@ export interface ApiEnvelope<T> {
  * alta: sin el motivo se quedaba reenviando el formulario contra un pase muerto.
  */
 export type MotivoError =
-  "falta_puntaje" | "requiere_confirmacion" | "token_invalido" | "preregistro_invalido"
+  | "falta_puntaje"
+  | "requiere_confirmacion"
+  | "token_invalido"
+  | "preregistro_invalido"
+  /** 403 que NO es de permisos: la barbería no compró esa función del plan. */
+  | "funcion_no_incluida"
 
 /**
  * Contrato de error de la API: `{ error: { message, status, codigo?, motivo? }, meta }`.

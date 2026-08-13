@@ -9,7 +9,7 @@ import type {
   ReporteDashboard,
   Serie,
 } from "@features/dashboard/types/dashboard.types"
-import { getErrorMessage } from "@shared/utils/error"
+import { esFuncionNoIncluida, getErrorMessage } from "@shared/utils/error"
 
 /**
  * Estado de API de reportes. Lo instancian el dashboard y las estadísticas: son
@@ -28,6 +28,12 @@ export function useDashboard() {
   const [loadingPulso, setLoadingPulso] = useState(false)
   const [loadingSerie, setLoadingSerie] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /**
+   * El plan contratado no incluye los reportes. No es un error de la pantalla:
+   * la petición se hizo bien y la respuesta es «esto va en otro plan», así que
+   * se pinta como una sección cerrada y no como algo roto.
+   */
+  const [sinPlan, setSinPlan] = useState(false)
 
   const fetchPulso = useCallback(async (rango: RangoDias) => {
     setLoadingPulso(true)
@@ -35,7 +41,12 @@ export function useDashboard() {
     try {
       const res = await dashboardService.obtenerDashboard(rango)
       setPulso(res.data)
+      setSinPlan(false)
     } catch (err) {
+      if (esFuncionNoIncluida(err)) {
+        setSinPlan(true)
+        return
+      }
       setError(getErrorMessage(err))
     } finally {
       setLoadingPulso(false)
@@ -47,7 +58,12 @@ export function useDashboard() {
     try {
       const res = await dashboardService.obtenerSerie(rango)
       setSerie(res.data)
+      setSinPlan(false)
     } catch (err) {
+      if (esFuncionNoIncluida(err)) {
+        setSinPlan(true)
+        return
+      }
       setError(getErrorMessage(err))
     } finally {
       setLoadingSerie(false)
@@ -70,6 +86,7 @@ export function useDashboard() {
     loadingPulso,
     loadingSerie,
     error,
+    sinPlan,
     fetchPulso,
     fetchSerie,
     fetchMetas,

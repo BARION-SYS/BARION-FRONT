@@ -11,6 +11,7 @@ import { aPuntosGrafica, totalesDeSerie, ultimosDias } from "@features/dashboard
 import type { Granularidad } from "@features/dashboard/types/dashboard.types"
 import { StatCard } from "@shared/components/stats/StatCard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+import { FuncionDelPlan } from "@shared/components/feedback/FuncionDelPlan"
 import { Tabs, TabsList, TabsTrigger } from "@shared/components/ui/tabs"
 import { useFormato } from "@shared/hooks/useFormato"
 import { useSedeActual } from "@store/sede.store"
@@ -31,7 +32,8 @@ const VENTANAS: { valor: string; etiqueta: string; dias: number; granularidad: G
  * servicios, que es transaccional.
  */
 export default function EstadisticasPage() {
-  const { serie, servicios, loadingEstadisticas, error, fetchEstadisticas } = useEstadisticas()
+  const { serie, servicios, loadingEstadisticas, error, sinPlan, fetchEstadisticas } =
+    useEstadisticas()
 
   const sedeActual = useSedeActual()
   const { dinero, numero, porcentaje, timezone, fechaCorta } = useFormato()
@@ -69,6 +71,20 @@ export default function EstadisticasPage() {
   const totales = useMemo(() => totalesDeSerie(serie.puntos), [serie.puntos])
 
   const sinHistoria = !serie.disponible
+
+  // La pantalla ENTERA es reportes, así que sin plan no hay nada que enseñar
+  // detrás: se sustituye, no se apila un aviso encima de gráficas vacías.
+  if (sinPlan) {
+    return (
+      <main className="flex-1 space-y-6 overflow-y-auto p-4 md:p-6">
+        <FuncionDelPlan
+          titulo="Las estadísticas"
+          detalle="La tendencia del negocio, el rendimiento por barbero y el ranking de servicios entran con un plan superior."
+          alto={320}
+        />
+      </main>
+    )
+  }
 
   if (loadingEstadisticas && serie.puntos.length === 0 && servicios.length === 0) {
     return (

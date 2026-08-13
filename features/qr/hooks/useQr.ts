@@ -6,7 +6,7 @@ import { qrService } from "@features/qr/services/qr.service"
 import { sedesService } from "@features/sedes/services/sedes.service"
 import type { ActividadQr, RangoQr, ResumenQr } from "@features/qr/types/qr.types"
 import type { Barberia } from "@features/configuracion/types/configuracion.types"
-import { getErrorMessage } from "@shared/utils/error"
+import { esFuncionNoIncluida, getErrorMessage } from "@shared/utils/error"
 import { useSedeStore } from "@store/sede.store"
 
 /**
@@ -32,6 +32,8 @@ export function useQr() {
   const [loadingReportes, setLoadingReportes] = useState(false)
   const [loadingAction, setLoadingAction] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /** Las CIFRAS del cartón van en otro plan. El cartón en sí, no. */
+  const [sinPlanReportes, setSinPlanReportes] = useState(false)
 
   const fetchBarberiaQr = useCallback(async () => {
     setLoadingQr(true)
@@ -61,7 +63,14 @@ export function useQr() {
       ])
       setResumen(resResumen.data)
       setActividad(resActividad.data)
+      setSinPlanReportes(false)
     } catch (err) {
+      // El cartón y su código NO son del plan: lo que se cierra son las cifras,
+      // así que la pantalla sigue sirviendo para lo que se vino a hacer.
+      if (esFuncionNoIncluida(err)) {
+        setSinPlanReportes(true)
+        return
+      }
       setError(getErrorMessage(err))
     } finally {
       setLoadingReportes(false)
@@ -100,6 +109,7 @@ export function useQr() {
     loadingReportes,
     loadingAction,
     error,
+    sinPlanReportes,
     fetchBarberiaQr,
     fetchReportesQr,
     handleRotateSlugQr,

@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react"
 import { dashboardService } from "@features/dashboard/services/dashboard.service"
 import type { RangoDias, Serie, ServicioTop } from "@features/dashboard/types/dashboard.types"
-import { getErrorMessage } from "@shared/utils/error"
+import { esFuncionNoIncluida, getErrorMessage } from "@shared/utils/error"
 
 /**
  * Estado de API de las estadísticas. Consume el service de `dashboard`, que es
@@ -20,6 +20,8 @@ export function useEstadisticas() {
   const [servicios, setServicios] = useState<ServicioTop[]>([])
   const [loadingEstadisticas, setLoadingEstadisticas] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /** Los reportes no están en el plan contratado: sección cerrada, no avería. */
+  const [sinPlan, setSinPlan] = useState(false)
 
   const fetchEstadisticas = useCallback(
     async (rangoAgregado: RangoDias, rangoTransaccional: RangoDias) => {
@@ -32,7 +34,12 @@ export function useEstadisticas() {
         ])
         setSerie(resSerie.data)
         setServicios(resServicios.data)
+        setSinPlan(false)
       } catch (err) {
+        if (esFuncionNoIncluida(err)) {
+          setSinPlan(true)
+          return
+        }
         setError(getErrorMessage(err))
       } finally {
         setLoadingEstadisticas(false)
@@ -41,5 +48,5 @@ export function useEstadisticas() {
     []
   )
 
-  return { serie, servicios, loadingEstadisticas, error, fetchEstadisticas }
+  return { serie, servicios, loadingEstadisticas, error, sinPlan, fetchEstadisticas }
 }

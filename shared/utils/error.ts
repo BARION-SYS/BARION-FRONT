@@ -23,6 +23,7 @@ const MOTIVOS: readonly MotivoError[] = [
   "requiere_confirmacion",
   "token_invalido",
   "preregistro_invalido",
+  "funcion_no_incluida",
 ]
 
 /**
@@ -45,4 +46,16 @@ export function esMotivoConocido(valor: unknown): valor is MotivoError {
  */
 export function motivoDeError(err: unknown): MotivoError | undefined {
   return esHttpError(err) ? err.motivo : undefined
+}
+
+/**
+ * ¿Este 403 es del PLAN y no de los permisos?
+ *
+ * Los dos llegan con `codigo: "acceso_denegado"`, así que sin el motivo son
+ * indistinguibles — y llevan a pantallas opuestas: «pídeselo a quien administra»
+ * frente a «cambia de plan», que es algo que quien lo está leyendo suele poder
+ * hacer él mismo. Comparar el mensaje no es una alternativa: es copy.
+ */
+export function esFuncionNoIncluida(err: unknown): boolean {
+  return motivoDeError(err) === "funcion_no_incluida"
 }

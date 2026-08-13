@@ -14,6 +14,7 @@ import { ultimosDias } from "@features/dashboard/utils/serie"
 import { puede } from "@features/auth/utils/permisos"
 import { StatCard } from "@shared/components/stats/StatCard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+import { FuncionDelPlan } from "@shared/components/feedback/FuncionDelPlan"
 import { Modal } from "@shared/components/modals/Modal"
 import { Button } from "@shared/components/ui/button"
 import { useFormato } from "@shared/hooks/useFormato"
@@ -58,6 +59,7 @@ export default function QrPage() {
     actividad,
     loadingQr,
     loadingReportes,
+    sinPlanReportes,
     loadingAction,
     fetchBarberiaQr,
     fetchReportesQr,
@@ -163,7 +165,15 @@ export default function QrPage() {
     <main className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 md:p-6 lg:overflow-hidden">
       {veReportes && (
         <section aria-label="Lo que ha traído el código QR" className="shrink-0">
-          {loadingReportes && !resumen ? (
+          {/* El cartón y su código NO dependen del plan: lo que se cierra son
+              las cifras, así que la pantalla sigue sirviendo para imprimirlo. */}
+          {sinPlanReportes ? (
+            <FuncionDelPlan
+              titulo="Las cifras del cartón"
+              detalle="Cuántas citas y clientes llegó a traer el QR entra con un plan superior. El código, su descarga y la rotación siguen aquí."
+              alto={160}
+            />
+          ) : loadingReportes && !resumen ? (
             <DataSkeleton variant="stats" count={2} className="grid-cols-1 sm:grid-cols-2" />
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

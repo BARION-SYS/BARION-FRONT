@@ -223,6 +223,19 @@ Usar siempre el más específico; rutas relativas y barriles (`index.ts`) PROHIB
 
 ## Responsividad (obligatorio)
 
+**El tamaño táctil vive en los PRIMITIVOS, no en cada pantalla.** `Button`,
+`Input` y `Select` miden **44px de alto en móvil** y bajan a 36 en `md`: es el
+mínimo de iOS/Android, y por debajo de ahí se falla el toque o se pulsa el
+vecino. No se sube en escritorio —engordaría el panel entero sin que nadie lo
+pida— ni se corrige pantalla por pantalla, que es como una queda fuera. Los
+iconos pequeños (`icon-sm`) conservan su recuadro y ganan área con un
+pseudoelemento: lo que crece es la zona que responde al dedo, no el dibujo.
+
+**Nada de texto de contenido por debajo de 12px** (`text-xs`). Las únicas
+excepciones son las maquetas a escala, como la vista previa del portal en
+Configuración → Apariencia, donde el texto no está para leerse.
+
+
 Mobile-first: clases base = móvil; `sm: md: lg: xl:` añaden. Sin scroll horizontal (probar 375/768/1024/1440). `min-h-dvh`/`h-dvh`, nunca `100vh`. Touch targets ≥ 44px. Texto base ≥ 16px en móvil. Layouts fluidos (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`), nada de anchos fijos en px. Tablas con `overflow-x-auto` o tarjetas en móvil. Sidebar colapsable en desktop + drawer en móvil. Respetar `prefers-reduced-motion` (`motion-reduce:transition-none`).
 
 ## Skills de frontend

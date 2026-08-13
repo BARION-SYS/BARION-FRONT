@@ -71,12 +71,12 @@ export function QrActividadList({ actividad, loading }: QrActividadListProps) {
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-semibold text-foreground">{nombre}</p>
-                  <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     {etiquetaAccionQr[entrada.accion]}
                     {entrada.sede ? ` · ${entrada.sede.nombre}` : ""}
                   </p>
                 </div>
-                <Badge variant="secondary" className="shrink-0 text-[10px] tabular-nums">
+                <Badge variant="secondary" className="shrink-0 text-xs tabular-nums">
                   {relativo(entrada.ocurridoEn)}
                 </Badge>
               </li>

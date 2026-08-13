@@ -95,7 +95,7 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodig
 
       <div className="max-w-full min-w-0 text-center">
         <p className="text-xs font-medium text-foreground">{nombreBarberia}</p>
-        <p className="truncate text-[11px] text-muted-foreground">{url}</p>
+        <p className="truncate text-xs text-muted-foreground">{url}</p>
       </div>
 
       <div className="mt-auto grid w-full grid-cols-3 gap-2">
@@ -105,7 +105,7 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodig
           className="h-auto min-h-11 cursor-pointer flex-col gap-1.5 py-3 text-muted-foreground hover:text-foreground motion-reduce:transition-none"
         >
           <Download aria-hidden />
-          <span className="text-[10px]">Descargar</span>
+          <span className="text-xs">Descargar</span>
         </Button>
         <Button
           variant="secondary"
@@ -113,7 +113,7 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodig
           className="h-auto min-h-11 cursor-pointer flex-col gap-1.5 py-3 text-muted-foreground hover:text-foreground motion-reduce:transition-none"
         >
           <Share2 aria-hidden />
-          <span className="text-[10px]">Compartir</span>
+          <span className="text-xs">Compartir</span>
         </Button>
         <Button
           variant="secondary"
@@ -126,7 +126,7 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodig
           )}
         >
           {copiado ? <Check aria-hidden /> : <Copy aria-hidden />}
-          <span className="text-[10px]">{copiado ? "Copiado" : "Copiar"}</span>
+          <span className="text-xs">{copiado ? "Copiado" : "Copiar"}</span>
         </Button>
       </div>
     </Card>

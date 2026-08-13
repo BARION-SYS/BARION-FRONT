@@ -33,16 +33,16 @@ export function QrSedesList({ porSede, sedeActualId }: QrSedesListProps) {
               <p className="truncate text-xs font-semibold text-foreground">
                 {fila.sede.nombre}
                 {fila.sede.id === sedeActualId && (
-                  <span className="ml-1.5 text-[10px] font-medium text-muted-foreground">
+                  <span className="ml-1.5 text-xs font-medium text-muted-foreground">
                     (el de arriba)
                   </span>
                 )}
               </p>
-              <p className="mt-0.5 truncate font-mono text-[10px] text-muted-foreground">
+              <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">
                 {fila.slugQr}
               </p>
             </div>
-            <Badge variant="secondary" className="shrink-0 text-[10px] tabular-nums">
+            <Badge variant="secondary" className="shrink-0 text-xs tabular-nums">
               {numero(fila.citasDesdeQr)}
             </Badge>
           </li>

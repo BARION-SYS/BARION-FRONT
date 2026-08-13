@@ -93,7 +93,7 @@ export function ClientesToolbar({
       )}
 
       <p
-        className="px-1 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground/80 uppercase"
+        className="px-1 text-xs font-semibold tracking-[0.14em] text-muted-foreground/80 uppercase"
         aria-live="polite"
       >
         {total} {total === 1 ? "cliente" : "clientes"}

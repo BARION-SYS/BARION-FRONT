@@ -143,7 +143,7 @@ export function PersonasList({
 
               {puedeAlgo && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+                  <DropdownMenuTrigger className="inline-flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:size-8">
                     <MoreHorizontal className="size-4" aria-hidden />
                     <span className="sr-only">Acciones de {persona.nombre}</span>
                   </DropdownMenuTrigger>

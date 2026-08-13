@@ -36,6 +36,13 @@ import type {
 } from "@features/suscripcion/schemas/suscripcion.schema"
 import type { Factura } from "@features/suscripcion/types/suscripcion.types"
 
+/** Estados en los que el cobro ya no va a moverse: no hay nada que esperar. */
+const RESUELTOS = new Set(["aprobado", "rechazado", "anulado", "error"])
+
+/** Cuántas veces se vuelve a preguntar tras volver del checkout, y cada cuánto. */
+const INTENTOS_TRAS_PAGO = 5
+const MS_ENTRE_INTENTOS = 5_000
+
 /**
  * La cuenta: qué plan hay contratado, con qué se paga y qué se ha cobrado.
  *
@@ -255,6 +262,38 @@ export default function ConfiguracionPlanPage() {
     void fetchEnlacesPago()
   }
 
+  const enlaceDeRetorno = pagoDeRetorno
+    ? enlaces.find((enlace) => enlace.referencia === pagoDeRetorno)
+    : undefined
+  const esperandoConfirmacion =
+    !!pagoDeRetorno &&
+    enlaceDeRetorno?.estado !== "aprobado" &&
+    !RESUELTOS.has(enlaceDeRetorno?.estado ?? "")
+
+  /**
+   * Mientras el pago siga sin resolverse, se vuelve a preguntar solo.
+   *
+   * La notificación del proveedor tarda segundos, no minutos, y en ese hueco lo
+   * único que había era un botón: quien vuelve del checkout se quedaba mirando
+   * un aviso que no cambiaba salvo que se le ocurriera pulsarlo. Se reintenta
+   * un número ACOTADO de veces —no es un poller— porque pasado ese rato lo que
+   * hay es un problema, y repreguntar cada cinco segundos para siempre solo
+   * carga la api con una pantalla abierta que nadie mira.
+   */
+  useEffect(() => {
+    if (!esperandoConfirmacion) return
+
+    let intentos = 0
+    const temporizador = setInterval(() => {
+      intentos += 1
+      void fetchSuscripcion()
+      void fetchEnlacesPago()
+      if (intentos >= INTENTOS_TRAS_PAGO) clearInterval(temporizador)
+    }, MS_ENTRE_INTENTOS)
+
+    return () => clearInterval(temporizador)
+  }, [esperandoConfirmacion, fetchSuscripcion, fetchEnlacesPago])
+
   const onVerFactura = (factura: Factura) => {
     setFacturaAbierta(factura)
     void fetchFactura(factura.id)
@@ -273,6 +312,10 @@ export default function ConfiguracionPlanPage() {
       {pagoDeRetorno && (
         <PagosRetornoPago
           referencia={pagoDeRetorno}
+          // El estado sale de la lista que esta misma pantalla ya cargó: sin
+          // esto el aviso seguía diciendo «esperando» con el mismo enlace
+          // marcado «Pagado» justo debajo.
+          estado={enlaceDeRetorno?.estado}
           cargando={loadingSuscripcion || loadingEnlaces}
           onActualizar={onActualizarTrasPago}
           onCerrar={() => router.replace(rutaDeSeccion("plan"), { scroll: false })}

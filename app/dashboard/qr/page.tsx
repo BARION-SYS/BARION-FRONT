@@ -10,7 +10,7 @@ import { QrSedesList } from "@features/qr/components/QrSedesList"
 import { CAPACIDADES_QR, DIAS_QR, LIMITE_ACTIVIDAD_QR } from "@features/qr/constants/qr"
 import { useQr } from "@features/qr/hooks/useQr"
 import { enlaceDelCarton } from "@features/qr/utils/enlace"
-import { ultimosDiasInstantes } from "@features/dashboard/utils/serie"
+import { ultimosDias } from "@features/dashboard/utils/serie"
 import { puede } from "@features/auth/utils/permisos"
 import { StatCard } from "@shared/components/stats/StatCard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
@@ -83,7 +83,12 @@ export default function QrPage() {
   /** El dominio real por el que se entró: es el que se imprime en el cartón. */
   const origen = useOrigen()
 
-  const rango = useMemo(() => ultimosDiasInstantes(timezone, DIAS_QR), [timezone])
+  // Sin `sedeId` ni granularidad: estas dos rutas no los aceptan —el QR mezcla
+  // citas y fichas de cliente, y la ficha no cuelga de un local—.
+  const rango = useMemo(() => {
+    const { desde, hasta } = ultimosDias(timezone, DIAS_QR)
+    return { desde, hasta }
+  }, [timezone])
 
   useEffect(() => {
     void fetchBarberiaQr()

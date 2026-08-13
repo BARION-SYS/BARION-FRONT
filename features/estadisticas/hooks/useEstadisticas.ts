@@ -2,12 +2,7 @@
 
 import { useCallback, useState } from "react"
 import { dashboardService } from "@features/dashboard/services/dashboard.service"
-import type {
-  RangoDias,
-  RangoInstantes,
-  Serie,
-  ServicioTop,
-} from "@features/dashboard/types/dashboard.types"
+import type { RangoDias, Serie, ServicioTop } from "@features/dashboard/types/dashboard.types"
 import { getErrorMessage } from "@shared/utils/error"
 
 /**
@@ -27,7 +22,7 @@ export function useEstadisticas() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchEstadisticas = useCallback(
-    async (rangoAgregado: RangoDias, rangoTransaccional: RangoInstantes) => {
+    async (rangoAgregado: RangoDias, rangoTransaccional: RangoDias) => {
       setLoadingEstadisticas(true)
       setError(null)
       try {

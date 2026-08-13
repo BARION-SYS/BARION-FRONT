@@ -4,7 +4,6 @@ import type {
   FiltrosMetas,
   Meta,
   RangoDias,
-  RangoInstantes,
   RendimientoBarbero,
   ReporteDashboard,
   Serie,
@@ -16,13 +15,14 @@ import type { ApiResult } from "@shared/types/api.types"
  * Reportería. **La api entrega números crudos**: el título, el ícono y la
  * comparación contra el período anterior los compone el front.
  *
- * Dos superficies con fuentes distintas, y el tipo del rango lo declara:
- * `dashboard` y `servicios` leen lo transaccional y se piden en INSTANTES;
- * `series` y `barberos` leen el agregado nocturno y se piden en DÍAS.
+ * Dos superficies con fuentes distintas —`dashboard` y `servicios` leen lo
+ * transaccional, `series` y `barberos` el agregado nocturno— y **las cuatro se
+ * piden igual: en días `YYYY-MM-DD`, los dos inclusive**. La medianoche de cada
+ * día la resuelve la api con la zona horaria de la sede.
  */
 export const dashboardService = {
   /** El pulso del rango — normalmente hoy. Siempre está al día. */
-  async obtenerDashboard(rango: RangoInstantes): Promise<ApiResult<ReporteDashboard>> {
+  async obtenerDashboard(rango: RangoDias): Promise<ApiResult<ReporteDashboard>> {
     return api.get<ReporteDashboard>("/reportes/dashboard", { params: omitEmpty({ ...rango }) })
   },
 
@@ -38,7 +38,7 @@ export const dashboardService = {
 
   /** Los más vendidos del rango. Transaccional. */
   async obtenerServiciosTop(
-    rango: RangoInstantes & { limite?: number }
+    rango: RangoDias & { limite?: number }
   ): Promise<ApiResult<ServicioTop[]>> {
     return api.get<ServicioTop[]>("/reportes/servicios", { params: omitEmpty({ ...rango }) })
   },

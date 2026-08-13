@@ -1,9 +1,11 @@
 /**
  * Lo que hace falta para pintar una serie que la api entrega **cruda**.
  *
- * El rango de lo agregado va en DÍAS (`YYYY-MM-DD`, los dos inclusive) y el de
- * lo transaccional en INSTANTES, con el `hasta` exclusivo. La diferencia la
- * impone la api y aquí no se disimula: son dos funciones distintas.
+ * **Todos los rangos van en DÍAS** (`YYYY-MM-DD`, los dos inclusive), agregados
+ * y transaccionales por igual: el huso lo aplica la api, que es quien conoce la
+ * sede. Aquí solo se dice QUÉ días se quieren; la medianoche de cada uno no es
+ * asunto del navegador —y cuando lo era, bastaba con tener el reloj en otra
+ * zona para pedir el día equivocado sin enterarse—.
  */
 import { hoyLocal, sumarDias } from "@features/citas/utils/semana"
 import type {
@@ -12,33 +14,14 @@ import type {
   PuntoSerie,
   RangoDias,
 } from "@features/dashboard/types/dashboard.types"
-import { inicioDiaLocal } from "@shared/utils/datetime"
 
-/** El día de hoy en la sede, como rango transaccional. */
+/** El día de hoy en la sede. */
 export function rangoDeHoy(timezone: string): { desde: string; hasta: string } {
   const hoy = hoyLocal(timezone)
-  return {
-    desde: inicioDiaLocal(hoy, timezone),
-    hasta: inicioDiaLocal(sumarDias(hoy, 1), timezone),
-  }
+  return { desde: hoy, hasta: hoy }
 }
 
-/**
- * Los últimos `dias` días contando hoy, como rango transaccional: `hasta` es el
- * arranque de mañana y queda EXCLUIDO, que es como lo pide la api.
- */
-export function ultimosDiasInstantes(
-  timezone: string,
-  dias: number
-): { desde: string; hasta: string } {
-  const hoy = hoyLocal(timezone)
-  return {
-    desde: inicioDiaLocal(sumarDias(hoy, -(dias - 1)), timezone),
-    hasta: inicioDiaLocal(sumarDias(hoy, 1), timezone),
-  }
-}
-
-/** Los últimos `dias` días, como rango agregado (ambos extremos inclusive). */
+/** Los últimos `dias` días, ambos extremos inclusive. */
 export function ultimosDias(
   timezone: string,
   dias: number,

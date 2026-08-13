@@ -6,7 +6,6 @@ import type {
   FiltrosMetas,
   Meta,
   RangoDias,
-  RangoInstantes,
   ReporteDashboard,
   Serie,
 } from "@features/dashboard/types/dashboard.types"
@@ -30,7 +29,7 @@ export function useDashboard() {
   const [loadingSerie, setLoadingSerie] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchPulso = useCallback(async (rango: RangoInstantes) => {
+  const fetchPulso = useCallback(async (rango: RangoDias) => {
     setLoadingPulso(true)
     setError(null)
     try {

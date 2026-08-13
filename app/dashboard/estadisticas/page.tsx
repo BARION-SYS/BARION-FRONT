@@ -13,7 +13,6 @@ import { StatCard } from "@shared/components/stats/StatCard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { Tabs, TabsList, TabsTrigger } from "@shared/components/ui/tabs"
 import { useFormato } from "@shared/hooks/useFormato"
-import { inicioDiaLocal } from "@shared/utils/datetime"
 import { useSedeActual } from "@store/sede.store"
 
 const VENTANAS: { valor: string; etiqueta: string; dias: number; granularidad: Granularidad }[] = [
@@ -48,15 +47,15 @@ export default function EstadisticasPage() {
     [timezone, elegida.dias, elegida.granularidad, sedeActual?.id]
   )
 
+  // Los mismos días que la serie, **sin la granularidad**: agrupar por semanas
+  // es del agregado y el ranking de servicios no la acepta.
   const rangoTransaccional = useMemo(
     () => ({
-      desde: inicioDiaLocal(rangoAgregado.desde, timezone),
-      // El agregado incluye el último día entero; el transaccional corta al
-      // inicio del siguiente, que es lo mismo expresado en instantes.
-      hasta: inicioDiaLocal(rangoAgregado.hasta, timezone),
+      desde: rangoAgregado.desde,
+      hasta: rangoAgregado.hasta,
       sedeId: sedeActual?.id,
     }),
-    [rangoAgregado.desde, rangoAgregado.hasta, timezone, sedeActual?.id]
+    [rangoAgregado.desde, rangoAgregado.hasta, sedeActual?.id]
   )
 
   useEffect(() => {

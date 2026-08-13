@@ -97,14 +97,11 @@ export interface Meta {
 
 export type Granularidad = "dia" | "semana" | "mes"
 
-/** Lo transaccional se pide en INSTANTES. `hasta` es exclusivo. */
-export interface RangoInstantes {
-  desde: string
-  hasta: string
-  sedeId?: string
-}
-
-/** Lo agregado se pide en DÍAS `YYYY-MM-DD`, los dos inclusive. */
+/**
+ * **Todo reporte se pide en DÍAS** `YYYY-MM-DD`, los dos inclusive. El huso lo
+ * aplica la api con la zona de la sede: el front dice qué días quiere, no a qué
+ * hora empiezan.
+ */
 export interface RangoDias {
   desde: string
   hasta: string

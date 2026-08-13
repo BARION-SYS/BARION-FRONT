@@ -29,4 +29,10 @@ export const esES: Diccionario = fusionar(esCO, {
   navbar: {
     sedeActiva: (nombre: string) => `Local activo: ${nombre}`,
   },
+  auth: {
+    errores: {
+      // «Ingresa» es colombiano; en España se introduce o se escribe.
+      correo: "Escribe un correo válido",
+    },
+  },
 })

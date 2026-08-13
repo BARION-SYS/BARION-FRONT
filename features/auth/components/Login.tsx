@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
@@ -16,6 +16,7 @@ import { env } from "@config/env"
 import { rutasPublicas } from "@routes/rutasPublicas"
 import { LogoGoogle } from "@shared/components/brand/LogoGoogle"
 import { esquemaLogin, type DatosLogin } from "@features/auth/schemas/auth.schema"
+import { useTextos } from "@shared/providers/TextosProvider"
 
 interface LoginProps {
   onSubmit: (datos: DatosLogin) => Promise<void>
@@ -59,14 +60,17 @@ const bloque: Variants = {
 
 // Presentacional: el padre (app/page.tsx) entrega el submit y el estado por props.
 export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
+  const t = useTextos()
   const [verContrasena, setVerContrasena] = useState(false)
+  // El schema se rehace si cambia el idioma: sus mensajes también se leen.
+  const esquema = useMemo(() => esquemaLogin(t), [t])
   const {
     register,
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
   } = useForm<DatosLogin>({
-    resolver: standardSchemaResolver(esquemaLogin),
+    resolver: standardSchemaResolver(esquema),
     defaultValues: { correo: "", contrasena: "", recordarme: true },
   })
 
@@ -111,17 +115,15 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
             ) : (
               <span className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-xs font-medium tracking-widest text-muted-foreground uppercase">
                 <span className="h-1.5 w-1.5 rounded-full bg-(--exito)" aria-hidden />
-                En línea
+                {t.auth.login.enLinea}
               </span>
             )}
           </div>
           <h2 className="mt-6 text-2xl font-bold text-balance text-foreground sm:text-3xl">
-            {slug ? "Entra a tu barbería" : "Panel administrativo"}
+            {slug ? t.auth.login.tituloBarberia : t.auth.login.tituloGlobal}
           </h2>
           <p className="mt-1.5 text-base text-pretty text-muted-foreground">
-            {slug
-              ? "Con tu correo y tu contraseña. El mismo correo puede trabajar en más de una barbería: la puerta decide a cuál entras."
-              : "Bienvenido de vuelta. Tu barbería te espera."}
+            {slug ? t.auth.login.descripcionBarberia : t.auth.login.descripcionGlobal}
           </p>
         </motion.div>
 
@@ -143,13 +145,13 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
         <form className="mt-8 space-y-5" onSubmit={enviar} noValidate suppressHydrationWarning>
           <motion.div variants={bloque}>
             <Field data-invalid={!!errors.correo}>
-              <FieldLabel htmlFor="correo">Correo electrónico</FieldLabel>
+              <FieldLabel htmlFor="correo">{t.auth.login.correo}</FieldLabel>
               <Input
                 id="correo"
                 type="email"
                 autoComplete="email"
                 suppressHydrationWarning
-                placeholder="tu@barberia.mx"
+                placeholder={t.auth.login.correoPlaceholder}
                 aria-invalid={!!errors.correo}
                 className="h-11"
                 {...register("correo")}
@@ -160,7 +162,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
 
           <motion.div variants={bloque}>
             <Field data-invalid={!!errors.contrasena}>
-              <FieldLabel htmlFor="contrasena">Contraseña</FieldLabel>
+              <FieldLabel htmlFor="contrasena">{t.auth.login.contrasena}</FieldLabel>
               <div className="relative">
                 <Input
                   id="contrasena"
@@ -176,7 +178,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => setVerContrasena(!verContrasena)}
-                  aria-label={verContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  aria-label={verContrasena ? t.auth.login.ocultar : t.auth.login.mostrar}
                   className="absolute top-1/2 right-1 -translate-y-1/2"
                 >
                   {verContrasena ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
@@ -202,7 +204,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
                   />
                 )}
               />
-              Recordarme
+              {t.auth.login.recordarme}
             </label>
             {/* El enlace real de recuperación va debajo, con el slug de la
                 puerta. Aquí había un botón con el mismo texto y sin destino */}
@@ -229,7 +231,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
               href={slug ? `/recuperar?slug=${encodeURIComponent(slug)}` : "/recuperar"}
               className="text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
-              ¿Olvidaste tu contraseña?
+              {t.auth.login.olvidaste}
             </Link>
           </motion.div>
 
@@ -244,7 +246,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
                   <Loader2 className="animate-spin" aria-hidden />
                 ) : (
                   <>
-                    Abrir el panel <ArrowRight aria-hidden />
+                    {t.auth.login.entrar} <ArrowRight aria-hidden />
                   </>
                 )}
               </Button>
@@ -255,7 +257,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
         <motion.div className="mt-6" variants={bloque}>
           <div className="flex items-center gap-3">
             <span className="h-px flex-1 bg-border" aria-hidden />
-            <span className="text-xs text-muted-foreground">o</span>
+            <span className="text-xs text-muted-foreground">{t.auth.login.o}</span>
             <span className="h-px flex-1 bg-border" aria-hidden />
           </div>
 
@@ -270,7 +272,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
             )}
           >
             <LogoGoogle aria-hidden />
-            Continuar con Google
+            {t.auth.login.google}
           </a>
         </motion.div>
 
@@ -278,12 +280,12 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
             next/link. Estuvo como botón sin destino: el sitio parecía tener
             registro y la única forma de llegar era teclear la dirección */}
         <motion.p className="mt-7 text-center text-sm text-muted-foreground" variants={bloque}>
-          ¿No tienes cuenta?{" "}
+          {t.auth.login.sinCuenta}{" "}
           <Link
             href={rutasPublicas.registro}
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            Registra tu barbería gratis
+            {t.auth.login.registrarse}
           </Link>
         </motion.p>
       </div>
@@ -295,13 +297,13 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
         <div className="border-t border-dashed border-border" />
         <div className="px-8 pt-5 pb-6 text-center sm:px-10">
           <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
-            Acceso demo
+            {t.auth.login.demo}
           </p>
           <Link
             href="/dashboard"
             className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
           >
-            Entrar sin credenciales <ArrowRight className="h-3 w-3" aria-hidden />
+            {t.auth.login.demoEntrar} <ArrowRight className="h-3 w-3" aria-hidden />
           </Link>
         </div>
       </motion.div>

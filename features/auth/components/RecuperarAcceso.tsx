@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { motion, type Variants } from "motion/react"
@@ -9,6 +10,7 @@ import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import { useTextos } from "@shared/providers/TextosProvider"
 import {
   esquemaSolicitudRecuperacion,
   type DatosSolicitudRecuperacion,
@@ -47,12 +49,14 @@ const bloque: Variants = {
  * cuenta en Barion.
  */
 export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: RecuperarAccesoProps) {
+  const t = useTextos()
+  const esquema = useMemo(() => esquemaSolicitudRecuperacion(t), [t])
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<DatosSolicitudRecuperacion>({
-    resolver: standardSchemaResolver(esquemaSolicitudRecuperacion),
+    resolver: standardSchemaResolver(esquema),
     defaultValues: { email: "" },
   })
 
@@ -74,20 +78,16 @@ export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: Recupe
                 <MailCheck className="size-5 text-(--exito)" aria-hidden />
               </span>
               <div className="flex flex-col gap-1.5">
-                <h1 className="text-lg font-semibold">Revisa tu correo</h1>
+                <h1 className="text-lg font-semibold">{t.auth.recuperar.enviadoTitulo}</h1>
                 <p className="text-sm text-muted-foreground">
-                  Si esa dirección tiene cuenta en Barion, le llegará un enlace para elegir una
-                  contraseña nueva. Caduca en dos horas y sirve una sola vez.
+                  {t.auth.recuperar.enviadoDescripcion}
                 </p>
               </div>
             </>
           ) : (
             <div className="flex flex-col gap-1.5">
-              <h1 className="text-lg font-semibold">Recupera tu acceso</h1>
-              <p className="text-sm text-muted-foreground">
-                Escribe el correo con el que entras y te mandamos un enlace para elegir otra
-                contraseña.
-              </p>
+              <h1 className="text-lg font-semibold">{t.auth.recuperar.titulo}</h1>
+              <p className="text-sm text-muted-foreground">{t.auth.recuperar.descripcion}</p>
             </div>
           )}
         </motion.div>
@@ -99,13 +99,13 @@ export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: Recupe
             className="mt-6 flex flex-col gap-4"
           >
             <Field>
-              <FieldLabel htmlFor="email">Correo</FieldLabel>
+              <FieldLabel htmlFor="email">{t.auth.recuperar.correo}</FieldLabel>
               <Input
                 id="email"
                 type="email"
                 inputMode="email"
                 autoComplete="email"
-                placeholder="tu@barberia.co"
+                placeholder={t.auth.login.correoPlaceholder}
                 aria-invalid={Boolean(errors.email)}
                 {...register("email")}
               />
@@ -114,7 +114,7 @@ export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: Recupe
 
             <Button type="submit" disabled={enviando} className="h-10 w-full">
               {enviando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-              Enviar el enlace
+              {t.auth.recuperar.enviar}
             </Button>
           </motion.form>
         )}
@@ -125,7 +125,7 @@ export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: Recupe
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="size-4" aria-hidden />
-            Volver a iniciar sesión
+            {t.auth.recuperar.volver}
           </Link>
         </motion.div>
       </motion.div>

@@ -192,6 +192,126 @@ export const esCO = {
     miAgenda: "Mi agenda",
     configuracion: "Configuración",
   },
+
+  auth: {
+    /**
+     * Los mensajes de validación. Viven aquí y no dentro del schema porque el
+     * schema se construye CON el diccionario (`auth.schema.ts`): el mismo
+     * archivo valida y el idioma decide qué se lee.
+     */
+    errores: {
+      correo: "Ingresa un correo válido",
+      contrasenaCorta: "La contraseña debe tener mínimo 8 caracteres",
+      escribeLaActual: "Escribe la contraseña con la que entraste",
+      minimo12: "Mínimo 12 caracteres",
+      noCoinciden: "Las dos contraseñas no coinciden",
+      distintaDeLaDada: "Elige una distinta de la que te dieron",
+    },
+
+    login: {
+      enLinea: "En línea",
+      tituloBarberia: "Entra a tu barbería",
+      tituloGlobal: "Panel administrativo",
+      descripcionBarberia:
+        "Con tu correo y tu contraseña. El mismo correo puede trabajar en más de una barbería: la puerta decide a cuál entras.",
+      descripcionGlobal: "Bienvenido de vuelta. Tu barbería te espera.",
+      correo: "Correo electrónico",
+      correoPlaceholder: "tu@barberia.co",
+      contrasena: "Contraseña",
+      mostrar: "Mostrar contraseña",
+      ocultar: "Ocultar contraseña",
+      recordarme: "Recordarme",
+      olvidaste: "¿Olvidaste tu contraseña?",
+      entrar: "Abrir el panel",
+      /** El separador entre entrar con contraseña y entrar con Google. */
+      o: "o",
+      google: "Continuar con Google",
+      sinCuenta: "¿No tienes cuenta?",
+      registrarse: "Registra tu barbería gratis",
+      demo: "Acceso demo",
+      demoEntrar: "Entrar sin credenciales",
+    },
+
+    selectorBarberia: {
+      titulo: "¿A cuál barbería entras?",
+      descripcion: "Tu cuenta tiene acceso a varias. Elige con cuál quieres trabajar ahora.",
+      atajo: "Entrando por la dirección de tu barbería te ahorras este paso.",
+    },
+
+    recuperar: {
+      titulo: "Recupera tu acceso",
+      descripcion:
+        "Escribe el correo con el que entras y te mandamos un enlace para elegir otra contraseña.",
+      // No promete que el correo salió: exista o no la cuenta, la respuesta es
+      // la misma. Prometer de más convertiría esto en un directorio de quién
+      // tiene cuenta en Barion.
+      enviadoTitulo: "Revisa tu correo",
+      enviadoDescripcion:
+        "Si esa dirección tiene cuenta en Barion, le llegará un enlace para elegir una contraseña nueva. Caduca en dos horas y sirve una sola vez.",
+      correo: "Correo",
+      enviar: "Enviar el enlace",
+      volver: "Volver a iniciar sesión",
+    },
+
+    nuevaContrasena: {
+      titulo: "Elige tu contraseña",
+      descripcion: "La anterior deja de servir en cuanto guardes esta.",
+      contrasenaNueva: "Contraseña nueva",
+      repite: "Repítela",
+      minimo: "Mínimo 12 caracteres.",
+      guardar: "Guardar la contraseña",
+      mostrar: "Mostrar la contraseña",
+      ocultar: "Ocultar la contraseña",
+      enlaceIncompleto: "Este enlace está incompleto. Pide uno nuevo y ábrelo desde el correo.",
+      pedirOtro: "Pedir un enlace nuevo",
+    },
+
+    cambioObligatorio: {
+      saludo: (nombre: string) => `Hola, ${nombre}`,
+      tituloSinNombre: "Elige tu contraseña",
+      descripcion:
+        "Entraste con una clave que puso otra persona. Elige la tuya para continuar: hasta entonces el panel no se abre.",
+      actual: "Contraseña actual",
+      actualPlaceholder: "La que te dieron",
+      contrasenaNueva: "Contraseña nueva",
+      repite: "Repite la nueva",
+      minimo: "Mínimo 12 caracteres.",
+      mostrar: "Mostrar la contraseña",
+      ocultar: "Ocultar la contraseña",
+      guardar: "Guardar y entrar",
+    },
+
+    /**
+     * El panel de marca de la pantalla de acceso.
+     *
+     * El titular va en tres piezas porque el diseño resalta la del medio con el
+     * color de marca y parte la línea. Es la excepción a «una frase no se parte»
+     * y por eso se declara así de explícita: cada idioma decide **dónde** cae su
+     * palabra destacada, en vez de heredar el corte del español.
+     */
+    panelMarca: {
+      insignia: "Barbershop OS",
+      tituloAntes: "El ecosistema digital",
+      tituloDestacado: "completo",
+      tituloDespues: "para tu barbería moderna.",
+      descripcion:
+        "Gestiona citas, barberos, nómina y clientes desde una sola plataforma. Simple, rápido y premium.",
+      beneficios: {
+        citas: { etiqueta: "Citas inteligentes", descripcion: "Agenda, reagenda y confirma" },
+        clientes: { etiqueta: "Gestión de clientes", descripcion: "Historial y fidelización" },
+        estadisticas: {
+          etiqueta: "Estadísticas en tiempo real",
+          descripcion: "KPIs y métricas clave",
+        },
+        qr: { etiqueta: "Registro por QR", descripcion: "Clientes sin fricción" },
+      },
+      cifras: {
+        barberias: "Barberías activas",
+        citas: "Citas/semana",
+        uptime: "Uptime",
+      },
+    },
+  },
 }
 
 /**

@@ -3,27 +3,25 @@
 import { motion, type Variants } from "motion/react"
 import { BarChart3, CalendarDays, QrCode, Users } from "lucide-react"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
+import { useTextos } from "@shared/providers/TextosProvider"
 
-const beneficios = [
-  {
-    icono: CalendarDays,
-    etiqueta: "Citas inteligentes",
-    descripcion: "Agenda, reagenda y confirma",
-  },
-  { icono: Users, etiqueta: "Gestión de clientes", descripcion: "Historial y fidelización" },
-  {
-    icono: BarChart3,
-    etiqueta: "Estadísticas en tiempo real",
-    descripcion: "KPIs y métricas clave",
-  },
-  { icono: QrCode, etiqueta: "Registro por QR", descripcion: "Clientes sin fricción" },
-]
+/**
+ * Lo que NO cambia con el idioma: qué icono acompaña a cada beneficio y qué
+ * número acompaña a cada cifra. El texto lo pone el diccionario, y la clave es
+ * lo que une las dos mitades.
+ */
+const BENEFICIOS = [
+  { clave: "citas", icono: CalendarDays },
+  { clave: "clientes", icono: Users },
+  { clave: "estadisticas", icono: BarChart3 },
+  { clave: "qr", icono: QrCode },
+] as const
 
-const cifras = [
-  { valor: "2,400+", etiqueta: "Barberías activas" },
-  { valor: "48k+", etiqueta: "Citas/semana" },
-  { valor: "99.9%", etiqueta: "Uptime" },
-]
+const CIFRAS = [
+  { clave: "barberias", valor: "2,400+" },
+  { clave: "citas", valor: "48k+" },
+  { clave: "uptime", valor: "99.9%" },
+] as const
 
 const contenedor: Variants = {
   oculto: {},
@@ -37,6 +35,8 @@ const bloque: Variants = {
 }
 
 export function PanelMarca() {
+  const t = useTextos()
+
   return (
     <div className="relative hidden flex-col justify-between overflow-hidden border-r border-border bg-card p-12 lg:flex lg:w-1/2">
       {/* Empapelado diagonal — textura sutil de barbería */}
@@ -67,29 +67,27 @@ export function PanelMarca() {
         <motion.div className="flex items-center gap-4" variants={bloque}>
           <LogoBarion priority className="h-14" />
           <span className="rounded-full border border-border px-3 py-1 text-[10px] font-medium tracking-[0.2em] text-muted-foreground uppercase">
-            Barbershop OS
+            {t.auth.panelMarca.insignia}
           </span>
         </motion.div>
 
         <div className="space-y-7">
           <motion.div variants={bloque}>
             <h1 className="text-4xl leading-tight font-bold text-balance text-foreground">
-              El ecosistema digital
+              {t.auth.panelMarca.tituloAntes}
               <br />
-              <span className="text-primary">completo</span> para tu
-              <br />
-              barbería moderna.
+              <span className="text-primary">{t.auth.panelMarca.tituloDestacado}</span>{" "}
+              {t.auth.panelMarca.tituloDespues}
             </h1>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Gestiona citas, barberos, nómina y clientes desde una sola plataforma. Simple, rápido
-              y premium.
+              {t.auth.panelMarca.descripcion}
             </p>
           </motion.div>
 
           <motion.ul className="grid grid-cols-2 gap-3" variants={contenedor}>
-            {beneficios.map((beneficio) => (
+            {BENEFICIOS.map((beneficio) => (
               <motion.li
-                key={beneficio.etiqueta}
+                key={beneficio.clave}
                 variants={bloque}
                 whileHover={{ y: -4, transition: { duration: 0.2, ease: "easeOut" } }}
                 className="flex items-start gap-2.5 rounded-xl border border-border bg-secondary/50 p-3.5"
@@ -99,10 +97,10 @@ export function PanelMarca() {
                 </span>
                 <span>
                   <span className="block text-xs font-semibold text-foreground">
-                    {beneficio.etiqueta}
+                    {t.auth.panelMarca.beneficios[beneficio.clave].etiqueta}
                   </span>
                   <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                    {beneficio.descripcion}
+                    {t.auth.panelMarca.beneficios[beneficio.clave].descripcion}
                   </span>
                 </span>
               </motion.li>
@@ -111,10 +109,12 @@ export function PanelMarca() {
         </div>
 
         <motion.div className="flex items-center divide-x divide-border" variants={bloque}>
-          {cifras.map((cifra) => (
-            <div key={cifra.etiqueta} className="px-6 first:pl-0">
+          {CIFRAS.map((cifra) => (
+            <div key={cifra.clave} className="px-6 first:pl-0">
               <p className="text-lg font-bold text-primary tabular-nums">{cifra.valor}</p>
-              <p className="text-[11px] text-muted-foreground">{cifra.etiqueta}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {t.auth.panelMarca.cifras[cifra.clave]}
+              </p>
             </div>
           ))}
         </motion.div>

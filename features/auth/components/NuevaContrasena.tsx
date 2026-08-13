@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
@@ -10,6 +10,7 @@ import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import { useTextos } from "@shared/providers/TextosProvider"
 import {
   esquemaNuevaContrasena,
   type DatosNuevaContrasena,
@@ -52,13 +53,15 @@ export function NuevaContrasena({
   error,
   onSubmit,
 }: NuevaContrasenaProps) {
+  const t = useTextos()
   const [verContrasena, setVerContrasena] = useState(false)
+  const esquema = useMemo(() => esquemaNuevaContrasena(t), [t])
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<DatosNuevaContrasena>({
-    resolver: standardSchemaResolver(esquemaNuevaContrasena),
+    resolver: standardSchemaResolver(esquema),
     defaultValues: { contrasenaNueva: "", confirmacion: "" },
   })
 
@@ -76,10 +79,8 @@ export function NuevaContrasena({
         <motion.div variants={bloque} className="flex flex-col items-center gap-4 text-center">
           <LogoBarion variante="icono" />
           <div className="flex flex-col gap-1.5">
-            <h1 className="text-lg font-semibold">Elige tu contraseña</h1>
-            <p className="text-sm text-muted-foreground">
-              La anterior deja de servir en cuanto guardes esta.
-            </p>
+            <h1 className="text-lg font-semibold">{t.auth.nuevaContrasena.titulo}</h1>
+            <p className="text-sm text-muted-foreground">{t.auth.nuevaContrasena.descripcion}</p>
           </div>
         </motion.div>
 
@@ -95,7 +96,9 @@ export function NuevaContrasena({
             className="mt-6 flex flex-col gap-4"
           >
             <Field>
-              <FieldLabel htmlFor="contrasenaNueva">Contraseña nueva</FieldLabel>
+              <FieldLabel htmlFor="contrasenaNueva">
+                {t.auth.nuevaContrasena.contrasenaNueva}
+              </FieldLabel>
               <div className="relative">
                 <Input
                   id="contrasenaNueva"
@@ -109,7 +112,9 @@ export function NuevaContrasena({
                 <button
                   type="button"
                   onClick={() => setVerContrasena((v) => !v)}
-                  aria-label={verContrasena ? "Ocultar la contraseña" : "Mostrar la contraseña"}
+                  aria-label={
+                    verContrasena ? t.auth.nuevaContrasena.ocultar : t.auth.nuevaContrasena.mostrar
+                  }
                   className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {verContrasena ? (
@@ -119,12 +124,12 @@ export function NuevaContrasena({
                   )}
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground">Mínimo 12 caracteres.</p>
+              <p className="text-xs text-muted-foreground">{t.auth.nuevaContrasena.minimo}</p>
               {errors.contrasenaNueva && <FieldError>{errors.contrasenaNueva.message}</FieldError>}
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="confirmacion">Repítela</FieldLabel>
+              <FieldLabel htmlFor="confirmacion">{t.auth.nuevaContrasena.repite}</FieldLabel>
               <Input
                 id="confirmacion"
                 type={tipo}
@@ -147,7 +152,7 @@ export function NuevaContrasena({
 
             <Button type="submit" disabled={enviando} className="h-10 w-full">
               {enviando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-              Guardar la contraseña
+              {t.auth.nuevaContrasena.guardar}
             </Button>
           </motion.form>
         ) : (
@@ -156,7 +161,7 @@ export function NuevaContrasena({
             role="alert"
             className="mt-6 rounded-lg bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)] px-3 py-3 text-center text-sm text-destructive"
           >
-            Este enlace está incompleto. Pide uno nuevo y ábrelo desde el correo.
+            {t.auth.nuevaContrasena.enlaceIncompleto}
           </motion.p>
         )}
 
@@ -165,7 +170,7 @@ export function NuevaContrasena({
             href="/recuperar"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            Pedir un enlace nuevo
+            {t.auth.nuevaContrasena.pedirOtro}
           </Link>
         </motion.div>
       </motion.div>

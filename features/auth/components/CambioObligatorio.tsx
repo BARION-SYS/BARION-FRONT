@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { motion, type Variants } from "motion/react"
@@ -9,6 +9,7 @@ import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import { useTextos } from "@shared/providers/TextosProvider"
 import {
   esquemaCambioContrasena,
   type DatosCambioContrasena,
@@ -49,13 +50,15 @@ const bloque: Variants = {
  * Presentacional: el submit y el estado los entrega el padre por props.
  */
 export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: CambioObligatorioProps) {
+  const t = useTextos()
   const [verContrasena, setVerContrasena] = useState(false)
+  const esquema = useMemo(() => esquemaCambioContrasena(t), [t])
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<DatosCambioContrasena>({
-    resolver: standardSchemaResolver(esquemaCambioContrasena),
+    resolver: standardSchemaResolver(esquema),
     defaultValues: { contrasenaActual: "", contrasenaNueva: "", confirmacion: "" },
   })
 
@@ -77,12 +80,11 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
           </span>
           <div className="flex flex-col gap-1.5">
             <h1 className="text-lg font-semibold">
-              {nombre ? `Hola, ${nombre}` : "Elige tu contraseña"}
+              {nombre
+                ? t.auth.cambioObligatorio.saludo(nombre)
+                : t.auth.cambioObligatorio.tituloSinNombre}
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Entraste con una clave que puso otra persona. Elige la tuya para continuar: hasta
-              entonces el panel no se abre.
-            </p>
+            <p className="text-sm text-muted-foreground">{t.auth.cambioObligatorio.descripcion}</p>
           </div>
         </motion.div>
 
@@ -92,12 +94,12 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
           className="mt-6 flex flex-col gap-4"
         >
           <Field>
-            <FieldLabel htmlFor="contrasenaActual">Contraseña actual</FieldLabel>
+            <FieldLabel htmlFor="contrasenaActual">{t.auth.cambioObligatorio.actual}</FieldLabel>
             <Input
               id="contrasenaActual"
               type="password"
               autoComplete="current-password"
-              placeholder="La que te dieron"
+              placeholder={t.auth.cambioObligatorio.actualPlaceholder}
               aria-invalid={Boolean(errors.contrasenaActual)}
               {...register("contrasenaActual")}
             />
@@ -105,7 +107,9 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="contrasenaNueva">Contraseña nueva</FieldLabel>
+            <FieldLabel htmlFor="contrasenaNueva">
+              {t.auth.cambioObligatorio.contrasenaNueva}
+            </FieldLabel>
             <div className="relative">
               <Input
                 id="contrasenaNueva"
@@ -118,7 +122,11 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
               <button
                 type="button"
                 onClick={() => setVerContrasena((v) => !v)}
-                aria-label={verContrasena ? "Ocultar la contraseña" : "Mostrar la contraseña"}
+                aria-label={
+                  verContrasena
+                    ? t.auth.cambioObligatorio.ocultar
+                    : t.auth.cambioObligatorio.mostrar
+                }
                 className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
               >
                 {verContrasena ? (
@@ -128,12 +136,12 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
                 )}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">Mínimo 12 caracteres.</p>
+            <p className="text-xs text-muted-foreground">{t.auth.cambioObligatorio.minimo}</p>
             {errors.contrasenaNueva && <FieldError>{errors.contrasenaNueva.message}</FieldError>}
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="confirmacion">Repite la nueva</FieldLabel>
+            <FieldLabel htmlFor="confirmacion">{t.auth.cambioObligatorio.repite}</FieldLabel>
             <Input
               id="confirmacion"
               type={tipo}
@@ -146,14 +154,14 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
 
           <Button type="submit" disabled={enviando} className="h-10 w-full">
             {enviando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-            Guardar y entrar
+            {t.auth.cambioObligatorio.guardar}
           </Button>
         </motion.form>
 
         {/* La única otra salida: nadie debe quedar encerrado en una pantalla. */}
         <motion.div variants={bloque} className="mt-4 text-center">
           <Button variant="ghost" onClick={onSalir} className="h-9 text-sm">
-            Cerrar sesión
+            {t.comun.cerrarSesion}
           </Button>
         </motion.div>
       </motion.div>

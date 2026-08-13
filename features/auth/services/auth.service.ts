@@ -30,7 +30,7 @@ export const authService = {
    * como argumento aparte y no por el schema.
    */
   async login(datos: DatosLogin, slug?: string): Promise<ApiResult<ResultadoLogin>> {
-    const { correo, contrasena } = esquemaLogin.parse(datos)
+    const { correo, contrasena } = esquemaLogin().parse(datos)
     // `correo` es el nombre del formulario; el contrato de la API usa `email`.
     return api.post<ResultadoLogin>("/auth/login", {
       email: correo,
@@ -61,7 +61,7 @@ export const authService = {
    * comprobarlo es cosa del formulario, no del servidor.
    */
   async cambiarContrasena(datos: DatosCambioContrasena): Promise<ApiResult<null>> {
-    const { contrasenaActual, contrasenaNueva } = esquemaCambioContrasena.parse(datos)
+    const { contrasenaActual, contrasenaNueva } = esquemaCambioContrasena().parse(datos)
     return api.post<null>("/auth/cambiar-contrasena", { contrasenaActual, contrasenaNueva })
   },
 
@@ -70,7 +70,10 @@ export const authService = {
    * que la pantalla no puede prometer más que "si tiene cuenta, le llegará".
    */
   async solicitarRecuperacion(datos: DatosSolicitudRecuperacion): Promise<ApiResult<null>> {
-    return api.post<null>("/auth/restablecer-contrasena", esquemaSolicitudRecuperacion.parse(datos))
+    return api.post<null>(
+      "/auth/restablecer-contrasena",
+      esquemaSolicitudRecuperacion().parse(datos)
+    )
   },
 
   /** El token sale del enlace del correo, no del formulario. */
@@ -79,7 +82,7 @@ export const authService = {
     token: string,
     datos: DatosNuevaContrasena
   ): Promise<ApiResult<{ slug: string | null }>> {
-    const { contrasenaNueva } = esquemaNuevaContrasena.parse(datos)
+    const { contrasenaNueva } = esquemaNuevaContrasena().parse(datos)
     return api.post<{ slug: string | null }>("/auth/restablecer-contrasena/confirmar", {
       token,
       contrasenaNueva,

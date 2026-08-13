@@ -68,3 +68,26 @@ export const esquemaOferta = z.object({
 })
 
 export type DatosOferta = z.infer<typeof esquemaOferta>
+
+/**
+ * Quiénes ofrecen un servicio.
+ *
+ * El precio y la duración van OPCIONALES a propósito: asignar un corte a varias
+ * personas es decidir quién lo hace, no negociar una tarifa por cabeza. Lo que
+ * no se manda lo hereda la api del catálogo.
+ */
+const esquemaBarberoDelServicio = z.object({
+  barberoId: z.uuid(),
+  precioCentavos: z
+    .string()
+    .regex(/^\d{1,18}$/, "El precio va en centavos, sin signo ni decimales")
+    .optional(),
+  duracionMin: z.number().int().min(5).max(600).optional(),
+  bufferMin: z.number().int().min(0).max(240).optional(),
+})
+
+export const esquemaAsignacionServicio = z.object({
+  barberos: z.array(esquemaBarberoDelServicio).max(200, "Máximo 200 barberos"),
+})
+
+export type DatosAsignacionServicio = z.infer<typeof esquemaAsignacionServicio>

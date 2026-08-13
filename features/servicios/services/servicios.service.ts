@@ -1,8 +1,10 @@
 import { api } from "@lib/http/instances"
 import { omitEmpty } from "@shared/utils/params"
 import {
+  esquemaAsignacionServicio,
   esquemaOferta,
   esquemaServicio,
+  type DatosAsignacionServicio,
   type DatosOferta,
   type DatosServicio,
 } from "@features/servicios/schemas/servicios.schema"
@@ -53,5 +55,27 @@ export const serviciosService = {
   ): Promise<ApiResult<LineaOferta[]>> {
     const validos = esquemaOferta.parse(payload)
     return api.put<LineaOferta[]>(`/barberos/${barberoId}/servicios`, validos)
+  },
+
+  /** La misma oferta, preguntada desde el servicio: quién lo hace. */
+  async obtenerBarberosDelServicio(
+    servicioId: string,
+    soloActivas = false
+  ): Promise<ApiResult<LineaOferta[]>> {
+    return api.get<LineaOferta[]>(`/servicios/${servicioId}/barberos`, {
+      params: omitEmpty({ soloActivas }),
+    })
+  },
+
+  /**
+   * Deja exactamente a esos barberos ofreciendo el servicio. Lista completa: lo
+   * que no viene se desactiva, y quien sale conserva el resto de su carta.
+   */
+  async asignarBarberos(
+    servicioId: string,
+    payload: DatosAsignacionServicio
+  ): Promise<ApiResult<LineaOferta[]>> {
+    const validos = esquemaAsignacionServicio.parse(payload)
+    return api.put<LineaOferta[]>(`/servicios/${servicioId}/barberos`, validos)
   },
 }

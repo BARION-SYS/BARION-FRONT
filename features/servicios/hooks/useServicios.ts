@@ -3,7 +3,11 @@
 import { useCallback, useState } from "react"
 import { serviciosService } from "@features/servicios/services/servicios.service"
 import { getErrorMessage } from "@shared/utils/error"
-import type { DatosOferta, DatosServicio } from "@features/servicios/schemas/servicios.schema"
+import type {
+  DatosAsignacionServicio,
+  DatosOferta,
+  DatosServicio,
+} from "@features/servicios/schemas/servicios.schema"
 import type {
   FiltrosServicios,
   LineaOferta,
@@ -21,6 +25,8 @@ import type {
 export function useServicios() {
   const [servicios, setServicios] = useState<Servicio[]>([])
   const [oferta, setOferta] = useState<LineaOferta[]>([])
+  /** Quiénes ofrecen el servicio que se está mirando. */
+  const [barberosDelServicio, setBarberosDelServicio] = useState<LineaOferta[]>([])
   const [loadingLista, setLoadingLista] = useState(false)
   const [loadingOferta, setLoadingOferta] = useState(false)
   const [loadingAction, setLoadingAction] = useState(false)
@@ -94,6 +100,33 @@ export function useServicios() {
     }
   }, [])
 
+  const fetchBarberosDelServicio = useCallback(async (servicioId: string) => {
+    setLoadingOferta(true)
+    setError(null)
+    try {
+      const res = await serviciosService.obtenerBarberosDelServicio(servicioId)
+      setBarberosDelServicio(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoadingOferta(false)
+    }
+  }, [])
+
+  const handleAssignBarberos = useCallback(
+    async (servicioId: string, payload: DatosAsignacionServicio): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await serviciosService.asignarBarberos(servicioId, payload)
+        setBarberosDelServicio(res.data)
+        return res.message
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
   const handleReplaceOferta = useCallback(
     async (barberoId: string, payload: DatosOferta): Promise<string> => {
       setLoadingAction(true)
@@ -111,6 +144,9 @@ export function useServicios() {
   )
 
   return {
+    barberosDelServicio,
+    fetchBarberosDelServicio,
+    handleAssignBarberos,
     servicios,
     oferta,
     loadingLista,

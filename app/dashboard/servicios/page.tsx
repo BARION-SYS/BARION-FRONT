@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Plus } from "lucide-react"
 import { SectionCard } from "@shared/components/cards/SectionCard"
+import { SidePanel } from "@shared/components/modals/SidePanel"
 import { Modal } from "@shared/components/modals/Modal"
 import { Button } from "@shared/components/ui/button"
 import { notify } from "@shared/services/notify"
@@ -10,9 +11,14 @@ import { getErrorMessage } from "@shared/utils/error"
 import { useAuthStore } from "@store/auth.store"
 import { puede } from "@features/auth/utils/permisos"
 import { useSedeActual } from "@store/sede.store"
+import { useBarberos } from "@features/barberos/hooks/useBarberos"
 import { useSedes } from "@features/sedes/hooks/useSedes"
 import { useServicios } from "@features/servicios/hooks/useServicios"
 import { ServiciosForm } from "@features/servicios/components/ServiciosForm"
+import {
+  ID_FORM_ASIGNAR,
+  ServiciosAsignarForm,
+} from "@features/servicios/components/ServiciosAsignarForm"
 import { ServiciosList } from "@features/servicios/components/ServiciosList"
 import { ServiciosToolbar } from "@features/servicios/components/ServiciosToolbar"
 import type { DatosServicio } from "@features/servicios/schemas/servicios.schema"
@@ -38,7 +44,15 @@ export default function ServiciosPage() {
     handleCreateServicio,
     handleUpdateServicio,
     handleToggleServicio,
+    barberosDelServicio,
+    loadingOferta,
+    fetchBarberosDelServicio,
+    handleAssignBarberos,
   } = useServicios()
+
+  // El plantel: quiénes PODRÍAN ofrecer un servicio. Se pide una vez, no al
+  // abrir el panel — es la misma lista para todos los servicios.
+  const { barberos, fetchBarberos } = useBarberos()
 
   const { sedes, fetchSedes } = useSedes()
 
@@ -53,6 +67,7 @@ export default function ServiciosPage() {
   const [soloActivos, setSoloActivos] = useState(false)
   const [creando, setCreando] = useState(false)
   const [servicioEnEdicion, setServicioEnEdicion] = useState<Servicio | null>(null)
+  const [servicioAsignando, setServicioAsignando] = useState<Servicio | null>(null)
 
   const cargar = useCallback(
     () => fetchServicios({ sedeId: sedeActual?.id, paginar: false }),
@@ -62,7 +77,10 @@ export default function ServiciosPage() {
   useEffect(() => {
     void cargar()
     void fetchSedes()
-  }, [cargar, fetchSedes])
+    // El plantel hace falta para asignar, y se pide con el resto: abrir el panel
+    // y esperar a que llegue la lista sería una espera evitable.
+    void fetchBarberos()
+  }, [cargar, fetchSedes, fetchBarberos])
 
   // Las categorías salen de la carta, no de una lista fija: cada barbería
   // agrupa como quiere y una lista cerrada obligaría a mantenerla aquí.
@@ -148,9 +166,43 @@ export default function ServiciosPage() {
             gestiona={gestiona}
             onEditar={setServicioEnEdicion}
             onAlternarActivo={(servicio) => void conAviso(() => handleToggleServicio(servicio))}
+            onAsignar={(servicio) => {
+              setServicioAsignando(servicio)
+              void fetchBarberosDelServicio(servicio.id)
+            }}
           />
         </div>
       </SectionCard>
+
+      <SidePanel
+        open={servicioAsignando !== null}
+        onOpenChange={(abierto) => {
+          if (!abierto) setServicioAsignando(null)
+        }}
+        titulo={servicioAsignando ? `Quién ofrece ${servicioAsignando.nombre}` : ""}
+        // El botón vive en el pie y se ata al formulario por id: en una lista de
+        // quince barberos, dentro del cuerpo se quedaría fuera de alcance.
+        footer={
+          <Button type="submit" form={ID_FORM_ASIGNAR} disabled={loadingAction}>
+            Guardar
+          </Button>
+        }
+      >
+        {servicioAsignando && (
+          <ServiciosAsignarForm
+            servicio={servicioAsignando}
+            barberos={barberos}
+            asignados={barberosDelServicio}
+            cargando={loadingOferta}
+            onSubmit={async (datos) => {
+              const guardado = await conAviso(() =>
+                handleAssignBarberos(servicioAsignando.id, datos)
+              )
+              if (guardado) setServicioAsignando(null)
+            }}
+          />
+        )}
+      </SidePanel>
 
       <Modal
         open={creando || servicioEnEdicion !== null}

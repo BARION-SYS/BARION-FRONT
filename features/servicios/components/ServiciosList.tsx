@@ -20,6 +20,8 @@ interface ServiciosListProps {
   gestiona: boolean
   onEditar: (servicio: Servicio) => void
   onAlternarActivo: (servicio: Servicio) => void
+  /** Abrir quién lo ofrece. Es lo que se hace justo después de crearlo. */
+  onAsignar: (servicio: Servicio) => void
 }
 
 /**
@@ -34,6 +36,7 @@ export function ServiciosList({
   gestiona,
   onEditar,
   onAlternarActivo,
+  onAsignar,
 }: ServiciosListProps) {
   const { dinero } = useFormato()
 
@@ -93,6 +96,12 @@ export function ServiciosList({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => onEditar(servicio)}>Editar</DropdownMenuItem>
+                    {/* Primero de las acciones que no son editar: un servicio
+                        que nadie ofrece no se puede reservar, así que asignarlo
+                        es el paso siguiente a crearlo, no una opción escondida. */}
+                    <DropdownMenuItem onClick={() => onAsignar(servicio)}>
+                      Quién lo ofrece
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onAlternarActivo(servicio)}>
                       {/* Publicar es lo mismo que aprobar: la propuesta de un
                           barbero llega inactiva y esto es lo que la abre. */}

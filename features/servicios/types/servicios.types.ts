@@ -41,6 +41,8 @@ export interface Servicio {
 export interface LineaOferta {
   id: string
   servicioId: string
+  /** De quién es la línea. Es lo que identifica a cada uno al mirar un servicio. */
+  barberoId: string
   /** Del catálogo: es lo que se lee en pantalla y en el portal. */
   nombre: string
   categoria: string | null

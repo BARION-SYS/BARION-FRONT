@@ -24,11 +24,21 @@ export const esquemaAjuste = z.object({
     .trim()
     .min(3, "Di por qué: es lo que se lee meses después")
     .max(500, "Máximo 500 caracteres"),
-  /** En qué fecha CAE. Vacío = hoy. */
+  /**
+   * En qué fecha CAE. Vacío = hoy, y por eso se convierte en ausencia AQUÍ: un
+   * `""` viajaría como fecha y la api lo rechazaría por un campo que nadie
+   * rellenó a propósito. `.or(z.literal(""))` no sirve —`.optional()` acepta la
+   * cadena vacía primero y la rama nunca se ejecuta—, así que se transforma.
+   */
   ganadoEn: z
     .string()
+    .trim()
     .optional()
-    .or(z.literal("").transform(() => undefined)),
+    .transform((valor) => valor || undefined),
 })
 
-export type DatosAjuste = z.infer<typeof esquemaAjuste>
+/** Lo que se TECLEA: la fecha sigue siendo cadena vacía mientras no se toque. */
+export type EntradaAjuste = z.input<typeof esquemaAjuste>
+
+/** Lo que sale validado, que es lo que se envía. */
+export type DatosAjuste = z.output<typeof esquemaAjuste>

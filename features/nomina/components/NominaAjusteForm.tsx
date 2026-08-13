@@ -6,7 +6,11 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@shared/compone
 import { Input } from "@shared/components/ui/input"
 import { Textarea } from "@shared/components/ui/textarea"
 import { useFormato } from "@shared/hooks/useFormato"
-import { esquemaAjuste, type DatosAjuste } from "@features/nomina/schemas/nomina.schema"
+import {
+  esquemaAjuste,
+  type DatosAjuste,
+  type EntradaAjuste,
+} from "@features/nomina/schemas/nomina.schema"
 
 interface NominaAjusteFormProps {
   /** A quién se le ajusta. Viene fijado desde su fila: aquí no se elige. */
@@ -43,7 +47,9 @@ export function NominaAjusteForm({ barberoId, nombre, onSubmit }: NominaAjusteFo
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<DatosAjuste>({
+    // Lo tecleado y lo validado ya no son el mismo tipo: la fecha vacía se
+    // convierte en ausencia al validar, así que el formulario declara los dos.
+  } = useForm<EntradaAjuste, unknown, DatosAjuste>({
     resolver: standardSchemaResolver(esquemaAjuste),
     defaultValues: { barberoId, monto: "", motivo: "", ganadoEn: "" },
   })

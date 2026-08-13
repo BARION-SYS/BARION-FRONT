@@ -65,6 +65,15 @@ export interface Barberia {
   ficha: FichaBarberia
   marca: MarcaBarberia
   estado: EstadoBarberia
+  /**
+   * Si el escaparate público se está sirviendo.
+   *
+   * `false` = `/b/{slug}` responde 404, y con él el cartón QR y el enlace de
+   * reserva. Pasa mientras nadie haya abierto el enlace del correo de registro:
+   * el panel funciona igual, y por eso hay que decirlo en pantalla antes de que
+   * alguien imprima un cartón que no lleva a ningún sitio.
+   */
+  verificada: boolean
 }
 
 export type CanalNotificacion = "whatsapp" | "sms" | "correo" | "interno"

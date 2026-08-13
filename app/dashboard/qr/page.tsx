@@ -163,6 +163,25 @@ export default function QrPage() {
   return (
     // Móvil: scroll de página. lg+: app-like — alto completo, columnas con scroll propio.
     <main className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 md:p-6 lg:overflow-hidden">
+      {/*
+        El cartón no sirve de nada mientras el escaparate no exista: la
+        dirección responde 404 y quien escanea ve una página de error. Va lo
+        primero y no como nota al pie, porque el siguiente paso natural de esta
+        pantalla es imprimirlo.
+      */}
+      {barberia && !barberia.verificada && (
+        <p
+          role="alert"
+          className="shrink-0 rounded-xl border border-(--advertencia)/40 bg-[color-mix(in_srgb,var(--advertencia)_8%,transparent)] p-4 text-sm text-muted-foreground"
+        >
+          <span className="font-medium text-foreground">
+            Tu página pública todavía no está publicada.
+          </span>{" "}
+          Falta abrir el enlace que te mandamos al correo con el que te registraste. Hasta entonces
+          este código lleva a una página de error: no lo imprimas ni lo compartas.
+        </p>
+      )}
+
       {veReportes && (
         <section aria-label="Lo que ha traído el código QR" className="shrink-0">
           {/* El cartón y su código NO dependen del plan: lo que se cierra son

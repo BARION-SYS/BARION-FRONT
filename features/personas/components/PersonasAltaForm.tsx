@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Scissors } from "lucide-react"
@@ -24,6 +25,8 @@ import {
   esquemaAltaPersona,
   type DatosAltaPersona,
 } from "@features/personas/schemas/personas.schema"
+import { CampoTelefono } from "@shared/components/forms/CampoTelefono"
+import { useTenant } from "@shared/providers/TenantProvider"
 import type { Rol } from "@features/roles/types/roles.types"
 import type { Sede } from "@features/sedes/types/sedes.types"
 
@@ -90,6 +93,18 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
     },
   })
 
+  const { region } = useTenant()
+
+  // Las etiquetas que el disparador del select tiene que enseñar, con el
+  // centinela incluido: sin esta lista pinta el valor crudo.
+  const opcionesDeSede = useMemo(
+    () => [
+      { value: TODAS_LAS_SEDES, label: "Todas las sedes" },
+      ...sedes.map((sede) => ({ value: sede.id, label: sede.nombre })),
+    ],
+    [sedes]
+  )
+
   const codigoRol = watch("rol")
   const marcado = watch("atiende")
   const rolElegido = roles.find((rol) => rol.codigo === codigoRol)
@@ -150,17 +165,36 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
             <FieldError errors={[errors.email]} />
           </Field>
 
-          <Field data-invalid={!!errors.telefonoE164}>
-            <FieldLabel htmlFor="telefonoE164">Teléfono</FieldLabel>
-            <Input
-              id="telefonoE164"
-              inputMode="tel"
-              placeholder="+573001112233"
-              aria-invalid={!!errors.telefonoE164}
-              {...register("telefonoE164")}
-            />
-            <FieldError errors={[errors.telefonoE164]} />
-          </Field>
+          {/*
+            El teléfono en dos piezas y con el indicativo FIJO al país de la
+            barbería. Antes era un campo suelto que pedía el E.164 entero
+            (`+573001112233`): quien da de alta a su equipo teclea `3207512575`,
+            que es su número de siempre, y el alta fallaba con un mensaje sobre
+            un formato que nadie tiene por qué conocer.
+          */}
+          <Controller
+            control={control}
+            name="telefonoE164"
+            render={({ field }) => (
+              <Field data-invalid={!!errors.telefonoE164}>
+                <FieldLabel htmlFor="telefonoE164">Teléfono (opcional)</FieldLabel>
+                <CampoTelefono
+                  id="telefonoE164"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  paisSugerido={region}
+                  prefijoFijo
+                  invalido={!!errors.telefonoE164}
+                />
+                <FieldDescription>
+                  Para llamarle, no para entrar. Si el número ya está en otra cuenta de Barion,
+                  déjalo vacío.
+                </FieldDescription>
+                <FieldError errors={[errors.telefonoE164]} />
+              </Field>
+            )}
+          />
         </div>
 
         <Field data-invalid={!!errors.contrasenaInicial}>
@@ -222,8 +256,15 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
                   no tiene manera de volver a vacío. Mismo centinela que usa el
                   formulario de servicios, que ya resolvía esto.
                 */}
+                {/*
+                  `items` manda sobre la etiqueta que deriva el disparador. Sin
+                  él, un valor que todavía no está en la lista —el store de sedes
+                  aún no cargó— se pintaba TAL CUAL: un uuid en mitad del
+                  formulario.
+                */}
                 <Select
                   value={field.value ?? TODAS_LAS_SEDES}
+                  items={opcionesDeSede}
                   onValueChange={(valor) =>
                     field.onChange(valor === TODAS_LAS_SEDES ? undefined : valor)
                   }

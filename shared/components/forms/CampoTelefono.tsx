@@ -23,6 +23,16 @@ interface CampoTelefonoProps {
    * quien escribe no lo ha tocado**: ver la nota de abajo.
    */
   paisSugerido?: CodigoRegion
+  /**
+   * Deja el indicativo FIJO, sin lista donde elegir.
+   *
+   * Es para el panel: quien da de alta a su equipo teclea números del país donde
+   * opera su barbería, uno detrás de otro, y un desplegable que siempre acaba en
+   * el mismo valor es un control que estorba —y en móvil se come ancho—. Donde
+   * el número puede ser de cualquier parte —el alta pública, el escaparate— la
+   * lista sigue estando.
+   */
+  prefijoFijo?: boolean
   invalido?: boolean
   disabled?: boolean
 }
@@ -72,6 +82,7 @@ export function CampoTelefono({
   onChange,
   onBlur,
   paisSugerido,
+  prefijoFijo,
   invalido,
   disabled,
 }: CampoTelefonoProps) {
@@ -85,27 +96,39 @@ export function CampoTelefono({
     // indicativo lo lleva por lo mismo que lo lleva el número: dos controles
     // pegados con tamaños distintos se leen como un montaje.
     <div className={cn("flex gap-2.5", disabled && "opacity-60")}>
-      <Select
-        value={prefijo}
-        items={ITEMS_DISPARADOR}
-        onValueChange={(nuevo) => nuevo && onChange(`${nuevo}${numero}`)}
-        disabled={disabled}
-      >
-        <SelectTrigger
-          id={`${id}-prefijo`}
-          className="h-11 w-[5.5rem] shrink-0 text-base"
-          aria-label="Indicativo del país"
+      {prefijoFijo ? (
+        // Mismo alto y misma tipografía que el campo: dos piezas pegadas con
+        // tamaños distintos se leen como un montaje. No es un control, así que
+        // no recibe foco ni entra en el orden de tabulación.
+        <span
+          aria-hidden
+          className="flex h-11 shrink-0 items-center rounded-md border border-input bg-muted px-3 text-base text-muted-foreground"
         >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {PREFIJOS.map(({ codigo, prefijo: valor }) => (
-            <SelectItem key={codigo} value={valor}>
-              {valor} · {nombresDeRegion[codigo]}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+          {prefijo}
+        </span>
+      ) : (
+        <Select
+          value={prefijo}
+          items={ITEMS_DISPARADOR}
+          onValueChange={(nuevo) => nuevo && onChange(`${nuevo}${numero}`)}
+          disabled={disabled}
+        >
+          <SelectTrigger
+            id={`${id}-prefijo`}
+            className="h-11 w-[5.5rem] shrink-0 text-base"
+            aria-label="Indicativo del país"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PREFIJOS.map(({ codigo, prefijo: valor }) => (
+              <SelectItem key={codigo} value={valor}>
+                {valor} · {nombresDeRegion[codigo]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <Input
         id={id}

@@ -33,7 +33,24 @@ export const esquemaAltaPersona = z.object({
   nombre: z.string().min(2, "Mínimo 2 caracteres").max(120, "Máximo 120"),
   /** Es por donde entra, y por donde se vincula un proveedor externo. */
   email: z.email("Ingresa un correo válido"),
-  telefonoE164: z.string().regex(E164, "Formato internacional: +573001112233"),
+  /**
+   * Contacto, no identidad: se entra con el correo.
+   *
+   * **Opcional**, y no por comodidad: el número es único en toda la plataforma,
+   * así que uno que ya esté en otra cuenta —el móvil del dueño, la línea de la
+   * barbería— bloquea el alta. Dejarlo vacío es la salida, y sin ella el
+   * mensaje de la api no serviría de nada.
+   *
+   * El mensaje habla de lo que se TECLEA —dígitos—, no del formato en el que se
+   * guarda: el campo compone el E.164 con el indicativo, así que quien lo lee
+   * nunca escribió un `+`.
+   */
+  telefonoE164: z
+    .string()
+    .trim()
+    .regex(E164, "Revisa el número: faltan o sobran dígitos")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
 
   rol: z.string().min(2, "Elige un rol"),
   contrasenaInicial: z

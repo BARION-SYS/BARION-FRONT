@@ -10,7 +10,16 @@ export const esquemaAltaMiembro = z.object({
   // Obligatorio: es por donde entrará con un proveedor externo, porque la
   // vinculación se hace por correo.
   email: z.email("Ingresa un correo válido"),
-  telefonoE164: z.string().regex(/^\+[1-9]\d{7,14}$/, "Formato internacional: +573001112233"),
+  /**
+   * Contacto, no identidad: se entra con el correo. Opcional porque el número
+   * es único en toda la plataforma y uno ya registrado —el móvil del dueño, la
+   * línea del local— bloquearía el alta sin salida.
+   */
+  telefonoE164: z
+    .string()
+    .trim()
+    .regex(/^\+[1-9]\d{7,14}$/, "Revisa el número: faltan o sobran dígitos")
+    .optional(),
   rol: z.string().min(2, "Elige un rol"),
   /**
    * Vacía significa "genérala tú": `''` no viaja como cadena vacía, se convierte

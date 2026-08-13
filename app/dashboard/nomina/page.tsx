@@ -1,8 +1,16 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { NominaBarberoCard } from "@features/nomina/components/NominaBarberoCard"
 import { NominaBarberoDetail } from "@features/nomina/components/NominaBarberoDetail"
+import { ID_FORM_AJUSTE, NominaAjusteForm } from "@features/nomina/components/NominaAjusteForm"
+import { puede } from "@features/auth/utils/permisos"
+import { Modal } from "@shared/components/modals/Modal"
+import { Button } from "@shared/components/ui/button"
+import { notify } from "@shared/services/notify"
+import { getErrorMessage } from "@shared/utils/error"
+import { useAuthStore } from "@store/auth.store"
+import type { DatosAjuste } from "@features/nomina/schemas/nomina.schema"
 import { NominaResumen } from "@features/nomina/components/NominaResumen"
 import { useNomina } from "@features/nomina/hooks/useNomina"
 import type { PeriodoNomina } from "@features/nomina/types/nomina.types"
@@ -31,14 +39,27 @@ import { useSedeActual } from "@store/sede.store"
  *   escribe la agenda al cerrar una cita.
  */
 export default function NominaPage() {
-  const { resumen, asientos, loadingResumen, loadingAsientos, error, fetchResumen, fetchAsientos } =
-    useNomina()
+  const {
+    resumen,
+    asientos,
+    loadingResumen,
+    loadingAsientos,
+    loadingAction,
+    error,
+    fetchResumen,
+    fetchAsientos,
+    handleCreateAjuste,
+  } = useNomina()
+
+  const sesion = useAuthStore((estado) => estado.sesion)
+  const puedeAjustar = puede(sesion, "ganancias.ajustar")
 
   const sedeActual = useSedeActual()
-  const { timezone } = useFormato()
+  const { timezone, moneda, aCentavos } = useFormato()
 
   const [periodo, setPeriodo] = useState<PeriodoNomina>("semana")
   const [barberoSeleccionado, setBarberoSeleccionado] = useState<string | null>(null)
+  const [ajustando, setAjustando] = useState(false)
 
   const rango = useMemo(
     () => rangoDe(periodo, timezone, sedeActual?.inicioSemana ?? 1),
@@ -62,6 +83,32 @@ export default function NominaPage() {
 
   const totales = totalesDe(resumen)
   const etiquetaPeriodo = PERIODOS_NOMINA.find((opcion) => opcion.valor === periodo)?.etiqueta ?? ""
+
+  const onAjustar = useCallback(
+    async (datos: DatosAjuste) => {
+      try {
+        // La conversión a centavos vive aquí: la moneda es de la sede y quien
+        // la conoce es la pantalla. El signo se conserva — negativo descuenta.
+        notify.success(
+          await handleCreateAjuste({
+            barberoId: datos.barberoId,
+            montoCentavos: aCentavos(Number(datos.monto)),
+            moneda,
+            motivo: datos.motivo,
+            ganadoEn: datos.ganadoEn,
+          })
+        )
+        setAjustando(false)
+        // Las dos lecturas: el ajuste mueve el total del resumen y añade un
+        // asiento al detalle.
+        void fetchResumen(rango)
+        if (idSeleccionado) void fetchAsientos({ ...rango, barberoId: idSeleccionado })
+      } catch (err) {
+        notify.error(getErrorMessage(err))
+      }
+    },
+    [handleCreateAjuste, moneda, aCentavos, fetchResumen, fetchAsientos, rango, idSeleccionado]
+  )
 
   return (
     <main className="flex-1 space-y-6 overflow-y-auto p-4 md:p-6">
@@ -126,12 +173,38 @@ export default function NominaPage() {
                   asientos={asientos}
                   loadingAsientos={loadingAsientos}
                   etiquetaPeriodo={etiquetaPeriodo}
+                  puedeAjustar={puedeAjustar}
+                  onAjustar={() => setAjustando(true)}
                 />
               )}
             </div>
           </section>
         </>
       )}
+      <Modal
+        open={ajustando}
+        onOpenChange={(abierto) => !abierto && setAjustando(false)}
+        size="sm"
+        titulo="Ajustar la nómina"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setAjustando(false)} disabled={loadingAction}>
+              Cancelar
+            </Button>
+            <Button type="submit" form={ID_FORM_AJUSTE} disabled={loadingAction}>
+              Guardar ajuste
+            </Button>
+          </>
+        }
+      >
+        {seleccionado && (
+          <NominaAjusteForm
+            barberoId={seleccionado.barberoId}
+            nombre={seleccionado.barbero?.nombrePublico ?? "este barbero"}
+            onSubmit={(datos) => void onAjustar(datos)}
+          />
+        )}
+      </Modal>
     </main>
   )
 }

@@ -12,6 +12,7 @@ export function useNomina() {
   const [loadingResumen, setLoadingResumen] = useState(false)
   const [loadingAsientos, setLoadingAsientos] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadingAction, setLoadingAction] = useState(false)
 
   const fetchResumen = useCallback(async (filtros: FiltrosGanancias) => {
     setLoadingResumen(true)
@@ -39,7 +40,32 @@ export function useNomina() {
     }
   }, [])
 
+  /**
+   * Escribe el ajuste. Recibe los centavos ya convertidos: la moneda es de la
+   * sede y quien la conoce es la pantalla, no este hook.
+   */
+  const handleCreateAjuste = useCallback(
+    async (payload: {
+      barberoId: string
+      montoCentavos: string
+      moneda: string
+      motivo: string
+      ganadoEn?: string
+    }): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await nominaService.registrarAjuste(payload)
+        return res.message
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
   return {
+    handleCreateAjuste,
+    loadingAction,
     resumen,
     asientos,
     loadingResumen,

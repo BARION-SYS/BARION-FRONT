@@ -24,4 +24,18 @@ export const nominaService = {
   async obtenerGanancias(filtros: FiltrosGanancias = {}): Promise<ApiResult<Ganancia[]>> {
     return api.get<Ganancia[]>("/ganancias", { params: omitEmpty({ ...filtros }) })
   },
+
+  /**
+   * Añade un asiento de ajuste. El monto llega en CENTAVOS y con signo: la
+   * conversión desde lo que se teclea la hace quien conoce la moneda de la sede.
+   */
+  async registrarAjuste(payload: {
+    barberoId: string
+    montoCentavos: string
+    moneda: string
+    motivo: string
+    ganadoEn?: string
+  }): Promise<ApiResult<Ganancia>> {
+    return api.post<Ganancia>("/ganancias/ajustes", omitEmpty({ ...payload }))
+  },
 }

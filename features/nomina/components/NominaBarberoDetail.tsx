@@ -1,5 +1,8 @@
 "use client"
 
+import { Plus } from "lucide-react"
+
+import { Button } from "@shared/components/ui/button"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { Card } from "@shared/components/ui/card"
 import {
@@ -23,6 +26,9 @@ interface NominaBarberoDetailProps {
   asientos: Ganancia[]
   loadingAsientos: boolean
   etiquetaPeriodo: string
+  /** `ganancias.ajustar`: capacidad propia, no viene con ver la nómina. */
+  puedeAjustar: boolean
+  onAjustar: () => void
 }
 
 const ETIQUETA_TIPO: Record<Ganancia["tipo"], string> = {
@@ -37,6 +43,8 @@ export function NominaBarberoDetail({
   asientos,
   loadingAsientos,
   etiquetaPeriodo,
+  puedeAjustar,
+  onAjustar,
 }: NominaBarberoDetailProps) {
   const { dinero, fechaHora, porcentaje } = useFormato()
 
@@ -66,10 +74,20 @@ export function NominaBarberoDetail({
     <Card className="gap-5 py-5">
       <div className="flex items-center gap-3 px-5">
         <InitialsAvatar iniciales={inicialesDe(nombre)} color={color} tamano="md" />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-foreground">{nombre}</p>
           <p className="text-xs text-muted-foreground">{etiquetaPeriodo}</p>
         </div>
+        {/* La única escritura de esta pantalla, y va aquí porque es donde se ve
+            la cifra que hay que corregir. Sin `ganancias.ajustar` ni aparece:
+            mirar la nómina lo hace cualquiera que administre, escribir en ella
+            deja una fila que nadie puede borrar. */}
+        {puedeAjustar && (
+          <Button type="button" variant="outline" size="sm" onClick={onAjustar}>
+            <Plus className="size-4" aria-hidden />
+            Ajustar
+          </Button>
+        )}
       </div>
 
       <div className="px-5">

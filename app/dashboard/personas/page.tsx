@@ -55,6 +55,7 @@ export default function PersonasPage() {
     loadingAction: guardandoMiembro,
     fetchMiembros,
     handleCreateMiembro,
+    handleResendInvitacion,
     handleRegenerateContrasenaMiembro,
     handleChangeRolMiembro,
     handleRevokeMiembro,
@@ -110,6 +111,10 @@ export default function PersonasPage() {
     nombre: string
     contrasena: string | null
     cuentaExistente: boolean
+    invitado: boolean
+    /** A dónde fue la invitación: es donde se caza una errata en el correo. */
+    email: string
+    membresiaId: string
   } | null>(null)
   const [personaConPermisos, setPersonaConPermisos] = useState<Persona | null>(null)
   /**
@@ -193,6 +198,9 @@ export default function PersonasPage() {
           nombre: alta.miembro.nombre,
           contrasena: alta.contrasenaInicial,
           cuentaExistente: alta.cuentaExistente,
+          invitado: !!alta.invitado,
+          email: datos.email,
+          membresiaId: alta.miembro.id,
         })
         cargar()
       } catch (err) {
@@ -234,7 +242,19 @@ export default function PersonasPage() {
       if (!persona.acceso) return
       try {
         const contrasena = await handleRegenerateContrasenaMiembro(persona.acceso.membresiaId)
-        setCredencial({ nombre: persona.nombre, contrasena, cuentaExistente: false })
+        // Regenerar es el camino de siempre: aquí SÍ hay una contraseña que
+        // enseñar una vez, porque la puso el sistema a petición de quien
+        // administra y va a dictarla.
+        setCredencial({
+          nombre: persona.nombre,
+          contrasena,
+          cuentaExistente: false,
+          invitado: false,
+          // Sin correo aquí: esta rama no manda ninguno, y enseñar una
+          // dirección junto a una contraseña dictada solo confundiría.
+          email: "",
+          membresiaId: persona.acceso.membresiaId,
+        })
       } catch (err) {
         notify.error(getErrorMessage(err))
       }
@@ -411,6 +431,18 @@ export default function PersonasPage() {
             nombre={credencial.nombre}
             contrasena={credencial.contrasena}
             cuentaExistente={credencial.cuentaExistente}
+            invitado={credencial.invitado}
+            email={credencial.email}
+            reenviando={guardandoMiembro}
+            onReenviar={() => {
+              void (async () => {
+                try {
+                  notify.success(await handleResendInvitacion(credencial.membresiaId))
+                } catch (err) {
+                  notify.error(getErrorMessage(err))
+                }
+              })()
+            }}
             onCerrar={() => setCredencial(null)}
           />
         )}

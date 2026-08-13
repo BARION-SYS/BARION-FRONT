@@ -59,4 +59,12 @@ export const equipoService = {
   async revocarMiembro(membresiaId: string): Promise<ApiResult<RevocacionMiembro>> {
     return api.delete<RevocacionMiembro>(`/equipo/${membresiaId}`)
   },
+
+  /**
+   * Reenvía el enlace para poner la contraseña. No confirma que el correo
+   * llegue —eso no lo sabe nadie—: confirma que se volvió a mandar.
+   */
+  async reenviarInvitacion(membresiaId: string): Promise<ApiResult<{ email: string }>> {
+    return api.post<{ email: string }>(`/equipo/${membresiaId}/invitacion`, {})
+  },
 }

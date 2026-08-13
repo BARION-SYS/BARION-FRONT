@@ -101,7 +101,19 @@ export function useEquipo() {
     []
   )
 
+  /** Otro enlace para poner la contraseña: los correos se pierden. */
+  const handleResendInvitacion = useCallback(async (membresiaId: string): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await equipoService.reenviarInvitacion(membresiaId)
+      return res.message
+    } finally {
+      setLoadingAction(false)
+    }
+  }, [])
+
   return {
+    handleResendInvitacion,
     miembros,
     loadingLista,
     loadingAction,

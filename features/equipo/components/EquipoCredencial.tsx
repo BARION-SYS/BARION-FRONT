@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Copy, TriangleAlert } from "lucide-react"
+import { Check, Copy, MailCheck, Send, TriangleAlert } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 
 interface EquipoCredencialProps {
@@ -9,21 +9,37 @@ interface EquipoCredencialProps {
   /** `null` cuando esa persona ya tenía cuenta: entra con la suya. */
   contrasena: string | null
   cuentaExistente: boolean
+  /** Se le mandó el enlace para que ponga su contraseña. */
+  invitado?: boolean
+  /** A dónde fue la invitación. Se enseña para poder cazar una errata. */
+  email?: string
+  reenviando?: boolean
+  onReenviar?: () => void
   onCerrar: () => void
 }
 
 /**
- * La contraseña inicial, mostrada UNA vez.
+ * Cómo entra quien acaba de recibir acceso. Tres finales distintos:
  *
- * No es un detalle de estilo: la api la guarda hasheada y no existe ningún
- * endpoint que la devuelva. Si esta pantalla se cierra sin que nadie la copie,
- * la única salida es regenerarla — así que el aviso va antes que el valor y el
- * botón de cerrar es lo último.
+ * 1. **Invitado** — el caso normal. Se le mandó un enlace para que ponga su
+ *    contraseña, así que aquí no hay nada que copiar ni que dictar. Se enseña la
+ *    dirección a la que fue, que es donde se caza una errata, y se ofrece
+ *    reenviarla.
+ * 2. **Ya tenía cuenta** — entra con la suya, que nadie de esta barbería puede
+ *    cambiar.
+ * 3. **Contraseña puesta a mano** — quien administra la escribió, así que se
+ *    enseña UNA vez. La api la guarda hasheada y no hay endpoint que la
+ *    devuelva: si esta pantalla se cierra sin copiarla, la única salida es
+ *    regenerarla, y por eso el aviso va antes que el valor.
  */
 export function EquipoCredencial({
   nombre,
   contrasena,
   cuentaExistente,
+  invitado,
+  email,
+  reenviando,
+  onReenviar,
   onCerrar,
 }: EquipoCredencialProps) {
   const [copiada, setCopiada] = useState(false)
@@ -33,6 +49,45 @@ export function EquipoCredencial({
     await navigator.clipboard.writeText(contrasena)
     setCopiada(true)
     window.setTimeout(() => setCopiada(false), 2000)
+  }
+
+  // El camino normal desde que el alta invita: no hay ninguna contraseña que
+  // enseñar porque nadie la conoce — la pone quien entra, desde su enlace.
+  if (invitado) {
+    return (
+      <div className="flex flex-col gap-4">
+        <p className="flex items-start gap-2 rounded-lg bg-[color-mix(in_srgb,var(--exito)_12%,transparent)] px-3 py-2.5 text-sm text-(--exito)">
+          <MailCheck className="mt-0.5 size-4 shrink-0" aria-hidden />
+          Le mandamos a <span className="font-medium">{email}</span> un enlace para que cree su
+          contraseña.
+        </p>
+
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{nombre}</span> ya puede entrar en cuanto lo
+          abra. Tú no tienes que dictarle nada: nadie más ve esa contraseña, ni siquiera nosotros.
+        </p>
+
+        {/* Reenviar aquí y no solo en la ficha: si el correo se tecleó mal, el
+            momento de darse cuenta es este, leyéndolo en pantalla. */}
+        <div className="flex flex-wrap gap-2">
+          {onReenviar && (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 sm:h-10"
+              disabled={reenviando}
+              onClick={onReenviar}
+            >
+              <Send className="size-4" aria-hidden />
+              Reenviar invitación
+            </Button>
+          )}
+          <Button onClick={onCerrar} className="h-11 flex-1 sm:h-10">
+            Entendido
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (cuentaExistente || !contrasena) {

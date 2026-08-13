@@ -57,6 +57,13 @@ export interface AltaMiembro {
   barberoId: string | null
   contrasenaInicial: string | null
   cuentaExistente: boolean
+  /**
+   * Se le mandó el enlace para que ponga su contraseña.
+   *
+   * Es el camino normal del alta: `contrasenaInicial` viene `null` porque nadie
+   * —ni quien administra ni Barion— llega a conocerla.
+   */
+  invitado?: boolean
 }
 
 /**

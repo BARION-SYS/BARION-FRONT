@@ -38,9 +38,13 @@ function ContenedorConfirmar() {
     async (datos: DatosNuevaContrasena) => {
       setError(null)
       try {
-        const mensaje = await handleConfirmarRecuperacionAuth(token, datos)
+        const { mensaje, slug: suya } = await handleConfirmarRecuperacionAuth(token, datos)
         notify.success(mensaje)
-        router.replace(slug ? `/b/${slug}/entrar` : "/entrar")
+        // El de la dirección manda —viene de la puerta por la que se pidió— y
+        // detrás el que devuelve la api, que es el del propio enlace: el correo
+        // no puede llevarlo porque se emite antes de saber por dónde se abrirá.
+        const puerta = slug || suya
+        router.replace(puerta ? `/b/${puerta}/entrar` : "/entrar")
       } catch (err) {
         setError(getErrorMessage(err))
       }

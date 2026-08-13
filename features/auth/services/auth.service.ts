@@ -74,12 +74,16 @@ export const authService = {
   },
 
   /** El token sale del enlace del correo, no del formulario. */
+  /** Devuelve el slug de la barbería del enlace: es a dónde hay que volver. */
   async confirmarRecuperacion(
     token: string,
     datos: DatosNuevaContrasena
-  ): Promise<ApiResult<null>> {
+  ): Promise<ApiResult<{ slug: string | null }>> {
     const { contrasenaNueva } = esquemaNuevaContrasena.parse(datos)
-    return api.post<null>("/auth/restablecer-contrasena/confirmar", { token, contrasenaNueva })
+    return api.post<{ slug: string | null }>("/auth/restablecer-contrasena/confirmar", {
+      token,
+      contrasenaNueva,
+    })
   },
 
   /**

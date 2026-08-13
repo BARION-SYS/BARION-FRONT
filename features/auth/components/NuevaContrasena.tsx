@@ -84,7 +84,12 @@ export function NuevaContrasena({
         </motion.div>
 
         {tokenPresente ? (
+          // Igual que en el login: el gestor de contraseñas de Chrome mete su
+          // propio atributo en el formulario y en los campos antes de que React
+          // hidrate, y el desajuste es suyo, no de este código. Se silencia nodo
+          // por nodo porque la supresión no se hereda.
           <motion.form
+            suppressHydrationWarning
             variants={bloque}
             onSubmit={(e) => void handleSubmit(onSubmit)(e)}
             className="mt-6 flex flex-col gap-4"
@@ -94,6 +99,7 @@ export function NuevaContrasena({
               <div className="relative">
                 <Input
                   id="contrasenaNueva"
+                  suppressHydrationWarning
                   type={tipo}
                   autoComplete="new-password"
                   className="pr-10"

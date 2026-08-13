@@ -160,11 +160,17 @@ export function useAuth() {
   )
 
   const handleConfirmarRecuperacionAuth = useCallback(
-    async (token: string, datos: DatosNuevaContrasena): Promise<string> => {
+    async (
+      token: string,
+      datos: DatosNuevaContrasena
+      // Devuelve también a QUÉ barbería pertenecía el enlace: es lo que permite
+      // volver a su puerta en vez de a la global, donde quien trabaja en dos
+      // tendría que elegir justo después de recuperar su contraseña.
+    ): Promise<{ mensaje: string; slug: string | null }> => {
       setLoadingContrasena(true)
       try {
         const res = await authService.confirmarRecuperacion(token, datos)
-        return res.message
+        return { mensaje: res.message, slug: res.data?.slug ?? null }
       } catch (err) {
         throw new Error(getErrorMessage(err))
       } finally {

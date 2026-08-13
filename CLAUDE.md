@@ -146,7 +146,8 @@ shared/
 │   ├── forms/       # composiciones de formulario reutilizables
 │   └── (raíz)       # composiciones propias en carpeta por tipo: stats/StatCard, cards/SectionCard, status/StatusBadge, avatar/InitialsAvatar
 ├── layout/          # App shell: LayoutDashboard, Sidebar, Navbar, ThemeToggle — nombres de estructura SIEMPRE en inglés
-├── providers/       # ThemeProvider, TenantProvider (+ AuthProvider, QueryProvider al integrar)
+├── providers/       # ThemeProvider, TenantProvider, TextosProvider (idioma) (+ AuthProvider, QueryProvider al integrar)
+├── textos/          # Diccionarios de idioma — ver § Idioma (i18n)
 ├── hooks/           # useFormato + genéricos sin dominio
 ├── types/           # api.types.ts (ApiEnvelope, ApiResult, HttpError, PaginationInfo), ui.types.ts
 └── utils/           # Puras: cn, error (getErrorMessage), params (omitEmpty), formData, datetime, currency, numbers, i18n
@@ -211,6 +212,53 @@ Usar siempre el más específico; rutas relativas y barriles (`index.ts`) PROHIB
 - `pnpm format` — formatea todo el repo. Correr antes de commitear.
 - `pnpm format:check` — solo verifica (CI / pre-merge).
 - No cambiar reglas de `.prettierrc` por preferencia personal; un cambio de formato = PR propio que reformatea todo el repo en un solo commit.
+
+## Idioma (i18n)
+
+**Ningún texto que lea una persona se escribe dentro de un componente.** Sale del
+diccionario: `const t = useTextos()` y después `t.navbar.miPerfil`. Aplica a lo
+visible y también a lo que solo oye un lector de pantalla —`aria-label`,
+`placeholder`, `title`—, que es donde más se olvida.
+
+```text
+shared/textos/
+├── config.ts                # los tres idiomas, el de cada mercado y cómo se llaman
+├── fusionar.ts              # un diccionario escrito como DIFERENCIAS de otro
+└── diccionarios/
+    ├── es-CO.ts             # el BASE: aquí se escribe primero, y de aquí sale el tipo
+    ├── es-ES.ts             # solo lo que en España se dice de otra forma
+    └── en-US.ts             # completo, y declarado con el tipo del base
+```
+
+- **Son `.ts` y no `.json` a propósito**: `en-US` se declara `: Diccionario`, así
+  que **una clave sin traducir no compila**. Es el único fallo de i18n que no se
+  ve al probar — la pantalla no revienta, le habla en español a quien no lo
+  entiende. Con JSON haría falta un script que compare listas.
+- **Una frase con un dato adentro es una función**, no trozos concatenados:
+  `sedeActiva: (nombre) => ...`. El orden de las palabras cambia entre idiomas y
+  media frase no se puede recolocar. Los plurales, un `if` dentro de esa misma
+  función.
+- **`es-ES` es una lista de diferencias** sobre `es-CO` (`fusionar`), no una
+  copia: dos archivos completos se separan, y el que se queda viejo es siempre
+  el que menos se abre.
+- **El idioma sale de la persona y, si no eligió, de la región de la barbería**
+  (`store/idioma.store.ts`, `TextosProvider`). El del navegador NO participa: es
+  de quien mira, y el panel es del negocio. Se cambia en el navbar
+  (`SelectorIdioma`), junto al tema y a los colores.
+- **`useFormato()` formatea con el idioma activo**, no con el de la región: texto
+  en inglés y meses en español es peor que no traducir.
+- **Lo que NO se traduce**: lo que llega de la api. Nombres de servicios, de
+  sedes y de personas son datos de la barbería — traducir un dato es
+  inventárselo. Tampoco los mensajes de error de la api, que llegan ya
+  redactados; lo que el front redacta es su propio copy.
+- Una ruta nueva de `routes/` **no compila sin su entrada en el diccionario**: su
+  `clave` está tipada contra él (`ClaveRuta`). El nombre de una sección no vive
+  en la ruta — la ruta dice a dónde se va y con qué permiso.
+
+**Estado**: la maquinaria está y el chrome (navegación, navbar, sidebar, tema,
+colores) va por diccionario. **El resto de las features todavía tiene el texto
+embebido** y va entrando pantalla por pantalla; mientras tanto conviven las dos
+formas, y lo que se toque se convierte.
 
 ## Pruebas
 

@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import { TooltipProvider } from "@shared/components/ui/tooltip"
 import { Toaster } from "@shared/components/ui/sonner"
 import { TenantProvider } from "@shared/providers/TenantProvider"
+import { TextosProvider } from "@shared/providers/TextosProvider"
 import { ThemeProvider } from "@shared/providers/ThemeProvider"
 import "@/style/globals.css"
 
@@ -44,8 +45,10 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           <TenantProvider>
-            <TooltipProvider>{children}</TooltipProvider>
-            <Toaster position="top-right" />
+            <TextosProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+              <Toaster position="top-right" />
+            </TextosProvider>
           </TenantProvider>
         </ThemeProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}

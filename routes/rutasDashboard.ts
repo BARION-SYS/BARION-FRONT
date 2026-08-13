@@ -12,7 +12,7 @@ import {
   Users,
   UsersRound,
 } from "lucide-react"
-import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
+import type { GrupoSidebar, RutaApp } from "@routes/types/routes.types"
 import { rutasAdmin, seccionesAdmin } from "@routes/rutasAdmin"
 
 // Fuente única de navegación: la barra lateral y el encabezado se renderizan desde esta lista.
@@ -22,9 +22,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["reportes.ver", "agenda.ver_propia"],
     seccion: "principal",
     href: "/dashboard",
-    etiqueta: "Dashboard",
-    titulo: "Dashboard",
-    subtitulo: "Resumen general de tu barbería",
     icono: LayoutDashboard,
     entrada: "zoom",
   },
@@ -33,9 +30,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["agenda.ver", "agenda.ver_propia"],
     seccion: "operacion",
     href: "/dashboard/citas",
-    etiqueta: "Citas",
-    titulo: "Citas",
-    subtitulo: "Gestión de citas y calendario",
     icono: CalendarDays,
     entrada: "subir",
   },
@@ -48,9 +42,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["equipo.ver", "barberos.ver"],
     seccion: "operacion",
     href: "/dashboard/personas",
-    etiqueta: "Personas",
-    titulo: "Personas",
-    subtitulo: "Quién trabaja en la barbería: quién entra, quién atiende y con qué permisos",
     icono: UsersRound,
     entrada: "derecha",
   },
@@ -61,9 +52,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["catalogo.ver"],
     seccion: "operacion",
     href: "/dashboard/servicios",
-    etiqueta: "Servicios",
-    titulo: "Servicios",
-    subtitulo: "El catálogo de la barbería: qué se ofrece, cuánto dura y entre qué precios",
     icono: Scissors,
     entrada: "izquierda",
   },
@@ -72,9 +60,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["sedes.ver"],
     seccion: "operacion",
     href: "/dashboard/sedes",
-    etiqueta: "Sedes",
-    titulo: "Sedes",
-    subtitulo: "Dónde opera la barbería, con su horario y sus cierres",
     icono: Building2,
     entrada: "izquierda",
   },
@@ -86,9 +71,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["clientes.ver", "clientes.ver_propios"],
     seccion: "operacion",
     href: "/dashboard/clientes",
-    etiqueta: "Clientes",
-    titulo: "Clientes",
-    subtitulo: "Base de clientes y fidelización",
     icono: Users,
     entrada: "derecha",
   },
@@ -97,9 +79,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["ganancias.ver", "ganancias.ver_propias"],
     seccion: "finanzas",
     href: "/dashboard/nomina",
-    etiqueta: "Nómina",
-    titulo: "Nómina",
-    subtitulo: "Comisiones, propinas y producción",
     icono: DollarSign,
     entrada: "bajar",
   },
@@ -108,9 +87,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["reportes.ver"],
     seccion: "finanzas",
     href: "/dashboard/estadisticas",
-    etiqueta: "Estadísticas",
-    titulo: "Estadísticas",
-    subtitulo: "Análisis y métricas de negocio",
     icono: BarChart3,
     entrada: "zoom",
   },
@@ -124,9 +100,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["jornadas.gestionar_propia", "oferta.gestionar_propia"],
     seccion: "operacion",
     href: "/dashboard/mi-perfil",
-    etiqueta: "Mi perfil",
-    titulo: "Mi perfil",
-    subtitulo: "Cuándo trabajas y qué ofreces",
     icono: CalendarClock,
     entrada: "fundido",
   },
@@ -135,9 +108,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["sedes.ver"],
     seccion: "herramientas",
     href: "/dashboard/qr",
-    etiqueta: "Código QR",
-    titulo: "Código QR",
-    subtitulo: "Registro y acceso de clientes",
     icono: QrCode,
     entrada: "fundido",
   },
@@ -148,9 +118,6 @@ export const rutasDashboard: RutaApp[] = [
     clave: "notificaciones",
     seccion: "herramientas",
     href: "/dashboard/notificaciones",
-    etiqueta: "Notificaciones",
-    titulo: "Notificaciones",
-    subtitulo: "Lo que ha pasado en tu barbería",
     icono: Bell,
     entrada: "fundido",
   },
@@ -162,9 +129,6 @@ export const rutasDashboard: RutaApp[] = [
     permisos: ["barberias.gestionar"],
     seccion: "herramientas",
     href: "/dashboard/configuracion",
-    etiqueta: "Configuración",
-    titulo: "Configuración",
-    subtitulo: "Personalización de tu barbería",
     icono: Settings,
     entrada: "izquierda",
   },
@@ -191,7 +155,7 @@ export function rutasDe(pathname: string): RutaApp[] {
   return pathname.startsWith("/admin") ? rutasAdmin : rutasDashboard
 }
 
-export function seccionesDe(pathname: string): { id: SeccionRuta; etiqueta: string }[] {
+export function seccionesDe(pathname: string): GrupoSidebar[] {
   return pathname.startsWith("/admin") ? seccionesAdmin : seccionesSidebar
 }
 
@@ -213,10 +177,10 @@ export function obtenerRutaActiva(pathname: string): RutaApp | undefined {
   return rutasDe(pathname).find((ruta) => esRutaActiva(ruta, pathname))
 }
 
-// Etiquetas y orden de las secciones del sidebar.
-export const seccionesSidebar: { id: SeccionRuta; etiqueta: string }[] = [
-  { id: "principal", etiqueta: "Principal" },
-  { id: "operacion", etiqueta: "Operación" },
-  { id: "finanzas", etiqueta: "Finanzas" },
-  { id: "herramientas", etiqueta: "Herramientas" },
+// Orden de las secciones del sidebar. El rótulo lo pone el diccionario.
+export const seccionesSidebar: GrupoSidebar[] = [
+  { id: "principal", clave: "principal" },
+  { id: "operacion", clave: "operacion" },
+  { id: "finanzas", clave: "finanzas" },
+  { id: "herramientas", clave: "herramientas" },
 ]

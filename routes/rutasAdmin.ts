@@ -1,5 +1,5 @@
 import { Building2, CreditCard, Globe, LayoutDashboard, Tags, UserCog, Users } from "lucide-react"
-import type { RutaApp, SeccionRuta } from "@routes/types/routes.types"
+import type { GrupoSidebar, RutaApp } from "@routes/types/routes.types"
 
 /**
  * Navegación del staff de Barion — la misma aplicación, otra área.
@@ -21,9 +21,6 @@ export const rutasAdmin: RutaApp[] = [
     permisos: ["plataforma.barberias.ver"],
     seccion: "principal",
     href: "/admin",
-    etiqueta: "Resumen",
-    titulo: "Resumen de la plataforma",
-    subtitulo: "Cuántas barberías hay, en qué estado y dónde operan",
     icono: LayoutDashboard,
     entrada: "zoom",
   },
@@ -32,9 +29,6 @@ export const rutasAdmin: RutaApp[] = [
     permisos: ["plataforma.barberias.ver"],
     seccion: "principal",
     href: "/admin/barberias",
-    etiqueta: "Barberías",
-    titulo: "Barberías",
-    subtitulo: "Alta, ficha, estado y plan de cada cliente",
     icono: Building2,
     entrada: "derecha",
   },
@@ -46,9 +40,6 @@ export const rutasAdmin: RutaApp[] = [
     permisos: ["plataforma.planes.gestionar"],
     seccion: "principal",
     href: "/admin/planes",
-    etiqueta: "Planes",
-    titulo: "Planes",
-    subtitulo: "Qué se vende: límites, funciones y precio por país",
     icono: Tags,
     entrada: "izquierda",
   },
@@ -60,9 +51,6 @@ export const rutasAdmin: RutaApp[] = [
     permisos: ["plataforma.suscripciones.gestionar"],
     seccion: "principal",
     href: "/admin/suscripciones",
-    etiqueta: "Suscripciones",
-    titulo: "Suscripciones",
-    subtitulo: "Qué tiene contratado cada barbería y hasta cuándo le vale",
     icono: CreditCard,
     entrada: "derecha",
   },
@@ -73,9 +61,6 @@ export const rutasAdmin: RutaApp[] = [
     permisos: ["plataforma.paises.gestionar"],
     seccion: "principal",
     href: "/admin/mercados",
-    etiqueta: "Mercados",
-    titulo: "Mercados",
-    subtitulo: "Dónde se opera y con qué impuesto se factura",
     icono: Globe,
     entrada: "izquierda",
   },
@@ -86,9 +71,6 @@ export const rutasAdmin: RutaApp[] = [
     permisos: ["plataforma.staff.gestionar"],
     seccion: "herramientas",
     href: "/admin/staff",
-    etiqueta: "Equipo de Barion",
-    titulo: "Equipo de Barion",
-    subtitulo: "Quién puede entrar a la plataforma y con qué correo",
     icono: Users,
     entrada: "izquierda",
   },
@@ -100,9 +82,6 @@ export const rutasAdmin: RutaApp[] = [
     clave: "admin-cuenta",
     seccion: "herramientas",
     href: "/admin/cuenta",
-    etiqueta: "Mi cuenta",
-    titulo: "Mi cuenta",
-    subtitulo: "Tu contraseña y con qué entras",
     icono: UserCog,
     entrada: "izquierda",
   },
@@ -112,7 +91,7 @@ export const rutasAdmin: RutaApp[] = [
  * Se reutilizan las secciones del panel en vez de inventar otras: son rótulos
  * de agrupación, y un área pequeña no necesita vocabulario propio.
  */
-export const seccionesAdmin: { id: SeccionRuta; etiqueta: string }[] = [
-  { id: "principal", etiqueta: "Plataforma" },
-  { id: "herramientas", etiqueta: "Tu cuenta" },
+export const seccionesAdmin: GrupoSidebar[] = [
+  { id: "principal", clave: "admin-principal" },
+  { id: "herramientas", clave: "admin-herramientas" },
 ]

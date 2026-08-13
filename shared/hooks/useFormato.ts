@@ -2,6 +2,7 @@
 
 import { monedas, type CodigoMoneda } from "@config/regiones"
 import { useTenant } from "@shared/providers/TenantProvider"
+import { useIdioma } from "@shared/providers/TextosProvider"
 import { useSedeActual } from "@store/sede.store"
 import { formatMoney, toMajorUnits, toMinorUnits } from "@shared/utils/currency"
 import {
@@ -31,7 +32,10 @@ export function useFormato() {
   const sede = useSedeActual()
   const timezone = sede?.zonaHoraria ?? tenant.timezone
   const moneda = monedaValida(sede?.moneda) ?? tenant.moneda
-  const { locale } = tenant
+  // El locale de formateo es el IDIOMA activo, no el de la región: quien pone
+  // el panel en inglés espera leer también las fechas en inglés, y dejar el
+  // texto en un idioma y los meses en otro es peor que no traducir.
+  const locale = useIdioma()
 
   return {
     dinero: (centavos: number) => formatMoney(centavos, moneda, locale),

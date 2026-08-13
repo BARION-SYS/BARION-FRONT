@@ -1,4 +1,18 @@
 import type { LucideIcon } from "lucide-react"
+import type { Diccionario } from "@shared/textos/diccionarios/es-CO"
+
+/**
+ * La clave con la que una ruta busca su nombre en el diccionario.
+ *
+ * Sale del propio diccionario, así que **una ruta nueva no compila hasta que
+ * tiene texto** en los tres idiomas. Es la comprobación que antes no existía:
+ * el nombre vivía escrito aquí en español y no había nada que obligara a
+ * traducirlo.
+ */
+export type ClaveRuta = keyof Diccionario["navegacion"]["rutas"]
+
+/** Igual para el rótulo de un grupo del sidebar. */
+export type ClaveGrupo = keyof Diccionario["navegacion"]["grupos"]
 
 export type SeccionRuta = "principal" | "operacion" | "finanzas" | "herramientas"
 
@@ -6,11 +20,9 @@ export type SeccionRuta = "principal" | "operacion" | "finanzas" | "herramientas
 export type EntradaVista = "subir" | "bajar" | "izquierda" | "derecha" | "zoom" | "fundido"
 
 export interface RutaApp {
-  clave: string
+  /** Con esto se busca su etiqueta, su título y su subtítulo (ver `ClaveRuta`). */
+  clave: ClaveRuta
   href: string
-  etiqueta: string
-  titulo: string
-  subtitulo: string
   icono: LucideIcon
   /** Grupo del sidebar — las secciones se renderizan en este orden */
   seccion: SeccionRuta
@@ -28,4 +40,10 @@ export interface RutaApp {
    * olvido.
    */
   permisos?: string[]
+}
+
+/** Un grupo del sidebar: su hueco en el layout y su rótulo en el diccionario. */
+export interface GrupoSidebar {
+  id: SeccionRuta
+  clave: ClaveGrupo
 }

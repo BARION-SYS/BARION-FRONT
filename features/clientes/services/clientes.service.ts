@@ -1,8 +1,10 @@
 import { api } from "@lib/http/instances"
 import { omitEmpty } from "@shared/utils/params"
 import {
+  esquemaBloqueo,
   esquemaCliente,
   esquemaConsentimiento,
+  type DatosBloqueo,
   type DatosCliente,
   type DatosConsentimiento,
 } from "@features/clientes/schemas/clientes.schema"
@@ -60,5 +62,19 @@ export const clientesService = {
     return api.get<Segmento[]>("/segmentos", {
       params: { paginar: false, soloActivos: true },
     })
+  },
+
+  /**
+   * Cierra la reserva EN LÍNEA hasta una fecha. No es una expulsión: sus citas
+   * siguen en pie y la barbería puede seguir citándolo a mano.
+   */
+  async bloquearCliente(id: string, payload: DatosBloqueo): Promise<ApiResult<Cliente>> {
+    const validos = esquemaBloqueo.parse(payload)
+    return api.post<Cliente>(`/clientes/${id}/bloqueo`, omitEmpty({ ...validos }))
+  },
+
+  /** Levantarlo antes de tiempo. Si no, caduca solo. */
+  async desbloquearCliente(id: string): Promise<ApiResult<Cliente>> {
+    return api.delete<Cliente>(`/clientes/${id}/bloqueo`)
   },
 }

@@ -10,6 +10,11 @@ import { puede } from "@features/auth/utils/permisos"
 import { useSedeActual } from "@store/sede.store"
 import { useBarberos } from "@features/barberos/hooks/useBarberos"
 import { useClientes } from "@features/clientes/hooks/useClientes"
+import {
+  ClientesBloqueoForm,
+  ID_FORM_BLOQUEO,
+} from "@features/clientes/components/ClientesBloqueoForm"
+import type { DatosBloqueo } from "@features/clientes/schemas/clientes.schema"
 import { ClientesDetail } from "@features/clientes/components/ClientesDetail"
 import { ClientesForm } from "@features/clientes/components/ClientesForm"
 import { ClientesList } from "@features/clientes/components/ClientesList"
@@ -51,6 +56,8 @@ export default function ClientesPage() {
     handleUpdateCliente,
     handleRegistrarConsentimiento,
     handleAnonimizarCliente,
+    handleBloquearCliente,
+    handleDesbloquearCliente,
   } = useClientes()
 
   const { barberos, fetchBarberos } = useBarberos()
@@ -71,6 +78,7 @@ export default function ClientesPage() {
   const [creando, setCreando] = useState(false)
   const [clienteEnEdicion, setClienteEnEdicion] = useState<Cliente | null>(null)
   const [clienteAAnonimizar, setClienteAAnonimizar] = useState<Cliente | null>(null)
+  const [clienteABloquear, setClienteABloquear] = useState<Cliente | null>(null)
 
   // La búsqueda y la etiqueta las filtra la API: la base de clientes crece sin
   // techo y traerla entera para filtrarla aquí dejaría de funcionar sola.
@@ -159,6 +167,32 @@ export default function ClientesPage() {
     }
   }, [clienteAAnonimizar, handleAnonimizarCliente, cargar])
 
+  const onBloquear = useCallback(
+    async (datos: DatosBloqueo) => {
+      if (!clienteABloquear) return
+      try {
+        notify.success(await handleBloquearCliente(clienteABloquear.id, datos))
+        setClienteABloquear(null)
+        void cargar()
+      } catch (err) {
+        notify.error(getErrorMessage(err))
+      }
+    },
+    [clienteABloquear, handleBloquearCliente, cargar]
+  )
+
+  const onDesbloquear = useCallback(
+    async (cliente: Cliente) => {
+      try {
+        notify.success(await handleDesbloquearCliente(cliente.id))
+        void cargar()
+      } catch (err) {
+        notify.error(getErrorMessage(err))
+      }
+    },
+    [handleDesbloquearCliente, cargar]
+  )
+
   return (
     // Móvil: scroll de página. lg+: app-like — alto fijo, lista y detalle
     // scrollean por dentro.
@@ -204,6 +238,8 @@ export default function ClientesPage() {
             gestiona={gestiona}
             puedeAnonimizar={puedeAnonimizar}
             onEditar={() => setClienteEnEdicion(seleccionado)}
+            onBloquear={() => setClienteABloquear(seleccionado)}
+            onDesbloquear={() => void onDesbloquear(seleccionado)}
             onAnonimizar={() => setClienteAAnonimizar(seleccionado)}
             onConsentimiento={onConsentimiento}
           />
@@ -233,6 +269,34 @@ export default function ClientesPage() {
           cargando={loadingAction}
           onSubmit={onGuardar}
         />
+      </Modal>
+
+      <Modal
+        open={clienteABloquear !== null}
+        onOpenChange={(abierto) => !abierto && setClienteABloquear(null)}
+        size="sm"
+        titulo="Bloquear la reserva en línea"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setClienteABloquear(null)}
+              disabled={loadingAction}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" form={ID_FORM_BLOQUEO} disabled={loadingAction}>
+              Bloquear
+            </Button>
+          </>
+        }
+      >
+        {clienteABloquear && (
+          <ClientesBloqueoForm
+            nombre={clienteABloquear.nombre}
+            onSubmit={(datos) => void onBloquear(datos)}
+          />
+        )}
       </Modal>
 
       <Modal

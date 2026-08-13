@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react"
+
 import {
   CalendarClock,
   Mail,
@@ -38,6 +40,9 @@ interface ClientesDetailProps {
   /** `clientes.anonimizar`: es otra capacidad, y más grave. */
   puedeAnonimizar: boolean
   onEditar: () => void
+  /** Cerrarle la reserva en línea, o levantársela antes de tiempo. */
+  onBloquear: () => void
+  onDesbloquear: () => void
   onAnonimizar: () => void
   onConsentimiento: (tipo: TipoConsentimiento, otorgado: boolean) => void
 }
@@ -64,11 +69,20 @@ export function ClientesDetail({
   gestiona,
   puedeAnonimizar,
   onEditar,
-  onAnonimizar,
+  onBloquear,
+  onDesbloquear,
   onConsentimiento,
+  onAnonimizar,
 }: ClientesDetailProps) {
   const { dinero, numero, fecha, relativo } = useFormato()
   const anonimizado = cliente.estado === "anonimizado"
+  // El reloj se lee UNA vez al montar y no en cada render: leerlo mientras se
+  // pinta es impuro —la misma pantalla daría resultados distintos— y el lint lo
+  // rechaza con razón. Un minuto de desfase no cambia nada aquí.
+  const [ahora] = useState(() => Date.now())
+  // Vencido cuenta como no bloqueado: la fecha caduca sola, que es lo que
+  // impide que un bloqueo se convierta en una expulsión por olvido.
+  const bloqueado = !!cliente.bloqueadoHasta && new Date(cliente.bloqueadoHasta).getTime() > ahora
 
   const vigente = (tipo: TipoConsentimiento) =>
     consentimientos?.vigentes.find((v) => v.tipo === tipo)?.otorgado ?? false
@@ -98,6 +112,16 @@ export function ClientesDetail({
                   Editar
                 </Button>
               )}
+              {gestiona &&
+                (bloqueado ? (
+                  <Button type="button" size="sm" variant="outline" onClick={onDesbloquear}>
+                    Levantar bloqueo
+                  </Button>
+                ) : (
+                  <Button type="button" size="sm" variant="outline" onClick={onBloquear}>
+                    Bloquear reserva
+                  </Button>
+                ))}
               {puedeAnonimizar && (
                 <Button type="button" size="sm" variant="destructive" onClick={onAnonimizar}>
                   Anonimizar
@@ -107,6 +131,14 @@ export function ClientesDetail({
           )
         }
       >
+        {bloqueado && cliente.bloqueadoHasta && (
+          <p className="mb-4 rounded-lg border border-(--advertencia)/40 bg-[color-mix(in_srgb,var(--advertencia)_8%,transparent)] p-3 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">No puede reservar en línea</span> hasta el{" "}
+            {fecha(cliente.bloqueadoHasta)}. Sus citas actuales siguen en pie y la barbería puede
+            seguir citándolo a mano.
+          </p>
+        )}
+
         <div className="flex flex-wrap items-center gap-4">
           <InitialsAvatar
             iniciales={inicialesDe(`${cliente.nombre} ${cliente.apellido ?? ""}`)}

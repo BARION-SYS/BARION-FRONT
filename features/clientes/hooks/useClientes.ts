@@ -3,7 +3,11 @@
 import { useCallback, useState } from "react"
 import { clientesService } from "@features/clientes/services/clientes.service"
 import { getErrorMessage } from "@shared/utils/error"
-import type { DatosCliente, DatosConsentimiento } from "@features/clientes/schemas/clientes.schema"
+import type {
+  DatosCliente,
+  DatosConsentimiento,
+  DatosBloqueo,
+} from "@features/clientes/schemas/clientes.schema"
 import type {
   Cliente,
   Consentimientos,
@@ -129,7 +133,36 @@ export function useClientes() {
     }
   }, [])
 
+  /**
+   * Cerrarle o abrirle la reserva en línea. Devuelve el mensaje de la api, que
+   * es el que se enseña: dice hasta cuándo queda cerrada.
+   */
+  const handleBloquearCliente = useCallback(
+    async (id: string, payload: DatosBloqueo): Promise<string> => {
+      setLoadingAction(true)
+      try {
+        const res = await clientesService.bloquearCliente(id, payload)
+        return res.message
+      } finally {
+        setLoadingAction(false)
+      }
+    },
+    []
+  )
+
+  const handleDesbloquearCliente = useCallback(async (id: string): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await clientesService.desbloquearCliente(id)
+      return res.message
+    } finally {
+      setLoadingAction(false)
+    }
+  }, [])
+
   return {
+    handleBloquearCliente,
+    handleDesbloquearCliente,
     clientes,
     segmentos,
     historial,

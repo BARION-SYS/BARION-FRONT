@@ -46,3 +46,22 @@ export const esquemaConsentimiento = z.object({
 })
 
 export type DatosConsentimiento = z.infer<typeof esquemaConsentimiento>
+
+/**
+ * Cerrarle la reserva en línea hasta una fecha.
+ *
+ * La fecha es obligatoria y futura porque un bloqueo indefinido no lo levanta
+ * nadie: se queda puesto, el cliente deja de volver y nadie recuerda por qué.
+ */
+export const esquemaBloqueo = z.object({
+  hasta: z.string().min(1, "Elige hasta cuándo"),
+  motivo: z
+    .string()
+    .trim()
+    .min(3, "Di por qué: es lo que lee quien atiende cuando esa persona llame")
+    .max(500, "Máximo 500 caracteres")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+})
+
+export type DatosBloqueo = z.infer<typeof esquemaBloqueo>

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { AnimatePresence, motion, type Variants } from "motion/react"
-import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react"
+import { ArrowRight, Eye, EyeOff, Loader2, Store } from "lucide-react"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button, buttonVariants } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
@@ -96,14 +96,32 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
         <motion.div variants={bloque}>
           <div className="flex items-start justify-between">
             <LogoBarion variante="icono" priority className="h-14" />
-            <span className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
-              <span className="h-1.5 w-1.5 rounded-full bg-(--exito)" aria-hidden />
-              En línea
-            </span>
+            {/*
+              La puerta dice de QUIÉN es. Entrar por `/b/{slug}/entrar` y por la
+              puerta global se veía exactamente igual, así que quien llega desde
+              el enlace de su barbería no tenía forma de saber a dónde está
+              entrando — y eso importa justo cuando alguien trabaja en dos.
+              Sin slug se conserva el indicador de siempre.
+            */}
+            {slug ? (
+              <span className="flex max-w-[55%] items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                <Store className="size-3.5 shrink-0" aria-hidden />
+                <span className="truncate">{slug}</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                <span className="h-1.5 w-1.5 rounded-full bg-(--exito)" aria-hidden />
+                En línea
+              </span>
+            )}
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-foreground">Panel administrativo</h2>
-          <p className="mt-1.5 text-base text-muted-foreground">
-            Bienvenido de vuelta. Tu barbería te espera.
+          <h2 className="mt-6 text-2xl font-bold text-balance text-foreground sm:text-3xl">
+            {slug ? "Entra a tu barbería" : "Panel administrativo"}
+          </h2>
+          <p className="mt-1.5 text-base text-pretty text-muted-foreground">
+            {slug
+              ? "Con tu correo y tu contraseña. El mismo correo puede trabajar en más de una barbería: la puerta decide a cuál entras."
+              : "Bienvenido de vuelta. Tu barbería te espera."}
           </p>
         </motion.div>
 

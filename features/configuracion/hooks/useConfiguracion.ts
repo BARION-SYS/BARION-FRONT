@@ -119,7 +119,19 @@ export function useConfiguracion() {
     []
   )
 
+  /** Otro enlace para publicar la barbería: los correos se pierden. */
+  const handleReenviarVerificacion = useCallback(async (): Promise<string> => {
+    setLoadingAction(true)
+    try {
+      const res = await configuracionService.reenviarVerificacion()
+      return res.message
+    } finally {
+      setLoadingAction(false)
+    }
+  }, [])
+
   return {
+    handleReenviarVerificacion,
     secciones,
     barberia,
     canales,

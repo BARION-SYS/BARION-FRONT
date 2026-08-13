@@ -89,4 +89,12 @@ export const configuracionService = {
     const { contrasenaActual, contrasenaNueva } = esquemaSeguridad.parse(payload)
     return api.post<null>("/auth/cambiar-contrasena", { contrasenaActual, contrasenaNueva })
   },
+
+  /**
+   * Reenvía el correo que publica la barbería. Va al correo del propietario, no
+   * al de quien lo pide: es la dirección que hay que confirmar.
+   */
+  async reenviarVerificacion(): Promise<ApiResult<{ email: string | null }>> {
+    return api.post<{ email: string | null }>("/verificacion/reenviar", {})
+  },
 }

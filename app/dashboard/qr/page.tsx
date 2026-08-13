@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { CalendarCheck, UserPlus } from "lucide-react"
+import { CalendarCheck, Send, UserPlus } from "lucide-react"
 import { QrActividadList } from "@features/qr/components/QrActividadList"
 import { QrCapacidadesCard } from "@features/qr/components/QrCapacidadesCard"
 import { QrCodigoCard } from "@features/qr/components/QrCodigoCard"
@@ -19,6 +19,7 @@ import { Modal } from "@shared/components/modals/Modal"
 import { Button } from "@shared/components/ui/button"
 import { useFormato } from "@shared/hooks/useFormato"
 import { useOrigen } from "@shared/hooks/useOrigen"
+import { useConfiguracion } from "@features/configuracion/hooks/useConfiguracion"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useAuthStore } from "@store/auth.store"
@@ -65,6 +66,10 @@ export default function QrPage() {
     fetchReportesQr,
     handleRotateSlugQr,
   } = useQr()
+
+  // El reenvío del correo que publica la barbería: vive en `configuracion`,
+  // que es de quien es la ficha, y aquí se consume su hook.
+  const { handleReenviarVerificacion, loadingAction: reenviando } = useConfiguracion()
 
   const sesion = useAuthStore((estado) => estado.sesion)
   const veReportes = puede(sesion, "reportes.ver")
@@ -179,6 +184,27 @@ export default function QrPage() {
           </span>{" "}
           Falta abrir el enlace que te mandamos al correo con el que te registraste. Hasta entonces
           este código lleva a una página de error: no lo imprimas ni lo compartas.
+          {/* La salida, al lado del problema: sin esto, un correo perdido solo
+              se recuperaba tocando la base. */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-3 flex"
+            disabled={reenviando}
+            onClick={() => {
+              void (async () => {
+                try {
+                  notify.success(await handleReenviarVerificacion())
+                } catch (err) {
+                  notify.error(getErrorMessage(err))
+                }
+              })()
+            }}
+          >
+            <Send className="size-4" aria-hidden />
+            Reenviar el correo
+          </Button>
         </p>
       )}
 

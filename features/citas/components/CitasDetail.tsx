@@ -1,6 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@shared/components/ui/button"
+import { Input } from "@shared/components/ui/input"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { useFormato } from "@shared/hooks/useFormato"
@@ -14,7 +16,8 @@ interface CitasDetailProps {
   /** `agenda.gestionar` o `agenda.gestionar_propia` sobre esta cita. */
   gestiona: boolean
   cargando?: boolean
-  onEstado: (estado: EstadoCita) => void
+  /** El destino, y la propina cuando se está completando. */
+  onEstado: (estado: EstadoCita, propinaCentavos?: string) => void
   onReprogramar: () => void
 }
 
@@ -44,7 +47,9 @@ export function CitasDetail({
   onEstado,
   onReprogramar,
 }: CitasDetailProps) {
-  const { hora, fecha, fechaHora, dinero } = useFormato()
+  const { hora, fecha, fechaHora, dinero, aCentavos } = useFormato()
+  // En unidad mayor: quien la teclea piensa en pesos, no en centavos.
+  const [propina, setPropina] = useState("")
   const estado = configEstadoCita[cita.estado]
   const siguientes = SIGUIENTES[cita.estado]
 
@@ -106,6 +111,31 @@ export function CitasDetail({
         </p>
       )}
 
+      {/*
+        Cerrar una cita es cobrarla, así que la propina se pregunta AQUÍ y no en
+        otra pantalla: es el mismo gesto. Va en blanco porque la mayoría de las
+        citas no llevan, y solo se manda si alguien escribe algo — un cero
+        explícito y un campo vacío significan lo mismo para el ledger, pero
+        obligar a teclearlo convertiría cada cierre en un formulario.
+      */}
+      {gestiona && siguientes.includes("completada") && (
+        <label className="flex flex-col gap-1.5 rounded-lg border border-border bg-secondary/40 p-3">
+          <span className="text-xs font-medium text-foreground">
+            Propina <span className="font-normal text-muted-foreground">(opcional)</span>
+          </span>
+          <Input
+            inputMode="decimal"
+            placeholder="0"
+            value={propina}
+            onChange={(evento) => setPropina(evento.target.value)}
+            aria-label="Propina que dejó el cliente"
+          />
+          <span className="text-xs text-muted-foreground">
+            Va íntegra al barbero. Una vez guardada solo se corrige con un ajuste de nómina.
+          </span>
+        </label>
+      )}
+
       {gestiona && siguientes.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {siguientes.map((destino) => (
@@ -115,7 +145,17 @@ export function CitasDetail({
               size="sm"
               variant={destino === "cancelada" ? "destructive" : "outline"}
               disabled={cargando}
-              onClick={() => onEstado(destino)}
+              onClick={() =>
+                onEstado(
+                  destino,
+                  // La propina solo viaja al completar: en cualquier otro salto
+                  // la api responde 422, y con razón — nadie sabría qué
+                  // significa una propina en una cita cancelada.
+                  destino === "completada" && propina.trim()
+                    ? aCentavos(Number(propina))
+                    : undefined
+                )
+              }
             >
               {configEstadoCita[destino].etiqueta}
             </Button>

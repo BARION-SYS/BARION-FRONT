@@ -235,7 +235,6 @@ pseudoelemento: lo que crece es la zona que responde al dedo, no el dibujo.
 excepciones son las maquetas a escala, como la vista previa del portal en
 Configuración → Apariencia, donde el texto no está para leerse.
 
-
 Mobile-first: clases base = móvil; `sm: md: lg: xl:` añaden. Sin scroll horizontal (probar 375/768/1024/1440). `min-h-dvh`/`h-dvh`, nunca `100vh`. Touch targets ≥ 44px. Texto base ≥ 16px en móvil. Layouts fluidos (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`), nada de anchos fijos en px. Tablas con `overflow-x-auto` o tarjetas en móvil. Sidebar colapsable en desktop + drawer en móvil. Respetar `prefers-reduced-motion` (`motion-reduce:transition-none`).
 
 ## Skills de frontend

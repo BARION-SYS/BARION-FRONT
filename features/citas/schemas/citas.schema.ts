@@ -58,6 +58,17 @@ export const esquemaEstadoCita = z.object({
     "cancelada",
     "no_asistio",
   ]),
+  /**
+   * Lo que el cliente dejó de más, en centavos.
+   *
+   * Va aquí y no en una pantalla propia porque **se sabe al cobrar**, que es el
+   * mismo momento en que la cita se cierra. La api solo la acepta al completar:
+   * en cualquier otro salto responde 422.
+   */
+  propinaCentavos: z
+    .string()
+    .regex(/^\d{1,18}$/, "La propina va en centavos, sin signo ni decimales")
+    .optional(),
   motivo: z
     .string()
     .max(500, "Máximo 500 caracteres")

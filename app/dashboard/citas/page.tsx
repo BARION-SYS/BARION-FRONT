@@ -165,10 +165,10 @@ export default function CitasPage() {
   )
 
   const onEstado = useCallback(
-    async (destino: EstadoCita) => {
+    async (destino: EstadoCita, propinaCentavos?: string) => {
       if (!seleccionada) return
       const movida = await conAviso(() =>
-        handleCambiarEstadoCita(seleccionada.id, { estado: destino })
+        handleCambiarEstadoCita(seleccionada.id, { estado: destino, propinaCentavos })
       )
       if (movida) {
         setSeleccionada(null)

@@ -125,7 +125,22 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
           </p>
         </motion.div>
 
-        <form className="mt-8 space-y-5" onSubmit={enviar} noValidate>
+        {/*
+          ── `suppressHydrationWarning` en el formulario y en sus dos campos ──
+          El gestor de contraseñas de Google/Chrome les mete un atributo propio
+          (`__gcruniqueid`) ANTES de que React hidrate, así que el HTML del
+          servidor y el del navegador dejan de coincidir y React lo denuncia con
+          un error de hidratación enorme. No es un fallo de este código y no hay
+          nada que arreglar en él: el atributo lo pone un tercero sobre el que no
+          mandamos, y pasa sobre todo en móvil al volver del acceso con Google.
+
+          Se silencia SOLO aquí —el atributo solo aparece en campos de
+          credenciales— y elemento por elemento, porque la supresión no se hereda
+          a los hijos. Lo que se pierde a cambio es la denuncia de un desajuste
+          real en estos tres nodos, que es un precio pequeño frente a un error de
+          consola que aparece en cada inicio de sesión y tapa a los de verdad.
+        */}
+        <form className="mt-8 space-y-5" onSubmit={enviar} noValidate suppressHydrationWarning>
           <motion.div variants={bloque}>
             <Field data-invalid={!!errors.correo}>
               <FieldLabel htmlFor="correo">Correo electrónico</FieldLabel>
@@ -133,6 +148,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
                 id="correo"
                 type="email"
                 autoComplete="email"
+                suppressHydrationWarning
                 placeholder="tu@barberia.mx"
                 aria-invalid={!!errors.correo}
                 className="h-11"
@@ -148,6 +164,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
               <div className="relative">
                 <Input
                   id="contrasena"
+                  suppressHydrationWarning
                   type={verContrasena ? "text" : "password"}
                   autoComplete="current-password"
                   aria-invalid={!!errors.contrasena}

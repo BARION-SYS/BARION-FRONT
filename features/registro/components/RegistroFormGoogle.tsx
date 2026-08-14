@@ -4,6 +4,7 @@ import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { AlertCircle, ArrowRight, Loader2, ShieldCheck } from "lucide-react"
 import { nombresDeRegion, regiones, type CodigoRegion } from "@config/regiones"
+import { AceptacionTerminos } from "@features/registro/components/AceptacionTerminos"
 import { DireccionPublica } from "@features/registro/components/DireccionPublica"
 import { CampoTelefono } from "@shared/components/forms/CampoTelefono"
 import {
@@ -99,6 +100,9 @@ export function RegistroFormGoogle({
       // negocio.
       propietarioNombre: preregistro.nombre ?? "",
       propietarioTelefonoE164: "",
+      // Desmarcada, igual que en el otro camino: el proveedor dice quién eres,
+      // no que aceptes un contrato.
+      aceptaTerminos: false,
     },
   })
 
@@ -272,6 +276,19 @@ export function RegistroFormGoogle({
       </FieldSet>
 
       <div className="space-y-4">
+        <Controller
+          control={control}
+          name="aceptaTerminos"
+          render={({ field }) => (
+            <AceptacionTerminos
+              checked={field.value === true}
+              onCheckedChange={field.onChange}
+              error={errors.aceptaTerminos}
+              disabled={deshabilitado}
+            />
+          )}
+        />
+
         {error && (
           <p
             role="alert"

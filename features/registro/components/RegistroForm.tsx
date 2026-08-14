@@ -6,6 +6,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react"
 import { env } from "@config/env"
 import { nombresDeRegion, regiones, type CodigoRegion } from "@config/regiones"
+import { AceptacionTerminos } from "@features/registro/components/AceptacionTerminos"
 import { DireccionPublica } from "@features/registro/components/DireccionPublica"
 import { CampoTelefono } from "@shared/components/forms/CampoTelefono"
 import {
@@ -93,6 +94,8 @@ export function RegistroForm({
       propietarioEmail: "",
       propietarioTelefonoE164: "",
       contrasena: "",
+      // Desmarcada. Una casilla premarcada no es una aceptación.
+      aceptaTerminos: false,
     },
   })
 
@@ -306,6 +309,21 @@ export function RegistroForm({
       </FieldSet>
 
       <div className="space-y-4">
+        {/* Lo último antes del botón: es lo que se acepta al pulsarlo, y una
+            casilla a mitad del formulario se lee como un campo más */}
+        <Controller
+          control={control}
+          name="aceptaTerminos"
+          render={({ field }) => (
+            <AceptacionTerminos
+              checked={field.value === true}
+              onCheckedChange={field.onChange}
+              error={errors.aceptaTerminos}
+              disabled={deshabilitado}
+            />
+          )}
+        />
+
         {/* Falló la petición, no un campo: por eso va aquí y no inline. Con
             ícono además del color — quien no distingue el rojo también tiene
             que ver que esto es un error */}

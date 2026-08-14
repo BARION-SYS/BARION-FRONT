@@ -17,4 +17,18 @@ export const rutasPublicas = {
  */
 export const rutasWeb = {
   inicio: env.landingUrl,
+  /**
+   * Los tres documentos legales se publican en el SITIO, no aquí, y por dos
+   * razones que empujan igual: se leen antes de tener cuenta —quien todavía no
+   * se ha registrado no puede entrar al panel a leer los términos— y tienen que
+   * poder indexarse, que es lo contrario de lo que hace esta aplicación con todo
+   * lo suyo.
+   *
+   * Con `new URL` y no concatenando: `NEXT_PUBLIC_LANDING_URL` puede venir con
+   * barra final, y dos barras seguidas dan una dirección que no resuelve — desde
+   * la casilla del alta, que es el peor sitio donde tener un enlace roto.
+   */
+  terminos: new URL("/legal/terminos", env.landingUrl).toString(),
+  privacidad: new URL("/legal/privacidad", env.landingUrl).toString(),
+  cookies: new URL("/legal/cookies", env.landingUrl).toString(),
 } as const

@@ -32,6 +32,23 @@ export const esquemaRegistro = z.object({
   propietarioEmail: z.email("Ingresa un correo válido"),
   propietarioTelefonoE164: z.string().trim().regex(E164, "Escríbelo con indicativo: +573001112233"),
   contrasena: z.string().min(12, "Mínimo 12 caracteres"),
+  /**
+   * La casilla de los términos. Sin marcar es un error de validación y no un
+   * `false` que la api rechace después: el error inline sale junto a la
+   * casilla, y un 400 vuelve al pie del formulario, lejos de lo que hay que
+   * corregir.
+   *
+   * `boolean().refine()` y no `literal(true)`, aunque lo único válido sea
+   * `true`: `literal` infiere el tipo `true`, así que el valor inicial del
+   * formulario —desmarcada— no encajaría sin un casteo. El tipo describe el
+   * campo, que es booleano; la regla la pone el refine.
+   *
+   * **Qué versión se aceptó no viaja desde aquí**: la estampa la api desde su
+   * propia constante. Una aceptación que redacta quien la firma no prueba nada.
+   */
+  aceptaTerminos: z
+    .boolean()
+    .refine((marcado) => marcado, "Hay que aceptar los términos y la política de privacidad"),
 })
 
 export type DatosRegistro = z.infer<typeof esquemaRegistro>

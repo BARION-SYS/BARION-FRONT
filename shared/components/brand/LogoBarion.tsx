@@ -25,6 +25,19 @@ const fuentes = {
 interface LogoBarionProps {
   variante?: keyof typeof fuentes
   className?: string
+  /**
+   * Carga la imagen con prioridad y la precarga en la cabecera.
+   *
+   * **Se pasa donde el logo es lo más grande que hay sobre la línea de
+   * flotación**, que es el caso de las pantallas de acceso y de alta: son
+   * páginas casi vacías, así que el logo acaba siendo el elemento que decide el
+   * LCP. Sin esto, el navegador lo descarga con prioridad baja y Next avisa por
+   * consola en cada carga.
+   *
+   * **No se pone en todas**: precargar tiene coste y en el panel el logo de la
+   * barra lateral es un detalle pequeño junto a una pantalla llena de contenido;
+   * marcarlo ahí robaría prioridad a lo que de verdad se está esperando.
+   */
   priority?: boolean
 }
 

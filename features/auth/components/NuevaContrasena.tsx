@@ -77,7 +77,7 @@ export function NuevaContrasena({
         className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-lg sm:p-8"
       >
         <motion.div variants={bloque} className="flex flex-col items-center gap-4 text-center">
-          <LogoBarion variante="icono" />
+          <LogoBarion variante="icono" priority />
           <div className="flex flex-col gap-1.5">
             <h1 className="text-lg font-semibold">{t.auth.nuevaContrasena.titulo}</h1>
             <p className="text-sm text-muted-foreground">{t.auth.nuevaContrasena.descripcion}</p>

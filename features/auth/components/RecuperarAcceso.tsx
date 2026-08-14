@@ -71,7 +71,7 @@ export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: Recupe
         className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-lg sm:p-8"
       >
         <motion.div variants={bloque} className="flex flex-col items-center gap-4 text-center">
-          <LogoBarion variante="icono" />
+          <LogoBarion variante="icono" priority />
           {enviado ? (
             <>
               <span className="flex size-11 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--exito)_14%,transparent)]">

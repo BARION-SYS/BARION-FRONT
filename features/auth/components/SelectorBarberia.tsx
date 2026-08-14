@@ -38,7 +38,7 @@ export function SelectorBarberia({ barberias, cargando, onElegir }: SelectorBarb
       initial="oculto"
       animate="visible"
     >
-      <LogoBarion variante="icono" className="mb-6" />
+      <LogoBarion variante="icono" priority className="mb-6" />
 
       <h1 className="text-lg font-semibold">{t.auth.selectorBarberia.titulo}</h1>
       <p className="mt-1 text-sm text-muted-foreground">{t.auth.selectorBarberia.descripcion}</p>

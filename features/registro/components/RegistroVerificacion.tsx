@@ -42,7 +42,7 @@ export function RegistroVerificacion({ estado, mensaje }: RegistroVerificacionPr
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-8 p-6">
-      <LogoBarion variante="completo" />
+      <LogoBarion variante="completo" priority />
 
       <motion.section
         // Entrada corta y con muelle: acompaña la llegada sin hacerla esperar.

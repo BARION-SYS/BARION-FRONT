@@ -164,7 +164,7 @@ function ContenedorRegistro() {
           <div className="mx-auto flex h-16 max-w-[1100px] items-center gap-4 px-6 sm:px-8">
             {/* Otro dominio: <a>, no next/link */}
             <a href={rutasWeb.inicio} aria-label="Barion — inicio">
-              <LogoBarion variante="completo" className="h-6" />
+              <LogoBarion variante="completo" priority className="h-6" />
             </a>
             <div className="ml-auto flex items-center gap-1">
               <Link

@@ -1,0 +1,55 @@
+# CI de BARION-FRONT.
+#
+# Lo mismo que se corre a mano antes de commitear: `pnpm lint` (eslint +
+# `tsc --noEmit`), `pnpm test` (vitest) y `pnpm format:check`.
+#
+# ── Por qué NO se construye la aplicación aquí ──────────────────────────────
+# `next build` ejecuta `config/env.ts`, que valida las variables con zod y
+# revienta si falta alguna — a propósito, para que el fallo salga al arrancar y
+# no en el navegador de alguien. Construir en CI obligaría a inventar aquí unas
+# variables de mentira, y entonces el build que pasa no sería el que se
+# despliega. Lo que sí lo comprueba es el CI del propio despliegue, con las
+# variables reales.
+#
+# `pnpm lint` no las necesita: eslint y `tsc` leen el código, no lo ejecutan.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Lint y pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint y tipos
+        run: pnpm lint
+
+      - name: Pruebas
+        run: pnpm test
+
+      - name: Formato
+        # Va al final y no al principio: un formato distinto no rompe nada, y
+        # enterarse de que además el código no compila es más útil que parar en
+        # una coma.
+        run: pnpm format:check

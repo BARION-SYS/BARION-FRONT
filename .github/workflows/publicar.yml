@@ -1,0 +1,95 @@
+# Construir y publicar la imagen de producción de BARION-FRONT.
+#
+# ── Esta imagen NO es genérica, y hay que entender por qué ──────────────────
+# `NEXT_PUBLIC_API_URL` y `NEXT_PUBLIC_LANDING_URL` se **hornean en el build**:
+# `NEXT_PUBLIC_` no es una etiqueta, es una orden de incrustar el valor en el
+# bundle que se descarga el navegador. Así que la imagen resultante vale para
+# UN despliegue concreto y no para otro; no se puede construir «la imagen del
+# front» y decidir después contra qué dominio apunta.
+#
+# De ahí que las dos salgan de variables del repositorio
+# (Settings → Secrets and variables → Actions → Variables) y no de un valor por
+# defecto: sin reserva, si faltan el build **falla aquí**, que es donde se
+# arregla. Con reserva se publicaría un panel que llama al `localhost` de cada
+# visitante, y eso solo se descubre delante de un cliente.
+#
+# El día que haga falta publicar para dos entornos distintos, este workflow se
+# parametriza por entorno; hoy hay uno.
+#
+# ── Dónde se publica y con qué etiquetas ────────────────────────────────────
+# `ghcr.io`, con el `GITHUB_TOKEN` de la corrida. `sha-<commit>` es la que se
+# despliega; `main` sirve para pruebas; `vX.Y.Z` al etiquetar versión.
+#
+# `IMAGE_WEB=ghcr.io/<org>/barion-front:sha-<commit>` en el `.env` del padre —
+# el servicio se llama `web` ahí, aunque el repositorio sea `BARION-FRONT`.
+name: Publicar imagen
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: publicar-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGEN: ${{ github.repository_owner }}/barion-front
+
+jobs:
+  publicar:
+    name: Construir y publicar
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Comprobar los dominios ANTES de construir
+        # El build tarda minutos y falla al final si falta una: comprobarlo aquí
+        # cuesta un segundo y el mensaje dice qué hacer.
+        run: |
+          set -euo pipefail
+          : "${API_URL:?Falta la variable de repositorio NEXT_PUBLIC_API_URL}"
+          : "${LANDING_URL:?Falta la variable de repositorio NEXT_PUBLIC_LANDING_URL}"
+        env:
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          LANDING_URL: ${{ vars.NEXT_PUBLIC_LANDING_URL }}
+
+      - name: Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Entrar al registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Etiquetas
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGEN }}
+          tags: |
+            type=sha,prefix=sha-,format=long
+            type=ref,event=branch
+            type=semver,pattern=v{{version}}
+
+      - name: Construir y publicar
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_LANDING_URL=${{ vars.NEXT_PUBLIC_LANDING_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

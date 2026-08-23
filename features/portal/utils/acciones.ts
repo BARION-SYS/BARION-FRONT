@@ -1,4 +1,4 @@
-import { getErrorMessage, motivoDeError } from "@shared/utils/error"
+import { motivoDeError } from "@shared/utils/error"
 import type { MotivoError } from "@shared/types/api.types"
 
 /**
@@ -20,43 +20,26 @@ import type { MotivoError } from "@shared/types/api.types"
  */
 
 /**
- * Frase con la que la api pedía el puntaje **antes** de publicar `motivo`.
- *
- * El cotejo es contra la frase COMPLETA a propósito: «Solo se califica una cita
- * que ya se atendió» también habla de calificar y es un fallo definitivo, no una
- * petición de dato.
- *
- * @deprecated RETIRAR —junto con `normalizar` y su rama en `motivoDeAccion`— en
- * cuanto la api que emite `motivo` esté desplegada. Vive solo para que un front
- * por delante del despliegue de la api siga comportándose como hoy.
- */
-const FALTA_PUNTAJE = "falta la calificacion"
-
-/** Sin tildes y en minúsculas: la comparación no depende de cómo se acentúe. */
-function normalizar(texto: string): string {
-  return texto
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-}
-
-/**
  * Por qué la api rechazó el enlace, cuando el rechazo **no** es el final.
  *
- * `undefined` = fallo terminal (o motivo que este front no conoce): se pinta el
- * desenlace y no se reintenta.
+ * `undefined` = fallo terminal, o un motivo que este front no conoce: se pinta
+ * el desenlace y no se reintenta.
  *
- * Aguanta que el campo no llegue: la api puede ir por detrás del despliegue del
- * front, y sin `motivo` el comportamiento es el de antes —solo se detecta la
- * petición de puntaje, por la frase—. Una cancelación contra una api antigua se
- * ejecuta al abrir, exactamente como hacía.
+ * ── Por qué sigue existiendo esta función si hoy solo reenvía ────────────────
+ * Porque nombra una pregunta del portal —«¿este rechazo pide un dato o es el
+ * final?»— que no es la misma que «¿qué motivo trae este error?». Si mañana un
+ * propósito nuevo del enlace necesita otro motivo, se decide aquí y no en la
+ * pantalla. La alternativa era que la página importara `motivoDeError` y el
+ * razonamiento de arriba se quedara sin sitio donde vivir.
+ *
+ * Hasta el 23 de agosto de 2026 hacía algo más: si la api no mandaba `motivo`,
+ * deducía la petición de puntaje **comparando la frase del mensaje**. Eso se
+ * retiró al confirmarse que la api lo emite (`falta_puntaje` sale de
+ * `portal-accion-command.service.ts`). Se anota porque el respaldo tenía fecha
+ * de caducidad desde que se escribió, y este es el día: mantener viva una
+ * comparación de prosa es mantener viva la posibilidad de que un cambio de copy
+ * rompa un enlace.
  */
 export function motivoDeAccion(err: unknown): MotivoError | undefined {
-  const motivo = motivoDeError(err)
-  if (motivo) return motivo
-
-  // Último recurso mientras la api no emita `motivo`. Se retira con FALTA_PUNTAJE.
-  if (normalizar(getErrorMessage(err)).startsWith(FALTA_PUNTAJE)) return "falta_puntaje"
-
-  return undefined
+  return motivoDeError(err)
 }

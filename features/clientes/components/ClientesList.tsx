@@ -9,6 +9,7 @@ import { useFormato } from "@shared/hooks/useFormato"
 import { cn } from "@shared/utils/cn"
 import { inicialesDe } from "@shared/utils/iniciales"
 import type { Cliente } from "@features/clientes/types/clientes.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface ClientesListProps {
   clientes: Cliente[]
@@ -32,6 +33,7 @@ export function ClientesList({
   onSeleccionar,
   onNuevo,
 }: ClientesListProps) {
+  const t = useTextos("clientes")
   const { relativo } = useFormato()
 
   return (
@@ -79,14 +81,14 @@ export function ClientesList({
                     {cliente.verificado && (
                       <ShieldCheck
                         className="size-3.5 shrink-0 text-(--exito)"
-                        aria-label="Cliente verificado"
+                        aria-label={t("detalle.verificado")}
                       />
                     )}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {cliente.ultimaVisitaEn
                       ? `Última visita ${relativo(cliente.ultimaVisitaEn)}`
-                      : "Sin visitas todavía"}
+                      : t("detalle.sinVisitas")}
                   </p>
                 </div>
                 {cliente.etiqueta && (

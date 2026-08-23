@@ -6,6 +6,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@shared/compone
 import { Input } from "@shared/components/ui/input"
 import { Textarea } from "@shared/components/ui/textarea"
 import { esquemaBloqueo, type DatosBloqueo } from "@features/clientes/schemas/clientes.schema"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface ClientesBloqueoFormProps {
   nombre: string
@@ -33,6 +34,7 @@ export const ID_FORM_BLOQUEO = "form-bloqueo-cliente"
  * el mostrador cuando esa persona llama a preguntar.
  */
 export function ClientesBloqueoForm({ nombre, onSubmit }: ClientesBloqueoFormProps) {
+  const t = useTextos("clientes.bloqueo")
   const {
     register,
     handleSubmit,
@@ -51,7 +53,7 @@ export function ClientesBloqueoForm({ nombre, onSubmit }: ClientesBloqueoFormPro
       </p>
 
       <Field data-invalid={!!errors.hasta}>
-        <FieldLabel htmlFor="hasta">Hasta cuándo</FieldLabel>
+        <FieldLabel htmlFor="hasta">{t("hastaCuando")}</FieldLabel>
         <Input id="hasta" type="date" aria-invalid={!!errors.hasta} {...register("hasta")} />
         <FieldDescription>
           Caduca solo ese día. Es lo que impide que un bloqueo se convierta en una expulsión por
@@ -61,11 +63,11 @@ export function ClientesBloqueoForm({ nombre, onSubmit }: ClientesBloqueoFormPro
       </Field>
 
       <Field data-invalid={!!errors.motivo}>
-        <FieldLabel htmlFor="motivo">Motivo (opcional)</FieldLabel>
+        <FieldLabel htmlFor="motivo">{t("motivo")}</FieldLabel>
         <Textarea
           id="motivo"
           rows={3}
-          placeholder="Tres plantones seguidos en agosto"
+          placeholder={t("motivoEjemplo")}
           aria-invalid={!!errors.motivo}
           {...register("motivo")}
         />

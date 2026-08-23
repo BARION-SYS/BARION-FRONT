@@ -12,26 +12,46 @@ import {
 import type { TonoEstado } from "@shared/types/ui.types"
 import type { EstadoCita } from "@features/citas/types/citas.types"
 
-// Config de presentación de estados de cita — dominio dueño; otros feats importan de aquí.
-//
-// Dos pares comparten tono (advertencia: pendiente/retrasada; peligro: cancelada/no_asistio):
-// el ícono y la etiqueta los distinguen igual, y el estado nunca depende SOLO del color.
-export const configEstadoCita: Record<
-  EstadoCita,
-  { etiqueta: string; icono: LucideIcon; tono: TonoEstado }
-> = {
-  reservada: { etiqueta: "Reservada", icono: CalendarClock, tono: "neutro" },
-  pendiente_confirmacion: {
-    etiqueta: "Pendiente de confirmación",
-    icono: Hourglass,
-    tono: "advertencia",
-  },
-  confirmada: { etiqueta: "Confirmada", icono: Circle, tono: "info" },
-  retrasada: { etiqueta: "Retrasada", icono: AlertTriangle, tono: "advertencia" },
-  en_curso: { etiqueta: "En curso", icono: Clock, tono: "primario" },
-  completada: { etiqueta: "Completada", icono: CheckCircle2, tono: "exito" },
-  cancelada: { etiqueta: "Cancelada", icono: XCircle, tono: "peligro" },
-  no_asistio: { etiqueta: "No asistió", icono: UserX, tono: "peligro" },
+/**
+ * Cómo se PINTA cada estado de cita — dominio dueño; otros feats importan de aquí.
+ *
+ * ── Aquí está la forma; el TEXTO vive en el diccionario ─────────────────────
+ * El ícono y el tono no cambian con el idioma; la etiqueta sí. Tenerlos juntos
+ * obligaba a que el único sitio donde se decide qué ícono lleva «cancelada»
+ * fuera también un sitio con español dentro, y a repetir esa decisión de diseño
+ * en cada traducción.
+ *
+ * Dos pares comparten tono (advertencia: pendiente/retrasada; peligro:
+ * cancelada/no_asistio): el ícono y la etiqueta los distinguen igual, y el
+ * estado nunca depende SOLO del color.
+ */
+export const configEstadoCita: Record<EstadoCita, { icono: LucideIcon; tono: TonoEstado }> = {
+  reservada: { icono: CalendarClock, tono: "neutro" },
+  pendiente_confirmacion: { icono: Hourglass, tono: "advertencia" },
+  confirmada: { icono: Circle, tono: "info" },
+  retrasada: { icono: AlertTriangle, tono: "advertencia" },
+  en_curso: { icono: Clock, tono: "primario" },
+  completada: { icono: CheckCircle2, tono: "exito" },
+  cancelada: { icono: XCircle, tono: "peligro" },
+  no_asistio: { icono: UserX, tono: "peligro" },
+}
+
+/**
+ * Cómo se LLAMA cada estado en el idioma activo.
+ *
+ * Recibe el traductor ya acotado a `citas.estados` en vez de llamar al hook: así
+ * la usan igual un componente y cualquier función que ya lo tenga a mano, y no
+ * obliga a que todo lo que necesite el nombre de un estado sea un componente de
+ * React.
+ *
+ * El tipo del parámetro es estructural —«algo que se llama con un estado y
+ * devuelve texto»— y no el `Translator` de la librería: mantiene a este archivo
+ * de dominio sin dependencias de infraestructura. `EstadoCita` es una unión
+ * cerrada y los ocho existen en el catálogo, así que añadir uno en la api **no
+ * compila** hasta tener su texto en los tres idiomas.
+ */
+export function textoEstadoCita(t: (estado: EstadoCita) => string, estado: EstadoCita): string {
+  return t(estado)
 }
 
 /** Ya pasó o está pasando: nadie cancela una cita completada, cancelada, no

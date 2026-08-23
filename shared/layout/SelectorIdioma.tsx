@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@shared/components/ui/dropdown-menu"
 import { ETIQUETA_IDIOMA, IDIOMAS } from "@shared/textos/config"
-import { useIdioma, useTextos } from "@shared/providers/TextosProvider"
+import { useIdioma, useTextos } from "@shared/textos/useTextos"
 import { useIdiomaStore } from "@store/idioma.store"
 
 /**
@@ -35,7 +35,7 @@ export function SelectorIdioma() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="outline" size="icon" aria-label={t.idioma.cambiar}>
+          <Button variant="outline" size="icon" aria-label={t("idioma.cambiar")}>
             <Languages aria-hidden />
           </Button>
         }
@@ -43,7 +43,7 @@ export function SelectorIdioma() {
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setIdioma(null)}>
           {elegido === null && <Check aria-hidden />}
-          {t.idioma.automatico}
+          {t("idioma.automatico")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {IDIOMAS.map((idioma) => (
@@ -52,7 +52,7 @@ export function SelectorIdioma() {
             <span lang={idioma}>{ETIQUETA_IDIOMA[idioma]}</span>
             {elegido === null && idioma === activo && (
               <span className="ml-auto text-[10px] text-muted-foreground">
-                {t.idioma.automatico}
+                {t("idioma.automatico")}
               </span>
             )}
           </DropdownMenuItem>

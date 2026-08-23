@@ -29,7 +29,7 @@ import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { notify } from "@shared/services/notify"
 import { useFormato } from "@shared/hooks/useFormato"
 import { SelectorIdioma } from "@shared/layout/SelectorIdioma"
-import { useTextos } from "@shared/providers/TextosProvider"
+import { useTextos } from "@shared/textos/useTextos"
 import { getErrorMessage } from "@shared/utils/error"
 import { useNotificaciones } from "@features/notificaciones/hooks/useNotificaciones"
 import { useSedes } from "@features/sedes/hooks/useSedes"
@@ -51,7 +51,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   const t = useTextos()
   // El nombre de la sección no vive en la ruta: la ruta dice a dónde se va y con
   // qué permiso, el diccionario cómo se llama en el idioma de quien mira.
-  const copiaRuta = ruta ? t.navegacion.rutas[ruta.clave] : null
+  const claveRuta = ruta?.clave ?? null
 
   /**
    * El área de plataforma comparte chrome con el panel, pero no comparte datos:
@@ -129,7 +129,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
   const nombreUsuario = sesion?.usuario.nombre ?? sesion?.usuario.email ?? ""
   // La sesión de plataforma llega sin rol —no tiene membresía en ninguna
   // barbería—, así que se nombra por lo que es en vez de dejar el hueco vacío.
-  const rolUsuario = esAdmin ? t.navbar.staffPlataforma : (sesion?.rol?.nombre ?? "")
+  const rolUsuario = esAdmin ? t("navbar.staffPlataforma") : (sesion?.rol?.nombre ?? "")
 
   return (
     <motion.header
@@ -148,17 +148,19 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
           variant="outline"
           size="icon"
           onClick={alAbrirMenuMovil}
-          aria-label={t.navegacion.abrirMenu}
+          aria-label={t("navegacion.abrirMenu")}
           className="shrink-0 lg:hidden"
         >
           <Menu aria-hidden />
         </Button>
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">
-            {copiaRuta?.titulo ?? "Barion"}
+            {claveRuta ? t(`navegacion.rutas.${claveRuta}.titulo`) : "Barion"}
           </h1>
-          {copiaRuta?.subtitulo && (
-            <p className="truncate text-xs text-muted-foreground">{copiaRuta.subtitulo}</p>
+          {claveRuta && (
+            <p className="truncate text-xs text-muted-foreground">
+              {t(`navegacion.rutas.${claveRuta}.subtitulo`)}
+            </p>
           )}
         </div>
       </motion.div>
@@ -176,8 +178,8 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
           />
           <Input
             type="search"
-            placeholder={t.comun.buscarPlaceholder}
-            aria-label={t.comun.buscar}
+            placeholder={t("comun.buscarPlaceholder")}
+            aria-label={t("comun.buscar")}
             className="w-56 rounded-full border-transparent bg-secondary/60 pl-9 text-xs transition-colors focus-visible:border-border focus-visible:bg-card"
           />
           <kbd
@@ -195,7 +197,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  aria-label={t.navbar.sedeActiva(sedeActual?.nombre ?? "")}
+                  aria-label={t("navbar.sedeActiva", { nombre: sedeActual?.nombre ?? "" })}
                   className="hidden max-w-40 gap-1.5 text-xs font-medium md:inline-flex"
                 >
                   <MapPin className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
@@ -231,7 +233,11 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
                 <Button
                   variant="outline"
                   size="icon"
-                  aria-label={noLeidas > 0 ? t.navbar.sinLeer(noLeidas) : t.navbar.notificaciones}
+                  aria-label={
+                    noLeidas > 0
+                      ? t("navbar.sinLeer", { cuantas: noLeidas })
+                      : t("navbar.notificaciones")
+                  }
                   className="relative"
                 >
                   <Bell aria-hidden />
@@ -249,7 +255,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
             <DropdownMenuContent align="end" className="w-80">
               <div className="flex items-center justify-between px-2 py-1.5">
                 <span className="text-sm font-medium text-foreground">
-                  {t.navbar.notificaciones}
+                  {t("navbar.notificaciones")}
                 </span>
                 {noLeidas > 0 && (
                   <Button
@@ -258,14 +264,14 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
                     className="h-auto p-0 text-xs"
                     onClick={() => void alMarcarTodas()}
                   >
-                    {t.navbar.marcarTodas}
+                    {t("navbar.marcarTodas")}
                   </Button>
                 )}
               </div>
               <DropdownMenuSeparator />
               {notificaciones.length === 0 && (
                 <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                  {t.navbar.sinNotificaciones}
+                  {t("navbar.sinNotificaciones")}
                 </p>
               )}
               {notificaciones.map((n) => (
@@ -306,7 +312,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
             render={
               <Button
                 variant="outline"
-                aria-label={t.navbar.menuUsuario(nombreUsuario, rolUsuario)}
+                aria-label={t("navbar.menuUsuario", { nombre: nombreUsuario, rol: rolUsuario })}
                 className="h-11 gap-2.5 rounded-full py-0 pr-3 pl-1.5"
               >
                 <span className="relative shrink-0" aria-hidden>
@@ -353,19 +359,19 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
             {!esAdmin && (
               <>
                 <DropdownMenuItem onClick={() => router.push("/dashboard/configuracion")}>
-                  <UserRound aria-hidden /> {t.navbar.miPerfil}
+                  <UserRound aria-hidden /> {t("navbar.miPerfil")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/dashboard/citas")}>
-                  <CalendarDays aria-hidden /> {t.navbar.miAgenda}
+                  <CalendarDays aria-hidden /> {t("navbar.miAgenda")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/dashboard/configuracion")}>
-                  <Settings aria-hidden /> {t.navbar.configuracion}
+                  <Settings aria-hidden /> {t("navbar.configuracion")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>
             )}
             <DropdownMenuItem variant="destructive" onClick={alCerrarSesion}>
-              <LogOut aria-hidden /> {t.comun.cerrarSesion}
+              <LogOut aria-hidden /> {t("comun.cerrarSesion")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

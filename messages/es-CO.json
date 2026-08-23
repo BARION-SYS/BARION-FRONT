@@ -1,0 +1,1140 @@
+{
+  "comun": {
+    "buscar": "Buscar",
+    "buscarPlaceholder": "Buscar...",
+    "cancelar": "Cancelar",
+    "cerrarSesion": "Cerrar sesión"
+  },
+  "idioma": {
+    "boton": "Idioma",
+    "cambiar": "Cambiar idioma",
+    "automatico": "El de la barbería"
+  },
+  "tema": {
+    "boton": "Tema",
+    "cambiar": "Cambiar tema",
+    "claro": "Claro",
+    "oscuro": "Oscuro",
+    "sistema": "Sistema"
+  },
+  "marca": {
+    "boton": "Colores del panel",
+    "aplicar": "Aplicar",
+    "restablecer": "Restablecer",
+    "colorPrimario": "Color primario",
+    "colorFondo": "Color de fondo",
+    "elegirPrimario": "Elegir un color primario personalizado",
+    "elegirFondo": "Elegir un color de fondo personalizado",
+    "actualizados": "Colores actualizados"
+  },
+  "navegacion": {
+    "abrirMenu": "Abrir menú",
+    "cerrarMenu": "Cerrar menú",
+    "principal": "Navegación principal",
+    "secciones": "Secciones",
+    "expandir": "Expandir barra lateral",
+    "colapsar": "Colapsar barra lateral",
+    "grupos": {
+      "principal": "Principal",
+      "operacion": "Operación",
+      "finanzas": "Finanzas",
+      "herramientas": "Herramientas",
+      "admin-principal": "Plataforma",
+      "admin-herramientas": "Tu cuenta"
+    },
+    "rutas": {
+      "dashboard": {
+        "etiqueta": "Dashboard",
+        "titulo": "Dashboard",
+        "subtitulo": "Resumen general de tu barbería"
+      },
+      "citas": {
+        "etiqueta": "Citas",
+        "titulo": "Citas",
+        "subtitulo": "Gestión de citas y calendario"
+      },
+      "personas": {
+        "etiqueta": "Personas",
+        "titulo": "Personas",
+        "subtitulo": "Quién trabaja en la barbería: quién entra, quién atiende y con qué permisos"
+      },
+      "servicios": {
+        "etiqueta": "Servicios",
+        "titulo": "Servicios",
+        "subtitulo": "El catálogo de la barbería: qué se ofrece, cuánto dura y entre qué precios"
+      },
+      "sedes": {
+        "etiqueta": "Sedes",
+        "titulo": "Sedes",
+        "subtitulo": "Dónde opera la barbería, con su horario y sus cierres"
+      },
+      "clientes": {
+        "etiqueta": "Clientes",
+        "titulo": "Clientes",
+        "subtitulo": "Base de clientes y fidelización"
+      },
+      "nomina": {
+        "etiqueta": "Nómina",
+        "titulo": "Nómina",
+        "subtitulo": "Comisiones, propinas y producción"
+      },
+      "estadisticas": {
+        "etiqueta": "Estadísticas",
+        "titulo": "Estadísticas",
+        "subtitulo": "Análisis y métricas de negocio"
+      },
+      "mi-perfil": {
+        "etiqueta": "Mi perfil",
+        "titulo": "Mi perfil",
+        "subtitulo": "Cuándo trabajas y qué ofreces"
+      },
+      "qr": {
+        "etiqueta": "Código QR",
+        "titulo": "Código QR",
+        "subtitulo": "Registro y acceso de clientes"
+      },
+      "notificaciones": {
+        "etiqueta": "Notificaciones",
+        "titulo": "Notificaciones",
+        "subtitulo": "Lo que ha pasado en tu barbería"
+      },
+      "configuracion": {
+        "etiqueta": "Configuración",
+        "titulo": "Configuración",
+        "subtitulo": "Personalización de tu barbería"
+      },
+      "admin": {
+        "etiqueta": "Resumen",
+        "titulo": "Resumen de la plataforma",
+        "subtitulo": "Cuántas barberías hay, en qué estado y dónde operan"
+      },
+      "admin-barberias": {
+        "etiqueta": "Barberías",
+        "titulo": "Barberías",
+        "subtitulo": "Alta, ficha, estado y plan de cada cliente"
+      },
+      "admin-planes": {
+        "etiqueta": "Planes",
+        "titulo": "Planes",
+        "subtitulo": "Qué se vende: límites, funciones y precio por país"
+      },
+      "admin-suscripciones": {
+        "etiqueta": "Suscripciones",
+        "titulo": "Suscripciones",
+        "subtitulo": "Qué tiene contratado cada barbería y hasta cuándo le vale"
+      },
+      "admin-mercados": {
+        "etiqueta": "Mercados",
+        "titulo": "Mercados",
+        "subtitulo": "Dónde se opera y con qué impuesto se factura"
+      },
+      "admin-staff": {
+        "etiqueta": "Equipo de Barion",
+        "titulo": "Equipo de Barion",
+        "subtitulo": "Quién puede entrar a la plataforma y con qué correo"
+      },
+      "admin-cuenta": {
+        "etiqueta": "Mi cuenta",
+        "titulo": "Mi cuenta",
+        "subtitulo": "Tu contraseña y con qué entras"
+      }
+    }
+  },
+  "navbar": {
+    "sedeActiva": "Sede activa: {nombre}",
+    "notificaciones": "Notificaciones",
+    "sinLeer": "Notificaciones, {cuantas, plural, one {# sin leer} other {# sin leer}}",
+    "marcarTodas": "Marcar todas como leídas",
+    "sinNotificaciones": "Sin notificaciones",
+    "menuUsuario": "Menú de usuario: {nombre}, {rol}",
+    "staffPlataforma": "Staff de Barion",
+    "miPerfil": "Mi perfil",
+    "miAgenda": "Mi agenda",
+    "configuracion": "Configuración"
+  },
+  "auth": {
+    "errores": {
+      "correo": "Ingresa un correo válido",
+      "contrasenaCorta": "La contraseña debe tener mínimo 8 caracteres",
+      "escribeLaActual": "Escribe la contraseña con la que entraste",
+      "minimo12": "Mínimo 12 caracteres",
+      "noCoinciden": "Las dos contraseñas no coinciden",
+      "distintaDeLaDada": "Elige una distinta de la que te dieron"
+    },
+    "login": {
+      "enLinea": "En línea",
+      "tituloBarberia": "Entra a tu barbería",
+      "tituloGlobal": "Panel administrativo",
+      "descripcionBarberia": "Con tu correo y tu contraseña. El mismo correo puede trabajar en más de una barbería: la puerta decide a cuál entras.",
+      "descripcionGlobal": "Bienvenido de vuelta. Tu barbería te espera.",
+      "correo": "Correo electrónico",
+      "correoPlaceholder": "tu@barberia.co",
+      "contrasena": "Contraseña",
+      "mostrar": "Mostrar contraseña",
+      "ocultar": "Ocultar contraseña",
+      "recordarme": "Recordarme",
+      "olvidaste": "¿Olvidaste tu contraseña?",
+      "entrar": "Abrir el panel",
+      "o": "o",
+      "google": "Continuar con Google",
+      "sinCuenta": "¿No tienes cuenta?",
+      "registrarse": "Registra tu barbería gratis",
+      "demo": "Acceso demo",
+      "demoEntrar": "Entrar sin credenciales"
+    },
+    "selectorBarberia": {
+      "titulo": "¿A cuál barbería entras?",
+      "descripcion": "Tu cuenta tiene acceso a varias. Elige con cuál quieres trabajar ahora.",
+      "atajo": "Entrando por la dirección de tu barbería te ahorras este paso."
+    },
+    "recuperar": {
+      "titulo": "Recupera tu acceso",
+      "descripcion": "Escribe el correo con el que entras y te mandamos un enlace para elegir otra contraseña.",
+      "enviadoTitulo": "Revisa tu correo",
+      "enviadoDescripcion": "Si esa dirección tiene cuenta en Barion, le llegará un enlace para elegir una contraseña nueva. Caduca en dos horas y sirve una sola vez.",
+      "correo": "Correo",
+      "enviar": "Enviar el enlace",
+      "volver": "Volver a iniciar sesión"
+    },
+    "nuevaContrasena": {
+      "titulo": "Elige tu contraseña",
+      "descripcion": "La anterior deja de servir en cuanto guardes esta.",
+      "contrasenaNueva": "Contraseña nueva",
+      "repite": "Repítela",
+      "minimo": "Mínimo 12 caracteres.",
+      "guardar": "Guardar la contraseña",
+      "mostrar": "Mostrar la contraseña",
+      "ocultar": "Ocultar la contraseña",
+      "enlaceIncompleto": "Este enlace está incompleto. Pide uno nuevo y ábrelo desde el correo.",
+      "pedirOtro": "Pedir un enlace nuevo"
+    },
+    "cambioObligatorio": {
+      "saludo": "Hola, {nombre}",
+      "tituloSinNombre": "Elige tu contraseña",
+      "descripcion": "Entraste con una clave que puso otra persona. Elige la tuya para continuar: hasta entonces el panel no se abre.",
+      "actual": "Contraseña actual",
+      "actualPlaceholder": "La que te dieron",
+      "contrasenaNueva": "Contraseña nueva",
+      "repite": "Repite la nueva",
+      "minimo": "Mínimo 12 caracteres.",
+      "mostrar": "Mostrar la contraseña",
+      "ocultar": "Ocultar la contraseña",
+      "guardar": "Guardar y entrar"
+    },
+    "panelMarca": {
+      "insignia": "Barbershop OS",
+      "tituloAntes": "El ecosistema digital",
+      "tituloDestacado": "completo",
+      "tituloDespues": "para tu barbería moderna.",
+      "descripcion": "Gestiona citas, barberos, nómina y clientes desde una sola plataforma. Simple, rápido y premium.",
+      "beneficios": {
+        "citas": {
+          "etiqueta": "Citas inteligentes",
+          "descripcion": "Agenda, reagenda y confirma"
+        },
+        "clientes": {
+          "etiqueta": "Gestión de clientes",
+          "descripcion": "Historial y fidelización"
+        },
+        "estadisticas": {
+          "etiqueta": "Estadísticas en tiempo real",
+          "descripcion": "KPIs y métricas clave"
+        },
+        "qr": {
+          "etiqueta": "Registro por QR",
+          "descripcion": "Clientes sin fricción"
+        }
+      },
+      "cifras": {
+        "barberias": "Barberías activas",
+        "citas": "Citas/semana",
+        "uptime": "Uptime"
+      }
+    }
+  },
+  "notificaciones": {
+    "vacia": "La bandeja está vacía",
+    "vaciaDetalle": "Aquí llegan los avisos de tus citas, tus clientes y tu equipo."
+  },
+  "equipo": {
+    "copiarContrasena": "Copiar la contraseña",
+    "contrasenaCopiada": "Copiada al portapapeles",
+    "contrasenaAviso": "Tendrá que cambiarla la primera vez que entre."
+  },
+  "roles": {
+    "sinRoles": "Todavía no hay roles.",
+    "capacidades": "Capacidades",
+    "activas": "{cuantas} activas",
+    "heredaSi": "Lo trae su rol",
+    "heredaNo": "No lo tiene"
+  },
+  "segmentos": {
+    "volver": "Clientela",
+    "nueva": "Nueva etiqueta",
+    "titulo": "Etiquetas",
+    "subtitulo": "Agrupan clientela con algo en común. Las que se rehacen solas se recalculan cada noche; las de a mano las mantiene el equipo desde la ficha de cada cliente.",
+    "administrar": "Administrar etiquetas",
+    "lista": {
+      "etiqueta": "Etiqueta",
+      "agrupa": "A quién agrupa",
+      "clientes": "Clientes",
+      "ultimaVez": "Última vez",
+      "estado": "Estado",
+      "acciones": "Acciones",
+      "editar": "Editar",
+      "darDeBaja": "Dar de baja",
+      "reactivar": "Reactivar",
+      "activa": "Activa",
+      "deBaja": "De baja",
+      "noSePinta": "No se pinta en la ficha",
+      "manual": "La mantiene el equipo",
+      "reglaDesconocida": "Regla desconocida ({tipo})",
+      "reglaCon": "{etiqueta}: {valor}",
+      "pendienteDeCalculo": "Se rehace esta noche",
+      "sinDatos": "Todavía no hay etiquetas",
+      "sinDatosDetalle": "Una etiqueta agrupa clientela con algo en común y se pinta junto a cada ficha."
+    },
+    "form": {
+      "tituloAlta": "Nueva etiqueta",
+      "tituloEdicion": "Editar etiqueta",
+      "crear": "Crear etiqueta",
+      "guardar": "Guardar",
+      "grupoNombre": "Cómo se llama",
+      "grupoQuienEntra": "Quién entra",
+      "grupoDondeSeVe": "Dónde se ve",
+      "nombre": "Nombre",
+      "nombreEjemplo": "Inactivo",
+      "descripcionEjemplo": "Lleva más de 60 días sin volver",
+      "nombreAyuda": "Es lo que se lee junto al cliente, así que corto se ve mejor.",
+      "descripcion": "Descripción",
+      "descripcionAyuda": "Opcional. Sirve para que dentro de seis meses se sepa qué quiso decir quien la creó.",
+      "comoSeLlena": "Cómo se llena",
+      "sola": "Sola, cada noche",
+      "aMano": "A mano, uno por uno",
+      "tipoFijoAlta": "Se elige una vez y no se puede cambiar.",
+      "tipoFijoEdicion": "No se cambia después de creada: sus miembros se quedarían sin nadie que los mantenga.",
+      "regla": "Regla",
+      "avisoManual": "La lista la mantiene el equipo desde la ficha de cada cliente. Nadie la rehace por la noche, así que se queda tal cual hasta que alguien la cambie.",
+      "porDefecto": "Si lo dejas vacío se usa {valor}.",
+      "esEtiqueta": "Se pinta junto al cliente",
+      "esEtiquetaAyuda": "Sin esto sigue existiendo y sirve para filtrar, pero no aparece como insignia en su ficha.",
+      "prioridad": "Prioridad",
+      "prioridadAyuda": "Cuando alguien cae en varias, se le pinta la de número más alto. Es lo que hace que su insignia sea una sola y no cambie de un día para otro."
+    },
+    "baja": {
+      "titulo": "Dar de baja la etiqueta",
+      "confirmar": "Dar de baja",
+      "detalle": "{nombre} deja de pintarse junto a los clientes y de servir para filtrar. No se pierde nada: se puede reactivar cuando quieras, y su historial se conserva."
+    },
+    "criterios": {
+      "inactivos": "Llevan tiempo sin volver",
+      "inactivosAyuda": "Sin volver desde hace ese tiempo, o sin haber venido nunca desde que se creó su ficha.",
+      "inactivosParametro": "Días sin volver",
+      "frecuentes": "Vienen seguido",
+      "frecuentesAyuda": "Con esa cantidad de visitas o más.",
+      "frecuentesParametro": "Visitas mínimas",
+      "nuevos": "Recién llegados",
+      "nuevosAyuda": "Ficha creada dentro de esa ventana de tiempo.",
+      "nuevosParametro": "Días desde que se creó la ficha",
+      "cumpleanos": "Cumplen años este mes",
+      "cumpleanosAyuda": "Se rehace cada noche, así que el mes cambia solo.",
+      "gasto": "Han gastado al menos",
+      "gastoAyuda": "Suma de lo que han pagado en esta barbería.",
+      "gastoParametro": "Gasto mínimo",
+      "riesgo": "Fallan a sus citas",
+      "riesgoAyuda": "Puntaje de fiabilidad igual o menor. Cuanto más bajo, más veces ha faltado.",
+      "riesgoParametro": "Puntaje máximo"
+    }
+  },
+  "citas": {
+    "estados": {
+      "reservada": "Reservada",
+      "pendiente_confirmacion": "Pendiente de confirmación",
+      "confirmada": "Confirmada",
+      "retrasada": "Retrasada",
+      "en_curso": "En curso",
+      "completada": "Completada",
+      "cancelada": "Cancelada",
+      "no_asistio": "No asistió"
+    },
+    "toolbar": {
+      "dia": "Día",
+      "semana": "Semana",
+      "lista": "Lista",
+      "anterior": "Anterior",
+      "siguiente": "Siguiente",
+      "estado": "Estado",
+      "barbero": "Barbero",
+      "reservar": "Reservar",
+      "todosLosBarberos": "Todos los barberos",
+      "todosLosEstados": "Todos los estados"
+    },
+    "detalle": {
+      "cuando": "Cuándo",
+      "total": "Total",
+      "seguimiento": "Seguimiento",
+      "servicios": "Servicios",
+      "historial": "Por dónde ha pasado"
+    },
+    "form": {
+      "cliente": "Cliente",
+      "barbero": "Barbero",
+      "servicios": "Servicios",
+      "hora": "Hora",
+      "notas": "Notas del cliente",
+      "reservar": "Reservar"
+    },
+    "sinCliente": "Sin cliente",
+    "sinTelefono": "Sin teléfono",
+    "propina": "Propina que dejó el cliente"
+  },
+  "clientes": {
+    "buscar": "Buscar cliente",
+    "buscarPlaceholder": "Nombre, teléfono o correo",
+    "todasLasEtiquetas": "Todas las etiquetas",
+    "etiqueta": "Etiqueta",
+    "etiquetaManual": "a mano",
+    "etiquetasAyuda": "Las etiquetas salen de las citas y se rehacen cada noche.",
+    "etiquetasManualesAyuda": " Las marcadas «a mano» las mantiene el equipo.",
+    "registrar": "Registrar cliente",
+    "guardar": "Guardar cambios",
+    "form": {
+      "avisoTitulo": "Es una ficha, no una cuenta de acceso.",
+      "avisoUno": "Es la del que entró sin cita: suma a su historial y se le puede agendar.",
+      "avisoDos": "No entra a ninguna parte ni reserva por su cuenta desde el escaparate — le reserva su barbero.",
+      "avisoTres": "Quien llega por el enlace público se registra solo: verifica su teléfono con un código y desde ahí reserva cuando quiera.",
+      "telefonoAlta": "Por aquí se le recuerda la cita. Único en la barbería, y queda sin verificar: eso solo lo hace él, con el código del enlace público.",
+      "grupoQuienEs": "Quién es",
+      "grupoAviso": "Cómo se le avisa",
+      "grupoPreferencias": "Para atenderlo mejor",
+      "nombre": "Nombre",
+      "nombreEjemplo": "Laura",
+      "apellido": "Apellido",
+      "apellidoEjemplo": "Méndez",
+      "telefono": "Teléfono",
+      "telefonoCambio": "Cambiarlo retira la verificación: el nuevo no lo ha probado nadie.",
+      "correo": "Correo",
+      "cumpleanos": "Cumpleaños",
+      "seAtiendeCon": "Se atiende con",
+      "sinPreferencia": "Sin preferencia",
+      "notas": "Notas internas",
+      "notasAyuda": "No las ve el cliente."
+    },
+    "detalle": {
+      "ficha": "Ficha",
+      "historial": "Historial",
+      "permisos": "Permisos de comunicación",
+      "gastado": "Gastado",
+      "visitas": "Visitas",
+      "ultimaVisita": "Última visita",
+      "whatsapp": "WhatsApp",
+      "correo": "Correo",
+      "etiqueta": "Etiqueta",
+      "etiquetaAyuda": "Se rehace cada noche a partir de sus citas.",
+      "etiquetaManualAyuda": "La mantiene el equipo a mano.",
+      "historialAyuda": "Sus visitas, con lo que se cobró en cada una",
+      "sinVisitas": "Sin visitas todavía",
+      "sinVisitasDetalle": "Todavía no ha venido.",
+      "sinServicios": "Sin servicios",
+      "verificado": "Cliente verificado",
+      "correoVerificado": "Correo verificado",
+      "telefonoVerificado": "Teléfono verificado",
+      "sinVerificar": "Sin verificar",
+      "noReservaEnLinea": "No puede reservar en línea",
+      "consentimientoAyuda": "Cada cambio se guarda como un registro nuevo: es la prueba de cuándo lo dio",
+      "tratamiento": "Tratamiento de datos",
+      "sms": "SMS"
+    },
+    "bloqueo": {
+      "motivo": "Motivo (opcional)",
+      "motivoEjemplo": "Tres plantones seguidos en agosto",
+      "hastaCuando": "Hasta cuándo"
+    }
+  },
+  "dashboard": {
+    "pagina": {
+      "indicadores": "Indicadores de hoy",
+      "actividad": "Actividad",
+      "hoy": "Hoy",
+      "ultimos30": "Últimos 30 días",
+      "sinPlanTitulo": "Los indicadores del día",
+      "sinPlanDetalle": "Ingresos, ticket promedio, propinas y clientes nuevos entran con un plan superior. Tu agenda y tus clientes siguen funcionando igual.",
+      "negocio": {
+        "citas": "Citas hoy",
+        "completadas": "Completadas",
+        "canceladas": "{cuantas} canceladas",
+        "ingresos": "Ingresos",
+        "ingresosDetalle": "Solo lo completado",
+        "ticket": "Ticket promedio",
+        "ticketDetalle": "Por cita cerrada",
+        "propinas": "Propinas",
+        "propinasDetalle": "Van al barbero",
+        "clientesNuevos": "Clientes nuevos",
+        "clientesNuevosDetalle": "Fichas creadas hoy"
+      },
+      "propio": {
+        "citas": "Mis citas hoy",
+        "completadas": "Completadas",
+        "completadasDetalle": "De las de hoy",
+        "ganado": "Llevo ganado",
+        "ganadoDetalle": "Comisión + propinas de hoy",
+        "propinas": "Propinas",
+        "propinasDetalle": "Íntegras para ti"
+      }
+    },
+    "barberos": {
+      "titulo": "Producción por barbero",
+      "sinDatos": "Nadie ha cerrado citas todavía",
+      "retirado": "Barbero retirado",
+      "citas": "{cuantas} citas",
+      "participacion": "Participación de {nombre}: {porcentaje}%"
+    },
+    "citasHoy": {
+      "titulo": "Citas de hoy",
+      "verTodas": "Ver todas",
+      "sinDatos": "Hoy no hay nada agendado",
+      "clienteSinNombre": "Cliente",
+      "total": "{cuantas, plural, one {cita total} other {citas totales}}",
+      "completas": "completas",
+      "enCurso": "en curso",
+      "perdidas": "perdidas"
+    },
+    "ingresos": {
+      "titulo": "Ingresos",
+      "sinDatos": "Todavía no hay tendencia",
+      "sinDatosDetalle": "La historia se calcula cada noche. Los datos de hoy sí están arriba."
+    },
+    "meta": {
+      "titulo": "Ingresos vs meta",
+      "conMeta": "Comparativo mensual",
+      "sinMeta": "Sin meta fijada",
+      "sinDatos": "Todavía no hay historia mensual",
+      "sinDatosDetalle": "Se calcula cada noche.",
+      "serieIngresos": "Ingresos",
+      "serieMeta": "Meta"
+    },
+    "servicios": {
+      "titulo": "Servicios más vendidos",
+      "sinDatos": "Nada vendido todavía"
+    }
+  },
+  "sedes": {
+    "nombre": "Nombre",
+    "nombreEjemplo": "Sede Centro",
+    "zonaHoraria": "Zona horaria",
+    "slugQr": "Identificador del QR",
+    "telefono": "Teléfono",
+    "moneda": "Moneda",
+    "heredaDeLaBarberia": "Hereda la de la barbería",
+    "heredaAyuda": "En blanco hereda la de la barbería.",
+    "direccion": "Dirección",
+    "calleEjemplo": "Cra 7 #12-34",
+    "ciudad": "Ciudad",
+    "ciudadEjemplo": "Bogotá",
+    "ciudadAyuda": "Es lo que el portal pinta bajo el nombre.",
+    "primerDia": "Primer día de la semana",
+    "lunes": "Lunes",
+    "domingo": "Domingo",
+    "crear": "Crear sede",
+    "guardar": "Guardar sede",
+    "editar": "Editar",
+    "desactivar": "Desactivar",
+    "reactivar": "Reactivar",
+    "desactivada": "Desactivada",
+    "cerrado": "Cerrado",
+    "cierre": {
+      "desde": "Desde",
+      "hasta": "Hasta",
+      "hastaAyuda": "Este día también queda cerrado.",
+      "motivo": "Motivo",
+      "motivoEjemplo": "Fiestas de fin de año",
+      "programar": "Programar cierre",
+      "guardar": "Guardar cierre"
+    }
+  },
+  "servicios": {
+    "nombre": "Nombre",
+    "nombreEjemplo": "Corte clásico",
+    "categoria": "Categoría",
+    "categoriaEjemplo": "Cortes",
+    "categoriaAyuda": "Agrupa la carta. Se escribe libre.",
+    "sede": "Sede",
+    "todasLasSedes": "Todas las sedes",
+    "moneda": "Moneda",
+    "duracion": "Duración (min)",
+    "limpieza": "Limpieza (min)",
+    "precioReferencia": "Precio de referencia",
+    "precioMinimo": "Precio mínimo",
+    "precioMaximo": "Precio máximo",
+    "descripcion": "Descripción",
+    "destacar": "Destacar en el escaparate",
+    "destacado": "Destacado",
+    "guardar": "Guardar servicio",
+    "crear": "Crear servicio",
+    "proponer": "Proponer servicio",
+    "editar": "Editar",
+    "retirar": "Retirar del catálogo",
+    "aprobarYPublicar": "Aprobar y publicar",
+    "publicar": "Publicar",
+    "estados": {
+      "enCarta": "En carta",
+      "propuesto": "Propuesto",
+      "retirado": "Retirado"
+    },
+    "toolbar": {
+      "buscar": "Buscar servicio",
+      "categoria": "Categoría",
+      "todasLasCategorias": "Todas las categorías",
+      "estado": "Estado",
+      "todoElCatalogo": "Todo el catálogo",
+      "soloEnCarta": "Solo en carta"
+    },
+    "asignar": {
+      "retiradoDeLaAgenda": "Retirado de la agenda",
+      "hereda": "Hereda",
+      "nadieLoOfrece": "Nadie lo ofrece: no aparecerá al reservar."
+    }
+  },
+  "nomina": {
+    "resumen": {
+      "produccion": "Producción total",
+      "produccionDetalle": "Lo que se le cobró al cliente",
+      "comisiones": "Comisiones",
+      "comisionesDetalle": "La parte de cada barbero",
+      "propinas": "Propinas",
+      "propinasDetalle": "Van íntegras a quien atendió",
+      "total": "Total a pagar",
+      "totalDetalle": "Comisiones + propinas + ajustes"
+    },
+    "retirado": "Barbero retirado",
+    "detalle": {
+      "concepto": "Concepto",
+      "detalle": "Detalle",
+      "monto": "Monto",
+      "cuando": "Cuándo",
+      "cobrado": "Cobrado",
+      "paraEl": "Para él",
+      "produccion": "Producción",
+      "produccionDetalle": "Lo que se le cobró al cliente",
+      "comision": "Comisión",
+      "comisionCon": "Comisión ({porcentaje})",
+      "comisionDetalle": "Su parte de esa producción",
+      "propinas": "Propinas",
+      "propinasDetalle": "Íntegras",
+      "ajustes": "Ajustes",
+      "ajustesDetalle": "Correcciones",
+      "tipos": {
+        "servicio": "Servicio",
+        "extra": "Extra",
+        "propina": "Propina",
+        "ajuste": "Ajuste"
+      }
+    },
+    "ajuste": {
+      "motivo": "Motivo",
+      "motivoEjemplo": "Corrección de la propina del corte BRN-4F2A9C",
+      "fecha": "En qué fecha cae (opcional)"
+    }
+  },
+  "personas": {
+    "nav": {
+      "personas": "Personas",
+      "roles": "Roles"
+    },
+    "estados": {
+      "yaNoTrabaja": "Ya no trabaja aquí",
+      "retirado": "Retirado",
+      "ausenteHoy": "Ausente hoy",
+      "atiende": "Sí"
+    },
+    "lista": {
+      "cambiarRol": "Cambiar rol",
+      "retirarDeLaAgenda": "Retirar de la agenda",
+      "devolverALaAgenda": "Devolver a la agenda",
+      "yaNoTrabajaAqui": "Ya no trabaja aquí (quita acceso y agenda)",
+      "quitarAcceso": "Quitar acceso"
+    },
+    "retiro": {
+      "citasPendientes": "{total, plural, one {Queda # cita suya por delante.} other {Quedan # citas suyas por delante.}}",
+      "aviso": "No se han cancelado: son clientes ya citados a los que hay que avisar uno por uno. Llámales y reasígnalas desde Citas."
+    },
+    "alta": {
+      "quienEs": "Quién es",
+      "nombre": "Nombre",
+      "nombreEjemplo": "Carlos Ramírez",
+      "suAcceso": "Su acceso",
+      "correo": "Correo",
+      "correoAyuda": "Si entra con Google, tiene que ser esta dirección.",
+      "telefono": "Teléfono (opcional)",
+      "contrasenaInicial": "Contraseña inicial",
+      "contrasenaAyuda": "Déjala vacía y la generamos nosotros",
+      "queHaceAqui": "Qué hace aquí",
+      "eligeUnRol": "Selecciona un rol",
+      "sede": "Sede",
+      "todasLasSedes": "Todas las sedes",
+      "atiendeAyuda": "Tendrá agenda propia, comisión y saldrá en el escaparate.",
+      "atiende": "Atiende clientes",
+      "comision": "Comisión por servicio (%)",
+      "comisionAyuda": "En blanco se lleva el 100 %."
+    },
+    "propia": {
+      "activo": "Apareces en la agenda y en el escaparate, y se te pueden reservar citas.",
+      "inactivo": "Actívalo si cortas tú: se te abre agenda propia y el cliente puede reservarte.",
+      "yoAtiendo": "Yo también atiendo",
+      "nombrePublico": "Nombre público",
+      "nombrePublicoEjemplo": "Camilo",
+      "titulo": "Título",
+      "tituloEjemplo": "Propietario",
+      "comision": "Comisión (%)"
+    }
+  },
+  "barberos": {
+    "nombrePublico": "Nombre público",
+    "nombreEjemplo": "Carlos Ramírez",
+    "titulo": "Título",
+    "tituloEjemplo": "Barbero Senior",
+    "telefono": "Teléfono",
+    "correo": "Correo",
+    "comision": "Comisión (%)",
+    "fechaContratacion": "Fecha de contratación",
+    "presentacion": "Presentación",
+    "descansa": "Descansa",
+    "detalle": {
+      "perfil": "Perfil",
+      "sinCuenta": "Sin cuenta",
+      "barbero": "Barbero",
+      "cienPorCiento": "Se lleva el 100 %",
+      "retirar": "Retirar del equipo",
+      "reincorporar": "Reincorporar",
+      "jornada": "Jornada",
+      "jornadaAyuda": "Cuándo atiende. No es el horario de la sede: los cupos salen de cruzar los dos",
+      "servicios": "Servicios que ofrece",
+      "serviciosAyuda": "Con el precio y la duración que él cobra",
+      "inactivo": "Inactivo",
+      "ausenteHoy": "Ausente hoy",
+      "activo": "Activo"
+    },
+    "ausencia": {
+      "desde": "Desde",
+      "hasta": "Hasta",
+      "tipo": "Tipo",
+      "motivo": "Motivo",
+      "motivoEjemplo": "Vacaciones de fin de año",
+      "sinAusencias": "Sin ausencias registradas.",
+      "aprobada": "Aprobada",
+      "pendiente": "Pendiente",
+      "aprobar": "Aprobar la ausencia",
+      "cancelar": "Cancelar la ausencia"
+    },
+    "excepcion": {
+      "fecha": "Fecha",
+      "entrada": "Entrada",
+      "salida": "Salida",
+      "motivo": "Motivo",
+      "motivoEjemplo": "Cita médica",
+      "programar": "Programar día especial",
+      "guardar": "Guardar día especial",
+      "noAtiende": "No atiende"
+    }
+  },
+  "estadisticas": {
+    "cancelaciones": {
+      "titulo": "Completadas vs perdidas",
+      "sinDatos": "Todavía no hay historia",
+      "completadas": "Completadas",
+      "perdidas": "Perdidas"
+    },
+    "ocupacion": {
+      "titulo": "Ocupación",
+      "sinDatos": "Todavía no hay ocupación calculada",
+      "sinDatosDetalle": "Necesita jornadas declaradas y el cálculo nocturno."
+    },
+    "servicios": {
+      "titulo": "Distribución de servicios",
+      "sinDatos": "Nada vendido en el período"
+    },
+    "tendencia": {
+      "titulo": "Evolución de ingresos",
+      "sinDatos": "Todavía no hay historia",
+      "sinDatosDetalle": "La tendencia se calcula cada noche a partir de las citas cerradas.",
+      "ingresosDelPeriodo": "Ingresos del período"
+    }
+  },
+  "primerosPasos": {
+    "hecho": "Hecho",
+    "titulo": "Primeros pasos",
+    "subtitulo": "Lo que le falta a tu barbería para empezar a recibir reservas"
+  },
+  "qr": {
+    "actividad": {
+      "titulo": "Llegaron por el código",
+      "sinDatos": "Nadie ha llegado por el código todavía",
+      "sinDatosDetalle": "Aquí aparecerá quien reserve o se registre después de escanearlo."
+    },
+    "capacidades": "Al escanear el QR el cliente puede",
+    "codigo": {
+      "titulo": "Código QR de la barbería",
+      "descargar": "Descargar",
+      "compartir": "Compartir",
+      "copiar": "Copiar",
+      "copiado": "Copiado"
+    },
+    "enlace": {
+      "titulo": "Enlace de reserva",
+      "copiar": "Copiar",
+      "copiado": "Copiado"
+    },
+    "porSede": {
+      "titulo": "Por sede",
+      "subtitulo": "Citas atribuidas al cartón de cada local"
+    }
+  },
+  "registro": {
+    "terminos": {
+      "aria": "Acepto los términos y la política de privacidad",
+      "heLeido": "He leído y acepto los",
+      "terminos": "términos y condiciones",
+      "yLa": "y la",
+      "privacidad": "política de privacidad",
+      "encargo": ". Incluyen el tratamiento de los datos de tus clientes, donde tu barbería es la responsable y Barion el encargado."
+    },
+    "direccion": {
+      "buscando": "Buscando una dirección libre"
+    },
+    "form": {
+      "tuBarberia": "Tu barbería",
+      "nombreComercial": "Nombre de la barbería",
+      "nombreEjemplo": "Barbería El Corte",
+      "pais": "País donde opera tu barbería",
+      "tusDatos": "Tus datos",
+      "tuCuenta": "Tu cuenta de propietario",
+      "tuNombre": "Tu nombre",
+      "nombrePropietarioEjemplo": "Julián Restrepo",
+      "telefono": "Teléfono",
+      "telefonoAyuda": "Para poder llamarte si hace falta.",
+      "correo": "Tu correo",
+      "correoAyuda": "Ahí llega el enlace que publica tu escaparate.",
+      "contrasena": "Contraseña",
+      "mostrarContrasena": "Mostrar contraseña",
+      "ocultarContrasena": "Ocultar contraseña",
+      "contrasenaAyuda": "Mínimo 12 caracteres.",
+      "continuaras": "Continuarás como"
+    },
+    "exito": {
+      "tuBarberia": "Tu barbería",
+      "tuPrueba": "Tu prueba",
+      "pruebaValor": "7 días · sin tarjeta",
+      "pruebaDetalle": "El plan se elige al terminarla",
+      "tuDireccion": "Tu dirección pública",
+      "direccionEsperando": "Se le sirve a tus clientes en cuanto abras el correo.",
+      "direccionLista": "Ya responde: compártela y pueden reservar contigo.",
+      "loQueSigue": "Lo que sigue",
+      "montaTitulo": "Monta tu barbería.",
+      "montaDetalle": "Añade tus servicios con su precio, las horas en que atiendes y a tu equipo. Con eso tu agenda empieza a aceptar reservas.",
+      "correoTitulo": "Abre el correo que te enviamos.",
+      "correoDetalle": "Hasta que lo hagas, tu dirección pública no se le sirve a nadie.",
+      "comparteTitulo": "Comparte tu dirección.",
+      "comparteDetalle": "Ponla en tu Instagram, en WhatsApp o en un cartel: desde ahí ven tu carta y reservan solos.",
+      "entraConCorreo": "Entra con el correo y la contraseña que acabas de elegir.",
+      "entraConGoogle": "Entra con el mismo botón de Google.",
+      "volverAlInicio": "Volver al inicio"
+    },
+    "paseCaducado": "Tu verificación con Google caducó",
+    "verificacion": {
+      "entrarAlPanel": "Entrar a mi panel",
+      "irAEntrar": "Ir a entrar",
+      "verificandoTitulo": "Confirmando tu correo",
+      "verificandoDetalle": "Un segundo. No cierres esta pestaña.",
+      "listoTitulo": "Listo, tu barbería ya es visible",
+      "listoDetalle": "Tus clientes pueden encontrarte y reservar desde tu página pública.",
+      "invalidoTitulo": "Este enlace ya no sirve",
+      "invalidoDetalle": "Puede que haya caducado o que ya lo hayas usado. Si ya confirmaste antes, no hay nada más que hacer: entra a tu panel."
+    }
+  },
+  "configuracion": {
+    "secciones": "Secciones de configuración",
+    "apariencia": {
+      "logotipo": "Logotipo",
+      "subir": "Subir logotipo",
+      "vistaPrevia": "Vista previa del portal de clientes",
+      "vistaPreviaAyuda": "Orientativa: se pinta con los colores de tu panel, no con los del portal real",
+      "reservaTuCita": "Reserva tu cita"
+    },
+    "general": {
+      "titulo": "Información de la barbería",
+      "nombre": "Nombre del negocio",
+      "impuesto": "Impuesto",
+      "incluido": "Incluido en el precio",
+      "agregado": "Se agrega al cobrar",
+      "tasa": "Tasa"
+    },
+    "ficha": {
+      "titulo": "Cara pública",
+      "subtitulo": "Lo que ve quien entra a reservar desde el portal",
+      "eslogan": "Eslogan",
+      "esloganEjemplo": "Cortes clásicos, sin filas",
+      "descripcion": "Descripción",
+      "ventajas": "Ventajas",
+      "ventajaEjemplo": "Reserva en 30 segundos"
+    },
+    "notificaciones": {
+      "titulo": "Canales de notificación",
+      "subtitulo": "Selecciona cómo se notificará a tus clientes sobre sus citas"
+    },
+    "seguridad": {
+      "titulo": "Seguridad de la cuenta",
+      "actual": "Contraseña actual",
+      "nueva": "Nueva contraseña",
+      "nuevaEjemplo": "Mínimo 8 caracteres",
+      "confirmar": "Confirmar nueva contraseña",
+      "confirmarEjemplo": "Repite la contraseña"
+    }
+  },
+  "pagos": {
+    "enlaces": {
+      "titulo": "Enlaces de pago",
+      "subtitulo": "Genera una dirección y mándasela a quien vaya a pagar. Caduca en 24 horas.",
+      "copiar": "Copiar",
+      "copiado": "Copiado",
+      "caducado": "Caducado",
+      "estados": {
+        "pendiente": "Sin pagar",
+        "procesando": "En curso",
+        "aprobado": "Pagado",
+        "rechazado": "Rechazado",
+        "error": "Sin confirmar",
+        "anulado": "Anulado"
+      }
+    },
+    "medio": {
+      "titulo": "Método de pago",
+      "subtitulo": "Con qué se cobra tu suscripción a Barion. El último que guardes es el que cobra.",
+      "seCobraraEl": "Se cobrará el",
+      "accesoTerminaEl": "Tu acceso termina el",
+      "sinMedio": "No hay con qué cobrar tu suscripción",
+      "sinMedioAdmin": "Quien administre la barbería puede guardar una tarjeta.",
+      "sinMedioPropio": "Guarda una tarjeta antes de la próxima renovación para no perder el acceso.",
+      "predeterminado": "Se cobra con esta",
+      "tipos": {
+        "tarjeta": "Tarjeta",
+        "debito_automatico": "Débito automático",
+        "otro": "Otro medio"
+      },
+      "estados": {
+        "activo": "Vigente",
+        "invalido": "Rechazada"
+      }
+    },
+    "retorno": {
+      "cerrar": "Cerrar el aviso del pago",
+      "confirmadoTitulo": "Pago confirmado",
+      "confirmadoDetalle": "Tu plan quedó al día y la factura ya está en tu historial. No hace falta que hagas nada más.",
+      "falloTitulo": "El pago no se completó",
+      "volvisteTitulo": "Volviste del pago",
+      "falloDetalle": "Ese intento no prosperó y no se te cobró nada. Puedes generar otro enlace o guardar una tarjeta para que el cobro salga solo.",
+      "volvisteDetalle": "Estamos esperando la confirmación de la pasarela. Puede tardar unos minutos y no hace falta pagar otra vez: cuando llegue, tu plan y tus facturas se actualizan solos."
+    },
+    "tarjeta": {
+      "numero": "Número de la tarjeta",
+      "titular": "Nombre en la tarjeta",
+      "titularEjemplo": "José Pérez",
+      "codigo": "Código"
+    }
+  },
+  "suscripcion": {
+    "tipoPersona": {
+      "natural": "Persona natural",
+      "juridica": "Empresa"
+    },
+    "fiscales": {
+      "titulo": "Datos de facturación",
+      "subtitulo": "Opcional. Solo si necesitas la factura a nombre de una empresa",
+      "editar": "Editar",
+      "agregar": "Agregar",
+      "sinDatos": "No hace falta que pongas nada",
+      "sinDatosDetalle": "Escríbenos antes de activar el cobro y lo resolvemos contigo.",
+      "nombreLegal": "Nombre legal",
+      "tipo": "Tipo",
+      "domicilio": "Domicilio fiscal",
+      "municipio": "Municipio DANE",
+      "enviamosA": "Enviamos la factura a",
+      "responsabilidades": "Responsabilidades"
+    },
+    "form": {
+      "aNombreDe": "A nombre de quién",
+      "tipo": "Tipo",
+      "documento": "Documento",
+      "numero": "Número",
+      "razonSocial": "Razón social",
+      "nombreCompleto": "Nombre completo",
+      "razonSocialEjemplo": "Inversiones El Corte S.A.S.",
+      "nombreEjemplo": "Carlos Ramírez",
+      "domicilio": "Domicilio fiscal",
+      "direccion": "Dirección",
+      "direccionEjemplo": "Calle 10 #43-12, oficina 302",
+      "ciudad": "Ciudad",
+      "region": "Departamento o estado",
+      "codigoPostal": "Código postal",
+      "pais": "País",
+      "codigoMunicipio": "Código DANE del municipio",
+      "responsabilidades": "Responsabilidades fiscales",
+      "aDondeMandamos": "A dónde mandamos la factura",
+      "correo": "Correo",
+      "telefono": "Teléfono"
+    },
+    "facturas": {
+      "titulo": "Facturas",
+      "subtitulo": "Los cobros de tu suscripción a Barion",
+      "sinDatos": "Todavía no hay facturas",
+      "sinDatosDetalle": "Aparecerán aquí en cuanto se emita el primer cobro de tu plan.",
+      "numero": "Número",
+      "emitida": "Emitida",
+      "estado": "Estado",
+      "total": "Total",
+      "vence": "Vence",
+      "pagada": "Pagada",
+      "desglose": "Desglose",
+      "concepto": "Concepto",
+      "cantidad": "Cant.",
+      "importe": "Importe",
+      "lineaIlegible": "Una línea llegó en un formato que no se pudo mostrar.",
+      "subtotal": "Subtotal",
+      "impuestos": "Impuestos"
+    },
+    "planes": {
+      "titulo": "Planes",
+      "subtituloVacio": "Lo que se puede contratar",
+      "sinPlanes": "No hay planes publicados",
+      "sinPlanesDetalle": "Escríbenos y te ayudamos a elegir el que le sirve a tu barbería.",
+      "subtitulo": "Cambia cuando quieras. Bajar de plan no desactiva a nadie.",
+      "mensual": "Mensual",
+      "anual": "Anual",
+      "tuPlan": "Tu plan",
+      "renovar": "Renovar en este plan",
+      "cambiarA": "Cambiar a {plan}",
+      "funciones": {
+        "agenda": "Agenda y reservas",
+        "portal": "Página pública de reservas",
+        "recordatorios": "Recordatorios automáticos",
+        "clientes": "Base de clientes",
+        "comisiones": "Comisiones y nómina",
+        "campanas": "Campañas de comunicación",
+        "fidelidad": "Puntos y premios",
+        "listaEspera": "Lista de espera",
+        "reportes": "Reportes y estadísticas",
+        "multisede": "Varias sedes"
+      }
+    },
+    "estados": {
+      "prueba": "En prueba",
+      "activa": "Al día",
+      "mora": "Pago pendiente",
+      "cancelada": "Cancelada",
+      "sobre_limite": "Sobre el límite"
+    },
+    "resumen": {
+      "accesoTerminaEl": "Tu acceso termina el",
+      "siguienteCobroEl": "Siguiente cobro el",
+      "venceHoy": "Vence hoy",
+      "sedes": "Sedes",
+      "barberos": "Barberos",
+      "sinLimite": "Sin límite en este plan",
+      "diasRestantes": "{dias, plural, one {Queda # día} other {Quedan # días}}"
+    }
+  },
+  "portal": {
+    "cabecera": {
+      "volver": "Volver al portal",
+      "abierto": "Abierto · {horario}",
+      "cerrado": "Cerrado ahora",
+      "misCitas": "Mis citas",
+      "entrar": "Entrar"
+    },
+    "pasos": {
+      "progreso": "Progreso de la reserva",
+      "barbero": "Barbero",
+      "servicio": "Servicio",
+      "agenda": "Horario",
+      "datos": "Confirmar"
+    },
+    "agenda": {
+      "hoy": "Hoy",
+      "sinCupo": "Sin cupo",
+      "cupos": "{cupos, plural, one {# cupo} other {# cupos}}",
+      "sinCuposEsteDia": "Sin cupos este día"
+    },
+    "resumen": {
+      "tuReserva": "Tu reserva",
+      "servicios": "Servicios",
+      "barbero": "Barbero",
+      "cualquiera": "Cualquiera disponible",
+      "fecha": "Fecha",
+      "duracion": "Duración",
+      "sinServicios": "Sin servicios todavía",
+      "pendiente": "Pendiente",
+      "total": "Total",
+      "totalDesde": "Total desde"
+    },
+    "reserva": {
+      "nombre": "Tu nombre",
+      "nombreEjemplo": "Como te llaman en la barbería",
+      "celular": "Celular",
+      "correo": "Correo",
+      "notas": "Notas para el barbero (opcional)",
+      "notasEjemplo": "Ej. fade bajo, dejar la barba corta",
+      "enviarCodigo": "Enviarme el código",
+      "confirmarReserva": "Confirmar reserva"
+    },
+    "google": {
+      "continuaras": "Continuarás como",
+      "nombre": "Tu nombre",
+      "nombreEjemplo": "Laura Gómez",
+      "telefono": "Teléfono",
+      "telefonoAyuda": "Por si la barbería necesita llamarte.",
+      "novedades": "Acepto recibir novedades y promociones",
+      "entrarAMisCitas": "Entrar a mis citas"
+    },
+    "otp": {
+      "seisDigitos": "El código es de 6 dígitos",
+      "codigo": "Código del correo",
+      "confirmar": "Confirmar"
+    },
+    "acceso": {
+      "correo": "Correo",
+      "enviarCodigo": "Enviarme el código"
+    },
+    "cita": {
+      "tuCitaCon": "Tu cita, {nombre}",
+      "tuCita": "Tu cita",
+      "cuando": "Cuándo",
+      "servicios": "Servicios",
+      "barbero": "Barbero",
+      "porAsignar": "Por asignar",
+      "totalEnLaBarberia": "Total a pagar en la barbería",
+      "duracion": "Duración",
+      "total": "Total",
+      "codigo": "Código"
+    },
+    "accion": {
+      "noSePudoAbrir": "No pudimos abrir este enlace",
+      "puntaje": "Puntaje de 1 a 5",
+      "comentarioEjemplo": "Lo que quieras que sepan",
+      "enviarCalificacion": "Enviar calificación",
+      "motivoEjemplo": "Me surgió un imprevisto, encontré otro horario…",
+      "motivoAyuda": "Nos ayuda a mejorar. Puedes cancelar sin escribir nada."
+    },
+    "misCitas": {
+      "titulo": "Mis citas",
+      "conCitas": "Tus citas en esta barbería. Puedes cancelar y calificar lo atendido.",
+      "sinSesion": "Entra con el correo con el que reservaste — sin contraseñas.",
+      "cancelarTitulo": "¿Cancelar esta cita?",
+      "cancelarDetalle": "Liberamos el cupo para otro cliente. Puedes volver a reservar cuando quieras.",
+      "calificarTitulo": "¿Cómo te fue?",
+      "calificarDetalle": "Una calificación por cita. El comentario lo publica la barbería si lo aprueba.",
+      "puntaje": "Puntaje"
+    },
+    "seguimiento": {
+      "noEncontrada": "No encontramos esta cita"
+    }
+  }
+}

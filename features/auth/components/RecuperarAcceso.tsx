@@ -10,11 +10,12 @@ import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
-import { useTextos } from "@shared/providers/TextosProvider"
+import { useTextos } from "@shared/textos/useTextos"
 import {
   esquemaSolicitudRecuperacion,
   type DatosSolicitudRecuperacion,
 } from "@features/auth/schemas/auth.schema"
+import { erroresDe } from "@features/auth/schemas/errores"
 
 interface RecuperarAccesoProps {
   cargando?: boolean
@@ -50,7 +51,7 @@ const bloque: Variants = {
  */
 export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: RecuperarAccesoProps) {
   const t = useTextos()
-  const esquema = useMemo(() => esquemaSolicitudRecuperacion(t), [t])
+  const esquema = useMemo(() => esquemaSolicitudRecuperacion(erroresDe(t)), [t])
   const {
     register,
     handleSubmit,
@@ -78,16 +79,16 @@ export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: Recupe
                 <MailCheck className="size-5 text-(--exito)" aria-hidden />
               </span>
               <div className="flex flex-col gap-1.5">
-                <h1 className="text-lg font-semibold">{t.auth.recuperar.enviadoTitulo}</h1>
+                <h1 className="text-lg font-semibold">{t("auth.recuperar.enviadoTitulo")}</h1>
                 <p className="text-sm text-muted-foreground">
-                  {t.auth.recuperar.enviadoDescripcion}
+                  {t("auth.recuperar.enviadoDescripcion")}
                 </p>
               </div>
             </>
           ) : (
             <div className="flex flex-col gap-1.5">
-              <h1 className="text-lg font-semibold">{t.auth.recuperar.titulo}</h1>
-              <p className="text-sm text-muted-foreground">{t.auth.recuperar.descripcion}</p>
+              <h1 className="text-lg font-semibold">{t("auth.recuperar.titulo")}</h1>
+              <p className="text-sm text-muted-foreground">{t("auth.recuperar.descripcion")}</p>
             </div>
           )}
         </motion.div>
@@ -99,13 +100,13 @@ export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: Recupe
             className="mt-6 flex flex-col gap-4"
           >
             <Field>
-              <FieldLabel htmlFor="email">{t.auth.recuperar.correo}</FieldLabel>
+              <FieldLabel htmlFor="email">{t("auth.recuperar.correo")}</FieldLabel>
               <Input
                 id="email"
                 type="email"
                 inputMode="email"
                 autoComplete="email"
-                placeholder={t.auth.login.correoPlaceholder}
+                placeholder={t("auth.login.correoPlaceholder")}
                 aria-invalid={Boolean(errors.email)}
                 {...register("email")}
               />
@@ -114,7 +115,7 @@ export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: Recupe
 
             <Button type="submit" disabled={enviando} className="h-10 w-full">
               {enviando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-              {t.auth.recuperar.enviar}
+              {t("auth.recuperar.enviar")}
             </Button>
           </motion.form>
         )}
@@ -125,7 +126,7 @@ export function RecuperarAcceso({ cargando, enviado, volverA, onSubmit }: Recupe
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="size-4" aria-hidden />
-            {t.auth.recuperar.volver}
+            {t("auth.recuperar.volver")}
           </Link>
         </motion.div>
       </motion.div>

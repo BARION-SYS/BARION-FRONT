@@ -2,7 +2,7 @@
 
 import { monedas, type CodigoMoneda } from "@config/regiones"
 import { useTenant } from "@shared/providers/TenantProvider"
-import { useIdioma } from "@shared/providers/TextosProvider"
+import { useIdioma } from "@shared/textos/useTextos"
 import { useSedeActual } from "@store/sede.store"
 import { formatMoney, toMajorUnits, toMinorUnits } from "@shared/utils/currency"
 import {

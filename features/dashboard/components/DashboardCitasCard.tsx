@@ -10,8 +10,9 @@ import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { tokenDeColor } from "@shared/utils/color"
 import { inicialesDe } from "@shared/utils/iniciales"
 import { useFormato } from "@shared/hooks/useFormato"
-import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { configEstadoCita, textoEstadoCita } from "@features/citas/utils/estadoCita"
 import type { Cita } from "@features/citas/types/citas.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface DashboardCitasCardProps {
   /** Las citas de hoy, tal como las devuelve `GET /citas`. */
@@ -19,6 +20,8 @@ interface DashboardCitasCardProps {
 }
 
 export function DashboardCitasCard({ citas }: DashboardCitasCardProps) {
+  const tEstados = useTextos("citas.estados")
+  const t = useTextos("dashboard.citasHoy")
   const { diaSemana, hora } = useFormato()
 
   const completadas = citas.filter((cita) => cita.estado === "completada").length
@@ -29,7 +32,7 @@ export function DashboardCitasCard({ citas }: DashboardCitasCardProps) {
 
   return (
     <SectionCard
-      titulo="Citas de hoy"
+      titulo={t("titulo")}
       subtitulo={diaSemana(new Date())}
       className="flex flex-col"
       accion={
@@ -37,17 +40,17 @@ export function DashboardCitasCard({ citas }: DashboardCitasCardProps) {
           href="/dashboard/citas"
           className="flex items-center gap-1 text-xs text-primary transition-colors hover:text-primary/80"
         >
-          Ver todas <ChevronRight className="h-3 w-3" aria-hidden />
+          {t("verTodas")} <ChevronRight className="h-3 w-3" aria-hidden />
         </Link>
       }
     >
       {citas.length === 0 ? (
-        <SinDatos titulo="Hoy no hay nada agendado" alto={120} />
+        <SinDatos titulo={t("sinDatos")} alto={120} />
       ) : (
         <ul className="scroll-fino max-h-80 flex-1 space-y-1.5 overflow-y-auto pr-1">
           {citas.map((cita) => {
             const estado = configEstadoCita[cita.estado]
-            const nombreCliente = cita.cliente?.nombre ?? "Cliente"
+            const nombreCliente = cita.cliente?.nombre ?? t("clienteSinNombre")
 
             return (
               <li
@@ -76,7 +79,7 @@ export function DashboardCitasCard({ citas }: DashboardCitasCardProps) {
                   </p>
                 </div>
                 <StatusBadge
-                  etiqueta={estado.etiqueta}
+                  etiqueta={textoEstadoCita(tEstados, cita.estado)}
                   tono={estado.tono}
                   icono={estado.icono}
                   compacta
@@ -89,17 +92,18 @@ export function DashboardCitasCard({ citas }: DashboardCitasCardProps) {
 
       <div className="mt-4 flex items-center justify-between border-t border-border pt-4 text-xs">
         <p className="text-muted-foreground">
-          <span className="font-semibold text-foreground">{citas.length}</span> citas totales
+          <span className="font-semibold text-foreground">{citas.length}</span>{" "}
+          {t("total", { cuantas: citas.length })}
         </p>
         <div className="flex items-center gap-3">
           <span className="text-(--exito)">
-            <span className="font-semibold">{completadas}</span> completas
+            <span className="font-semibold">{completadas}</span> {t("completas")}
           </span>
           <span className="text-primary">
-            <span className="font-semibold">{enCurso}</span> en curso
+            <span className="font-semibold">{enCurso}</span> {t("enCurso")}
           </span>
           <span className="text-destructive">
-            <span className="font-semibold">{canceladas}</span> perdidas
+            <span className="font-semibold">{canceladas}</span> {t("perdidas")}
           </span>
         </div>
       </div>

@@ -12,7 +12,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@shared/components/ui/tabs"
 import { useFormato } from "@shared/hooks/useFormato"
 import type { EstadoCita, VistaCalendario } from "@features/citas/types/citas.types"
-import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { configEstadoCita, textoEstadoCita } from "@features/citas/utils/estadoCita"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface CitasToolbarProps {
   vista: VistaCalendario
@@ -33,11 +34,14 @@ interface CitasToolbarProps {
 
 const TODOS = "todos"
 
-const ETIQUETAS: Record<VistaCalendario, string> = {
-  semana: "Semana",
-  dia: "Día",
-  lista: "Lista",
-}
+/**
+ * Las tres vistas, en el orden en que se ofrecen.
+ *
+ * La LISTA vive aquí porque el orden es una decisión de diseño y no cambia con
+ * el idioma; el texto sale del diccionario dentro del componente. Antes era un
+ * mapa de vista a etiqueta a nivel de módulo, y ahí no alcanza ningún hook.
+ */
+const VISTAS: readonly VistaCalendario[] = ["semana", "dia", "lista"]
 
 export function CitasToolbar({
   vista,
@@ -53,6 +57,8 @@ export function CitasToolbar({
   onEstado,
   onNueva,
 }: CitasToolbarProps) {
+  const tEstados = useTextos("citas.estados")
+  const t = useTextos("citas")
   const { fechaCorta } = useFormato()
 
   // El rótulo se arma con la fecha local, no con un instante: el día que se
@@ -69,7 +75,7 @@ export function CitasToolbar({
           type="button"
           size="icon"
           variant="outline"
-          aria-label="Anterior"
+          aria-label={t("toolbar.anterior")}
           onClick={() => onMover(-1)}
         >
           <ChevronLeft className="size-4" aria-hidden />
@@ -81,7 +87,7 @@ export function CitasToolbar({
           type="button"
           size="icon"
           variant="outline"
-          aria-label="Siguiente"
+          aria-label={t("toolbar.siguiente")}
           onClick={() => onMover(1)}
         >
           <ChevronRight className="size-4" aria-hidden />
@@ -94,9 +100,9 @@ export function CitasToolbar({
       <div className="flex flex-wrap items-center gap-2">
         <Tabs value={vista}>
           <TabsList>
-            {(Object.keys(ETIQUETAS) as VistaCalendario[]).map((clave) => (
+            {VISTAS.map((clave) => (
               <TabsTrigger key={clave} value={clave} onClick={() => onVista(clave)}>
-                {ETIQUETAS[clave]}
+                {t(`toolbar.${clave}`)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -106,11 +112,11 @@ export function CitasToolbar({
           value={barberoId || TODOS}
           onValueChange={(valor) => onBarbero(!valor || valor === TODOS ? "" : valor)}
         >
-          <SelectTrigger aria-label="Barbero" className="w-40">
+          <SelectTrigger aria-label={t("toolbar.barbero")} className="w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={TODOS}>Todos los barberos</SelectItem>
+            <SelectItem value={TODOS}>{t("toolbar.todosLosBarberos")}</SelectItem>
             {barberos.map((barbero) => (
               <SelectItem key={barbero.id} value={barbero.id}>
                 {barbero.nombrePublico}
@@ -123,14 +129,14 @@ export function CitasToolbar({
           value={estado || TODOS}
           onValueChange={(valor) => onEstado(!valor || valor === TODOS ? "" : valor)}
         >
-          <SelectTrigger aria-label="Estado" className="w-44">
+          <SelectTrigger aria-label={t("toolbar.estado")} className="w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={TODOS}>Todos los estados</SelectItem>
+            <SelectItem value={TODOS}>{t("toolbar.todosLosEstados")}</SelectItem>
             {(Object.keys(configEstadoCita) as EstadoCita[]).map((clave) => (
               <SelectItem key={clave} value={clave}>
-                {configEstadoCita[clave].etiqueta}
+                {textoEstadoCita(tEstados, clave)}
               </SelectItem>
             ))}
           </SelectContent>

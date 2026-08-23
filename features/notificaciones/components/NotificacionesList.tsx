@@ -6,6 +6,7 @@ import type { LucideIcon } from "lucide-react"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import { cn } from "@shared/utils/cn"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 import type {
   GrupoNotificacion,
   Notificacion,
@@ -43,6 +44,7 @@ const RUTA_ENTIDAD: Record<string, string> = {
 }
 
 export function NotificacionesList({ notificaciones, loading, onAbrir }: NotificacionesListProps) {
+  const t = useTextos("notificaciones")
   const { relativo, fechaHora } = useFormato()
 
   return (
@@ -54,10 +56,8 @@ export function NotificacionesList({ notificaciones, loading, onAbrir }: Notific
       emptyState={
         <div className="flex flex-col items-center gap-2 py-16 text-center">
           <Bell className="h-6 w-6 text-muted-foreground" aria-hidden />
-          <p className="text-sm font-medium text-foreground">La bandeja está vacía</p>
-          <p className="max-w-sm text-xs text-muted-foreground">
-            Aquí llegan los avisos de tus citas, tus clientes y tu equipo.
-          </p>
+          <p className="text-sm font-medium text-foreground">{t("vacia")}</p>
+          <p className="max-w-sm text-xs text-muted-foreground">{t("vaciaDetalle")}</p>
         </div>
       }
     >

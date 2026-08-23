@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Check, Copy, MailCheck, Send, TriangleAlert } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface EquipoCredencialProps {
   nombre: string
@@ -42,6 +43,7 @@ export function EquipoCredencial({
   onReenviar,
   onCerrar,
 }: EquipoCredencialProps) {
+  const t = useTextos("equipo")
   const [copiada, setCopiada] = useState(false)
 
   const copiar = async () => {
@@ -128,7 +130,7 @@ export function EquipoCredencial({
             type="button"
             variant="outline"
             onClick={() => void copiar()}
-            aria-label="Copiar la contraseña"
+            aria-label={t("copiarContrasena")}
             className="size-11 shrink-0"
           >
             {copiada ? (
@@ -140,7 +142,7 @@ export function EquipoCredencial({
         </div>
         {/* El estado de la copia también se anuncia: el icono solo no lo dice. */}
         <span aria-live="polite" className="text-xs text-muted-foreground">
-          {copiada ? "Copiada al portapapeles" : "Tendrá que cambiarla la primera vez que entre."}
+          {copiada ? t("contrasenaCopiada") : t("contrasenaAviso")}
         </span>
       </div>
 

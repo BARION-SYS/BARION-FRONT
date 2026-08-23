@@ -5,6 +5,7 @@ import { Loader2, Minus, Plus } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { FAMILIA_EXCLUIDA, NOMBRE_FAMILIA } from "@features/roles/constants/familias"
 import type { ExcepcionPermiso, Permiso, Rol } from "@features/roles/types/roles.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface RolesExcepcionesFormProps {
   /** El rol de la persona: sus capacidades son el punto de partida. */
@@ -36,6 +37,7 @@ export function RolesExcepcionesForm({
   cargando,
   onSubmit,
 }: RolesExcepcionesFormProps) {
+  const t = useTextos("roles")
   const [cambios, setCambios] = useState<Map<string, boolean>>(
     new Map(excepciones.map((e) => [e.permiso, e.concedido]))
   )
@@ -106,7 +108,7 @@ export function RolesExcepcionesForm({
                     )}
                     {estado === "hereda" && (
                       <span className="text-xs text-muted-foreground">
-                        {heredado ? "Lo trae su rol" : "No lo tiene"}
+                        {heredado ? t("heredaSi") : t("heredaNo")}
                       </span>
                     )}
                   </button>

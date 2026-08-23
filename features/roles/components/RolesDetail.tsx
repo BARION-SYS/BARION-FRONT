@@ -3,6 +3,7 @@
 import { Check, Minus } from "lucide-react"
 import { FAMILIA_EXCLUIDA, NOMBRE_FAMILIA } from "@features/roles/constants/familias"
 import type { Permiso, Rol } from "@features/roles/types/roles.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface RolesDetailProps {
   rol: Rol
@@ -17,6 +18,7 @@ interface RolesDetailProps {
  * desde su ficha, con las excepciones de permiso.
  */
 export function RolesDetail({ rol, permisos }: RolesDetailProps) {
+  const t = useTextos("roles")
   const delNegocio = permisos.filter((p) => p.familia !== FAMILIA_EXCLUIDA)
   const familias = [...new Set(delNegocio.map((p) => p.familia))]
   const trae = new Set(rol.permisos)
@@ -29,8 +31,10 @@ export function RolesDetail({ rol, permisos }: RolesDetailProps) {
       </p>
 
       <div className="flex items-baseline justify-between">
-        <p className="text-sm font-medium">Capacidades</p>
-        <span className="text-xs text-muted-foreground">{trae.size} activas</span>
+        <p className="text-sm font-medium">{t("capacidades")}</p>
+        <span className="text-xs text-muted-foreground">
+          {t("activas", { cuantas: trae.size })}
+        </span>
       </div>
 
       <div className="flex max-h-[50vh] flex-col gap-4 overflow-y-auto pr-1">

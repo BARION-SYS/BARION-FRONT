@@ -17,6 +17,7 @@ import { Textarea } from "@shared/components/ui/textarea"
 import { esquemaCliente, type DatosCliente } from "@features/clientes/schemas/clientes.schema"
 import type { Cliente } from "@features/clientes/types/clientes.types"
 import type { Barbero } from "@features/barberos/types/barberos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface ClientesFormProps {
   /** Sin cliente = alta. Con cliente = edición. */
@@ -52,6 +53,7 @@ const TITULO_GRUPO =
  */
 export function ClientesForm({ cliente, barberos, cargando, onSubmit }: ClientesFormProps) {
   const editando = Boolean(cliente)
+  const t = useTextos("clientes")
 
   const {
     register,
@@ -77,45 +79,43 @@ export function ClientesForm({ cliente, barberos, cargando, onSubmit }: Clientes
     <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="flex flex-col gap-5">
       {!editando && (
         <div className="rounded-xl border border-border bg-secondary/40 p-3 text-xs">
-          <p className="font-medium">Es una ficha, no una cuenta de acceso.</p>
+          <p className="font-medium">{t("form.avisoTitulo")}</p>
           <ul className="mt-1.5 flex list-disc flex-col gap-1 pl-4 text-muted-foreground">
-            <li>Es la del que entró sin cita: suma a su historial y se le puede agendar.</li>
-            <li>
-              No entra a ninguna parte ni reserva por su cuenta desde el escaparate — le reserva su
-              barbero.
-            </li>
-            <li>
-              Quien llega por el enlace público se registra solo: verifica su teléfono con un código
-              y desde ahí reserva cuando quiera.
-            </li>
+            <li>{t("form.avisoUno")}</li>
+            <li>{t("form.avisoDos")}</li>
+            <li>{t("form.avisoTres")}</li>
           </ul>
         </div>
       )}
 
       <fieldset className="flex flex-col gap-3">
-        <legend className={TITULO_GRUPO}>Quién es</legend>
+        <legend className={TITULO_GRUPO}>{t("form.grupoQuienEs")}</legend>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field data-invalid={!!errors.nombre}>
-            <FieldLabel htmlFor="nombre">Nombre</FieldLabel>
-            <Input id="nombre" placeholder="Laura" {...register("nombre")} />
+            <FieldLabel htmlFor="nombre">{t("form.nombre")}</FieldLabel>
+            <Input id="nombre" placeholder={t("form.nombreEjemplo")} {...register("nombre")} />
             <FieldError errors={[errors.nombre]} />
           </Field>
 
           <Field data-invalid={!!errors.apellido}>
-            <FieldLabel htmlFor="apellido">Apellido</FieldLabel>
-            <Input id="apellido" placeholder="Méndez" {...register("apellido")} />
+            <FieldLabel htmlFor="apellido">{t("form.apellido")}</FieldLabel>
+            <Input
+              id="apellido"
+              placeholder={t("form.apellidoEjemplo")}
+              {...register("apellido")}
+            />
             <FieldError errors={[errors.apellido]} />
           </Field>
         </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className={TITULO_GRUPO}>Cómo se le avisa</legend>
+        <legend className={TITULO_GRUPO}>{t("form.grupoAviso")}</legend>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field data-invalid={!!errors.telefonoE164}>
-            <FieldLabel htmlFor="telefonoE164">Teléfono</FieldLabel>
+            <FieldLabel htmlFor="telefonoE164">{t("form.telefono")}</FieldLabel>
             <Input
               id="telefonoE164"
               inputMode="tel"
@@ -123,15 +123,13 @@ export function ClientesForm({ cliente, barberos, cargando, onSubmit }: Clientes
               {...register("telefonoE164")}
             />
             <p className="text-xs text-muted-foreground">
-              {editando
-                ? "Cambiarlo retira la verificación: el nuevo no lo ha probado nadie."
-                : "Por aquí se le recuerda la cita. Único en la barbería, y queda sin verificar: eso solo lo hace él, con el código del enlace público."}
+              {editando ? t("form.telefonoCambio") : t("form.telefonoAlta")}
             </p>
             <FieldError errors={[errors.telefonoE164]} />
           </Field>
 
           <Field data-invalid={!!errors.email}>
-            <FieldLabel htmlFor="email">Correo</FieldLabel>
+            <FieldLabel htmlFor="email">{t("form.correo")}</FieldLabel>
             <Input id="email" type="email" placeholder="laura@correo.com" {...register("email")} />
             <p className="text-xs text-muted-foreground">
               Obligatorio: sin él no hay a dónde escribirle. También es único en la barbería.
@@ -142,11 +140,11 @@ export function ClientesForm({ cliente, barberos, cargando, onSubmit }: Clientes
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className={TITULO_GRUPO}>Para atenderlo mejor</legend>
+        <legend className={TITULO_GRUPO}>{t("form.grupoPreferencias")}</legend>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field data-invalid={!!errors.fechaNacimiento}>
-            <FieldLabel htmlFor="fechaNacimiento">Cumpleaños</FieldLabel>
+            <FieldLabel htmlFor="fechaNacimiento">{t("form.cumpleanos")}</FieldLabel>
             <Input id="fechaNacimiento" type="date" {...register("fechaNacimiento")} />
             <p className="text-xs text-muted-foreground">
               Opcional: es lo que enciende el saludo de cumpleaños.
@@ -159,7 +157,7 @@ export function ClientesForm({ cliente, barberos, cargando, onSubmit }: Clientes
             name="barberoFavoritoId"
             render={({ field }) => (
               <Field>
-                <FieldLabel htmlFor="barberoFavoritoId">Se atiende con</FieldLabel>
+                <FieldLabel htmlFor="barberoFavoritoId">{t("form.seAtiendeCon")}</FieldLabel>
                 <Select
                   value={field.value ?? SIN_FAVORITO}
                   onValueChange={(valor) =>
@@ -170,7 +168,7 @@ export function ClientesForm({ cliente, barberos, cargando, onSubmit }: Clientes
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={SIN_FAVORITO}>Sin preferencia</SelectItem>
+                    <SelectItem value={SIN_FAVORITO}>{t("form.sinPreferencia")}</SelectItem>
                     {barberos.map((barbero) => (
                       <SelectItem key={barbero.id} value={barbero.id}>
                         {barbero.nombrePublico}
@@ -185,16 +183,16 @@ export function ClientesForm({ cliente, barberos, cargando, onSubmit }: Clientes
         </div>
 
         <Field data-invalid={!!errors.notas}>
-          <FieldLabel htmlFor="notas">Notas internas</FieldLabel>
+          <FieldLabel htmlFor="notas">{t("form.notas")}</FieldLabel>
           <Textarea id="notas" rows={3} className="resize-none" {...register("notas")} />
-          <p className="text-xs text-muted-foreground">No las ve el cliente.</p>
+          <p className="text-xs text-muted-foreground">{t("form.notasAyuda")}</p>
           <FieldError errors={[errors.notas]} />
         </Field>
       </fieldset>
 
       <Button type="submit" disabled={enviando} className="h-10">
         {enviando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-        {editando ? "Guardar cambios" : "Registrar cliente"}
+        {editando ? t("guardar") : t("registrar")}
       </Button>
     </form>
   )

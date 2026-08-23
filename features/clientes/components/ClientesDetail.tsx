@@ -20,6 +20,7 @@ import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { Switch } from "@shared/components/ui/switch"
 import { InfoTooltip } from "@shared/components/tooltips/InfoTooltip"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 import { inicialesDe } from "@shared/utils/iniciales"
 import type {
   Cliente,
@@ -47,11 +48,18 @@ interface ClientesDetailProps {
   onConsentimiento: (tipo: TipoConsentimiento, otorgado: boolean) => void
 }
 
-const CANALES: { tipo: TipoConsentimiento; etiqueta: string }[] = [
-  { tipo: "marketing_whatsapp", etiqueta: "WhatsApp" },
-  { tipo: "marketing_sms", etiqueta: "SMS" },
-  { tipo: "marketing_email", etiqueta: "Correo" },
-  { tipo: "tratamiento_datos", etiqueta: "Tratamiento de datos" },
+/**
+ * Los cuatro consentimientos, en el orden en que se piden.
+ *
+ * La LISTA y su orden son estructura y no cambian con el idioma; cómo se llama
+ * cada uno sale del diccionario dentro del componente. A nivel de módulo no
+ * alcanza ningún hook, que es lo que obligaba a tener el español aquí.
+ */
+const CANALES: readonly TipoConsentimiento[] = [
+  "marketing_whatsapp",
+  "marketing_sms",
+  "marketing_email",
+  "tratamiento_datos",
 ]
 
 /**
@@ -74,6 +82,28 @@ export function ClientesDetail({
   onConsentimiento,
   onAnonimizar,
 }: ClientesDetailProps) {
+  const t = useTextos("clientes")
+
+  /**
+   * El nombre de cada consentimiento, por su clave del contrato.
+   *
+   * Mapa explícito y no `t("detalle")[canal]`: un consentimiento nuevo en la api
+   * **no compila** hasta tener su texto en los tres idiomas, que es para lo que
+   * existe el diccionario tipado.
+   */
+  const etiquetaCanal = (canal: TipoConsentimiento): string => {
+    switch (canal) {
+      case "marketing_whatsapp":
+        return t("detalle.whatsapp")
+      case "marketing_sms":
+        return t("detalle.sms")
+      case "marketing_email":
+        return t("detalle.correo")
+      case "tratamiento_datos":
+        return t("detalle.tratamiento")
+    }
+  }
+
   const { dinero, numero, fecha, relativo } = useFormato()
   const anonimizado = cliente.estado === "anonimizado"
   // El reloj se lee UNA vez al montar y no en cada render: leerlo mientras se
@@ -93,8 +123,8 @@ export function ClientesDetail({
     ? [
         segmentoEtiqueta.descripcion,
         segmentoEtiqueta.tipo === "dinamico"
-          ? "Se rehace cada noche a partir de sus citas."
-          : "La mantiene el equipo a mano.",
+          ? t("detalle.etiquetaAyuda")
+          : t("detalle.etiquetaManualAyuda"),
       ]
         .filter(Boolean)
         .join(" ")
@@ -103,7 +133,7 @@ export function ClientesDetail({
   return (
     <div className="flex flex-col gap-4">
       <SectionCard
-        titulo="Ficha"
+        titulo={t("detalle.ficha")}
         accion={
           anonimizado ? undefined : (
             <div className="flex gap-2">
@@ -133,9 +163,9 @@ export function ClientesDetail({
       >
         {bloqueado && cliente.bloqueadoHasta && (
           <p className="mb-4 rounded-lg border border-(--advertencia)/40 bg-[color-mix(in_srgb,var(--advertencia)_8%,transparent)] p-3 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">No puede reservar en línea</span> hasta el{" "}
-            {fecha(cliente.bloqueadoHasta)}. Sus citas actuales siguen en pie y la barbería puede
-            seguir citándolo a mano.
+            <span className="font-medium text-foreground">{t("detalle.noReservaEnLinea")}</span>{" "}
+            hasta el {fecha(cliente.bloqueadoHasta)}. Sus citas actuales siguen en pie y la barbería
+            puede seguir citándolo a mano.
           </p>
         )}
 
@@ -178,23 +208,27 @@ export function ClientesDetail({
             etiqueta={
               cliente.verificado
                 ? cliente.emailVerificado
-                  ? "Correo verificado"
-                  : "Teléfono verificado"
-                : "Sin verificar"
+                  ? t("detalle.correoVerificado")
+                  : t("detalle.telefonoVerificado")
+                : t("detalle.sinVerificar")
             }
             icono={cliente.verificado ? ShieldCheck : ShieldAlert}
           />
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <StatCard titulo="Visitas" valor={numero(cliente.totalVisitas)} icono={Scissors} />
           <StatCard
-            titulo="Gastado"
+            titulo={t("detalle.visitas")}
+            valor={numero(cliente.totalVisitas)}
+            icono={Scissors}
+          />
+          <StatCard
+            titulo={t("detalle.gastado")}
             valor={dinero(Number(cliente.totalGastadoCentavos))}
             icono={Wallet}
           />
           <StatCard
-            titulo="Última visita"
+            titulo={t("detalle.ultimaVisita")}
             valor={cliente.ultimaVisitaEn ? relativo(cliente.ultimaVisitaEn) : "—"}
             icono={CalendarClock}
           />
@@ -207,26 +241,23 @@ export function ClientesDetail({
         )}
       </SectionCard>
 
-      <SectionCard
-        titulo="Permisos de comunicación"
-        subtitulo="Cada cambio se guarda como un registro nuevo: es la prueba de cuándo lo dio"
-      >
+      <SectionCard titulo={t("detalle.permisos")} subtitulo={t("detalle.consentimientoAyuda")}>
         <Loadable loading={cargandoFicha} variant="form">
           <ul className="flex flex-col gap-2">
             {CANALES.map((canal) => (
               <li
-                key={canal.tipo}
+                key={canal}
                 className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card px-4 py-3"
               >
-                <label htmlFor={canal.tipo} className="text-sm">
-                  {canal.etiqueta}
+                <label htmlFor={canal} className="text-sm">
+                  {etiquetaCanal(canal)}
                 </label>
                 <Switch
-                  id={canal.tipo}
-                  checked={vigente(canal.tipo)}
+                  id={canal}
+                  checked={vigente(canal)}
                   disabled={!gestiona || anonimizado}
-                  onCheckedChange={(valor) => onConsentimiento(canal.tipo, valor)}
-                  aria-label={canal.etiqueta}
+                  onCheckedChange={(valor) => onConsentimiento(canal, valor)}
+                  aria-label={etiquetaCanal(canal)}
                 />
               </li>
             ))}
@@ -234,13 +265,15 @@ export function ClientesDetail({
         </Loadable>
       </SectionCard>
 
-      <SectionCard titulo="Historial" subtitulo="Sus visitas, con lo que se cobró en cada una">
+      <SectionCard titulo={t("detalle.historial")} subtitulo={t("detalle.historialAyuda")}>
         <Loadable
           loading={cargandoFicha}
           isEmpty={historial.length === 0}
           variant="list"
           emptyState={
-            <p className="py-8 text-center text-sm text-muted-foreground">Todavía no ha venido.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              {t("detalle.sinVisitasDetalle")}
+            </p>
           }
         >
           <ul className="flex flex-col gap-2">
@@ -252,7 +285,7 @@ export function ClientesDetail({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
                     {visita.servicios.map((servicio) => servicio.nombre).join(" + ") ||
-                      "Sin servicios"}
+                      t("detalle.sinServicios")}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {fecha(visita.iniciaEn)}

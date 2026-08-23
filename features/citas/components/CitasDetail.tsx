@@ -7,8 +7,9 @@ import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { useFormato } from "@shared/hooks/useFormato"
 import { inicialesDe } from "@shared/utils/iniciales"
-import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { configEstadoCita, textoEstadoCita } from "@features/citas/utils/estadoCita"
 import type { AsientoHistorialCita, Cita, EstadoCita } from "@features/citas/types/citas.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface CitasDetailProps {
   cita: Cita
@@ -47,6 +48,8 @@ export function CitasDetail({
   onEstado,
   onReprogramar,
 }: CitasDetailProps) {
+  const tEstados = useTextos("citas.estados")
+  const t = useTextos("citas")
   const { hora, fecha, fechaHora, dinero, aCentavos } = useFormato()
   // En unidad mayor: quien la teclea piensa en pesos, no en centavos.
   const [propina, setPropina] = useState("")
@@ -62,15 +65,19 @@ export function CitasDetail({
             {cita.cliente?.nombre} {cita.cliente?.apellido}
           </p>
           <p className="truncate text-xs text-muted-foreground">
-            {cita.cliente?.telefonoE164 ?? "Sin teléfono"}
+            {cita.cliente?.telefonoE164 ?? t("sinTelefono")}
           </p>
         </div>
-        <StatusBadge tono={estado.tono} etiqueta={estado.etiqueta} icono={estado.icono} />
+        <StatusBadge
+          tono={estado.tono}
+          etiqueta={textoEstadoCita(tEstados, cita.estado)}
+          icono={estado.icono}
+        />
       </div>
 
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div>
-          <dt className="text-xs text-muted-foreground">Cuándo</dt>
+          <dt className="text-xs text-muted-foreground">{t("detalle.cuando")}</dt>
           <dd>
             {fecha(cita.iniciaEn)} · {hora(cita.iniciaEn)}–{hora(cita.terminaEn)}
           </dd>
@@ -80,17 +87,17 @@ export function CitasDetail({
           <dd>{cita.barbero?.nombrePublico ?? "—"}</dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Total</dt>
+          <dt className="text-xs text-muted-foreground">{t("detalle.total")}</dt>
           <dd>{dinero(Number(cita.precioCentavos))}</dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Seguimiento</dt>
+          <dt className="text-xs text-muted-foreground">{t("detalle.seguimiento")}</dt>
           <dd className="font-mono text-xs">{cita.codigoSeguimiento}</dd>
         </div>
       </dl>
 
       <div>
-        <p className="mb-2 text-xs text-muted-foreground">Servicios</p>
+        <p className="mb-2 text-xs text-muted-foreground">{t("detalle.servicios")}</p>
         <ul className="flex flex-col gap-1">
           {cita.servicios.map((linea) => (
             <li key={linea.id} className="flex items-center justify-between text-sm">
@@ -128,7 +135,7 @@ export function CitasDetail({
             placeholder="0"
             value={propina}
             onChange={(evento) => setPropina(evento.target.value)}
-            aria-label="Propina que dejó el cliente"
+            aria-label={t("propina")}
           />
           <span className="text-xs text-muted-foreground">
             Va íntegra al barbero. Una vez guardada solo se corrige con un ajuste de nómina.
@@ -157,7 +164,7 @@ export function CitasDetail({
                 )
               }
             >
-              {configEstadoCita[destino].etiqueta}
+              {textoEstadoCita(tEstados, destino)}
             </Button>
           ))}
           <Button
@@ -174,11 +181,11 @@ export function CitasDetail({
 
       {historial.length > 0 && (
         <div>
-          <p className="mb-2 text-xs text-muted-foreground">Por dónde ha pasado</p>
+          <p className="mb-2 text-xs text-muted-foreground">{t("detalle.historial")}</p>
           <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
             {historial.map((asiento, indice) => (
               <li key={`${asiento.ocurridoEn}-${indice}`}>
-                {fechaHora(asiento.ocurridoEn)} · {configEstadoCita[asiento.estadoNuevo].etiqueta} (
+                {fechaHora(asiento.ocurridoEn)} · {textoEstadoCita(tEstados, asiento.estadoNuevo)} (
                 {asiento.actor}){asiento.motivo ? ` — ${asiento.motivo}` : ""}
               </li>
             ))}

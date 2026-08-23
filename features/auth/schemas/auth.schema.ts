@@ -1,17 +1,21 @@
 import { z } from "zod"
-import { esCO, type Diccionario } from "@shared/textos/diccionarios/es-CO"
+import { erroresPorDefecto, type TextosDeError } from "@features/auth/schemas/errores"
 
 /**
  * ── Por qué los schemas son FUNCIONES ───────────────────────────────────────
  * Porque sus mensajes los lee una persona, y esa persona tiene idioma. Un schema
  * declarado como constante congela el español en el módulo.
  *
- * El diccionario llega por parámetro y **el base es el valor por defecto**, que
+ * Los mensajes llegan por parámetro y **el español es el valor por defecto**, que
  * es lo que permite que haya un solo schema y no dos: el formulario lo construye
- * con el idioma activo (`esquemaLogin(t)`) y el service, que no es un componente
- * y no tiene contexto, lo llama sin nada (`esquemaLogin()`). Ahí el mensaje da
- * igual —lo que hace es descartar claves ajenas y transformar—; lo que no puede
- * pasar es que existan dos definiciones de lo válido.
+ * con el idioma activo (`esquemaLogin(erroresDe(t))`) y el service, que no es un
+ * componente y no tiene traductor, lo llama sin nada (`esquemaLogin()`). Ahí el
+ * mensaje da igual —lo que hace es descartar claves ajenas y transformar—; lo que
+ * no puede pasar es que existan dos definiciones de lo válido.
+ *
+ * Reciben un objeto de frases YA resueltas y no el traductor: zod las quiere como
+ * cadenas en el momento de construir el schema, así que resolverlas fuera deja
+ * esta capa sin saber nada de idiomas.
  */
 
 // El formulario tiene DOS campos y solo dos. La barbería no se teclea: sale de
@@ -20,10 +24,10 @@ import { esCO, type Diccionario } from "@shared/textos/diccionarios/es-CO"
 //
 // Por eso no está en este schema: zod valida lo que una persona escribió, y ahí
 // nadie escribió nada.
-export function esquemaLogin(t: Diccionario = esCO) {
+export function esquemaLogin(t: TextosDeError = erroresPorDefecto) {
   return z.object({
-    correo: z.email(t.auth.errores.correo),
-    contrasena: z.string().min(8, t.auth.errores.contrasenaCorta),
+    correo: z.email(t.correo),
+    contrasena: z.string().min(8, t.contrasenaCorta),
     recordarme: z.boolean(),
   })
 }
@@ -37,19 +41,19 @@ export type DatosLogin = z.infer<ReturnType<typeof esquemaLogin>>
 // cambio voluntario desde configuración. La actual se sigue pidiendo aunque haya
 // sesión — sin eso, un equipo desbloqueado un minuto basta para dejar a su dueño
 // fuera de su propia cuenta.
-export function esquemaCambioContrasena(t: Diccionario = esCO) {
+export function esquemaCambioContrasena(t: TextosDeError = erroresPorDefecto) {
   return z
     .object({
-      contrasenaActual: z.string().min(8, t.auth.errores.escribeLaActual),
-      contrasenaNueva: z.string().min(12, t.auth.errores.minimo12),
+      contrasenaActual: z.string().min(8, t.escribeLaActual),
+      contrasenaNueva: z.string().min(12, t.minimo12),
       confirmacion: z.string(),
     })
     .refine((d) => d.contrasenaNueva === d.confirmacion, {
-      message: t.auth.errores.noCoinciden,
+      message: t.noCoinciden,
       path: ["confirmacion"],
     })
     .refine((d) => d.contrasenaNueva !== d.contrasenaActual, {
-      message: t.auth.errores.distintaDeLaDada,
+      message: t.distintaDeLaDada,
       path: ["contrasenaNueva"],
     })
 }
@@ -57,9 +61,9 @@ export function esquemaCambioContrasena(t: Diccionario = esCO) {
 export type DatosCambioContrasena = z.infer<ReturnType<typeof esquemaCambioContrasena>>
 
 /** Pedir el enlace. La API responde lo mismo exista o no el correo. */
-export function esquemaSolicitudRecuperacion(t: Diccionario = esCO) {
+export function esquemaSolicitudRecuperacion(t: TextosDeError = erroresPorDefecto) {
   return z.object({
-    email: z.email(t.auth.errores.correo),
+    email: z.email(t.correo),
   })
 }
 
@@ -67,14 +71,14 @@ export type DatosSolicitudRecuperacion = z.infer<ReturnType<typeof esquemaSolici
 
 // El token no lo escribe nadie: viene en el enlace del correo y lo añade la
 // página. Por eso vive fuera del schema, igual que el slug en el login.
-export function esquemaNuevaContrasena(t: Diccionario = esCO) {
+export function esquemaNuevaContrasena(t: TextosDeError = erroresPorDefecto) {
   return z
     .object({
-      contrasenaNueva: z.string().min(12, t.auth.errores.minimo12),
+      contrasenaNueva: z.string().min(12, t.minimo12),
       confirmacion: z.string(),
     })
     .refine((d) => d.contrasenaNueva === d.confirmacion, {
-      message: t.auth.errores.noCoinciden,
+      message: t.noCoinciden,
       path: ["confirmacion"],
     })
 }

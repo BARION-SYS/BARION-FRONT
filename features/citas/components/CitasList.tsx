@@ -4,9 +4,10 @@ import { Loadable } from "@shared/components/feedback/Loadable"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { useFormato } from "@shared/hooks/useFormato"
 import { cn } from "@shared/utils/cn"
-import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { configEstadoCita, textoEstadoCita } from "@features/citas/utils/estadoCita"
 import { resumenServicios } from "@features/citas/utils/servicios"
 import type { Cita } from "@features/citas/types/citas.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface CitasListProps {
   citas: Cita[]
@@ -21,6 +22,8 @@ interface CitasListProps {
  * dice cuándo hay hueco, esta dice qué toca ahora.
  */
 export function CitasList({ citas, loading, onSeleccionar }: CitasListProps) {
+  const tEstados = useTextos("citas.estados")
+  const t = useTextos("citas")
   const { hora, fecha, dinero, fechaClave } = useFormato()
 
   const porDia = new Map<string, Cita[]>()
@@ -67,7 +70,7 @@ export function CitasList({ citas, loading, onSeleccionar }: CitasListProps) {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-medium">
-                          {cita.cliente?.nombre ?? "Sin cliente"} {cita.cliente?.apellido ?? ""}
+                          {cita.cliente?.nombre ?? t("sinCliente")} {cita.cliente?.apellido ?? ""}
                         </span>
                         <span className="block truncate text-xs text-muted-foreground">
                           {resumenServicios(cita.servicios.map((linea) => linea.nombre))}
@@ -79,7 +82,7 @@ export function CitasList({ citas, loading, onSeleccionar }: CitasListProps) {
                       </span>
                       <StatusBadge
                         tono={estado.tono}
-                        etiqueta={estado.etiqueta}
+                        etiqueta={textoEstadoCita(tEstados, cita.estado)}
                         icono={estado.icono}
                         compacta
                       />

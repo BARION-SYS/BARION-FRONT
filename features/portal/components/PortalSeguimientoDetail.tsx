@@ -3,7 +3,11 @@
 import { motion } from "motion/react"
 import Link from "next/link"
 import { CalendarCheck, CalendarX, MapPin } from "lucide-react"
-import { ESTADOS_NO_CANCELABLES, configEstadoCita } from "@features/citas/utils/estadoCita"
+import {
+  ESTADOS_NO_CANCELABLES,
+  configEstadoCita,
+  textoEstadoCita,
+} from "@features/citas/utils/estadoCita"
 import { resumenServicios } from "@features/citas/utils/servicios"
 import { direccionLegible } from "@features/portal/utils/horarios"
 import {
@@ -17,6 +21,7 @@ import type { SedePortal, SeguimientoPortal } from "@features/portal/types/porta
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { Button } from "@shared/components/ui/button"
 import { formatDuration } from "@shared/utils/datetime"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalSeguimientoDetailProps {
   cita: SeguimientoPortal
@@ -47,7 +52,9 @@ export function PortalSeguimientoDetail({
   formato,
   hrefCitas,
 }: PortalSeguimientoDetailProps) {
+  const tCita = useTextos("portal.cita")
   const estado = configEstadoCita[cita.estado]
+  const tEstados = useTextos("citas.estados")
   const duracionTotal = cita.servicios.reduce((suma, linea) => suma + linea.duracionMin, 0)
   // Ya pasó, está pasando o se canceló: no hay nada que ofrecer.
   const puedeCancelarse = !ESTADOS_NO_CANCELABLES.includes(cita.estado)
@@ -68,7 +75,7 @@ export function PortalSeguimientoDetail({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 id="titulo-seguimiento" className="text-2xl font-bold text-foreground">
-              {cita.cliente ? `Tu cita, ${cita.cliente.nombre}` : "Tu cita"}
+              {cita.cliente ? tCita("tuCitaCon", { nombre: cita.cliente.nombre }) : tCita("tuCita")}
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
               Código{" "}
@@ -78,7 +85,11 @@ export function PortalSeguimientoDetail({
             </p>
           </div>
           {/* Con ícono además del color: el estado nunca va solo por color */}
-          <StatusBadge etiqueta={estado.etiqueta} tono={estado.tono} icono={estado.icono} />
+          <StatusBadge
+            etiqueta={textoEstadoCita(tEstados, cita.estado)}
+            tono={estado.tono}
+            icono={estado.icono}
+          />
         </div>
 
         {cita.canceladaEn && (
@@ -93,27 +104,27 @@ export function PortalSeguimientoDetail({
 
         <dl className="mt-6 space-y-3 rounded-xl bg-secondary/50 p-4">
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-xs text-muted-foreground">Cuándo</dt>
+            <dt className="text-xs text-muted-foreground">{tCita("cuando")}</dt>
             <dd className="text-right text-sm font-semibold text-foreground">
               {diaSemanaDe(cita.iniciaEn, formato)} {fechaCortaDe(cita.iniciaEn, formato)} ·{" "}
               {horaDe(cita.iniciaEn, formato)}
             </dd>
           </div>
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-xs text-muted-foreground">Servicios</dt>
+            <dt className="text-xs text-muted-foreground">{tCita("servicios")}</dt>
             <dd className="text-right text-sm font-medium text-foreground">
               {resumenServicios(cita.servicios.map((linea) => linea.nombre))} ·{" "}
               {formatDuration(duracionTotal)}
             </dd>
           </div>
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-xs text-muted-foreground">Barbero</dt>
+            <dt className="text-xs text-muted-foreground">{tCita("barbero")}</dt>
             <dd className="text-right text-sm font-medium text-foreground">
-              {cita.barbero?.nombrePublico ?? "Por asignar"}
+              {cita.barbero?.nombrePublico ?? tCita("porAsignar")}
             </dd>
           </div>
           <div className="flex items-baseline justify-between gap-3 border-t border-dashed border-border pt-3">
-            <dt className="text-xs text-muted-foreground">Total a pagar en la barbería</dt>
+            <dt className="text-xs text-muted-foreground">{tCita("totalEnLaBarberia")}</dt>
             <dd className="text-right text-base font-bold text-primary tabular-nums">
               {dineroDe(cita.precioCentavos, formato)}
             </dd>

@@ -1,18 +1,22 @@
 import type { LucideIcon } from "lucide-react"
-import type { Diccionario } from "@shared/textos/diccionarios/es-CO"
+import type { Mensajes } from "@shared/textos/completitud"
 
 /**
- * La clave con la que una ruta busca su nombre en el diccionario.
+ * La clave con la que una ruta busca su nombre en el catálogo de mensajes.
  *
- * Sale del propio diccionario, así que **una ruta nueva no compila hasta que
- * tiene texto** en los tres idiomas. Es la comprobación que antes no existía:
- * el nombre vivía escrito aquí en español y no había nada que obligara a
+ * Sale del propio catálogo, así que **una ruta nueva no compila hasta que tiene
+ * texto** en los tres idiomas. Es la comprobación que antes no existía: el
+ * nombre vivía escrito aquí en español y no había nada que obligara a
  * traducirlo.
+ *
+ * `& string` no es ruido: las claves de un objeto incluyen `symbol` en el tipo
+ * de TypeScript, y sin acotarlo no se pueden usar para construir la clave del
+ * mensaje (`navegacion.rutas.${clave}.titulo`).
  */
-export type ClaveRuta = keyof Diccionario["navegacion"]["rutas"]
+export type ClaveRuta = keyof Mensajes["navegacion"]["rutas"] & string
 
 /** Igual para el rótulo de un grupo del sidebar. */
-export type ClaveGrupo = keyof Diccionario["navegacion"]["grupos"]
+export type ClaveGrupo = keyof Mensajes["navegacion"]["grupos"] & string
 
 export type SeccionRuta = "principal" | "operacion" | "finanzas" | "herramientas"
 

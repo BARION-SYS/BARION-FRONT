@@ -26,6 +26,7 @@ import { FuncionDelPlan } from "@shared/components/feedback/FuncionDelPlan"
 import { useFormato } from "@shared/hooks/useFormato"
 import { useAuthStore } from "@store/auth.store"
 import { useSedeActual } from "@store/sede.store"
+import { useTextos } from "@shared/textos/useTextos"
 
 /**
  * El resumen del negocio.
@@ -74,6 +75,7 @@ export default function DashboardPage() {
   const pasos = useMemo(() => pasosDeSesion(sesion), [sesion])
 
   const sedeActual = useSedeActual()
+  const t = useTextos("dashboard.pagina")
   const { dinero, numero, timezone, fecha, fechaCorta } = useFormato()
 
   const hoy = useMemo(() => rangoDeHoy(timezone), [timezone])
@@ -160,54 +162,50 @@ export default function DashboardPage() {
         <PrimerosPasosList pasos={pasos} progreso={progreso} />
       )}
 
-      <section aria-label="Indicadores de hoy">
+      <section aria-label={t("indicadores")}>
         {/* Tres estados, y solo uno es un fallo: sin la capacidad se enseñan las
             cifras propias, sin el plan se enseña qué plan las trae, y el bloque
             rojo se reserva para lo que de verdad se rompió. */}
         {sinPlan ? (
-          <FuncionDelPlan
-            titulo="Los indicadores del día"
-            detalle="Ingresos, ticket promedio, propinas y clientes nuevos entran con un plan superior. Tu agenda y tus clientes siguen funcionando igual."
-            alto={180}
-          />
+          <FuncionDelPlan titulo={t("sinPlanTitulo")} detalle={t("sinPlanDetalle")} alto={180} />
         ) : veReportes ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
             <StatCard
-              titulo="Citas hoy"
+              titulo={t("negocio.citas")}
               valor={numero(pulso?.citas.total ?? 0)}
               icono={CalendarDays}
               subtitulo={fecha(new Date())}
             />
             <StatCard
-              titulo="Completadas"
+              titulo={t("negocio.completadas")}
               valor={numero(pulso?.citas.completadas ?? 0)}
               icono={CheckCircle2}
-              subtitulo={`${numero(pulso?.citas.canceladas ?? 0)} canceladas`}
+              subtitulo={t("negocio.canceladas", { cuantas: numero(pulso?.citas.canceladas ?? 0) })}
             />
             <StatCard
-              titulo="Ingresos"
+              titulo={t("negocio.ingresos")}
               valor={dinero(Number(pulso?.ingresosCentavos ?? 0))}
               icono={DollarSign}
               acento
-              subtitulo="Solo lo completado"
+              subtitulo={t("negocio.ingresosDetalle")}
             />
             <StatCard
-              titulo="Ticket promedio"
+              titulo={t("negocio.ticket")}
               valor={dinero(Number(pulso?.ticketPromedioCentavos ?? 0))}
               icono={Coins}
-              subtitulo="Por cita cerrada"
+              subtitulo={t("negocio.ticketDetalle")}
             />
             <StatCard
-              titulo="Propinas"
+              titulo={t("negocio.propinas")}
               valor={dinero(Number(pulso?.propinasCentavos ?? 0))}
               icono={Gift}
-              subtitulo="Van al barbero"
+              subtitulo={t("negocio.propinasDetalle")}
             />
             <StatCard
-              titulo="Clientes nuevos"
+              titulo={t("negocio.clientesNuevos")}
               valor={numero(pulso?.clientesNuevos ?? 0)}
               icono={UserPlus}
-              subtitulo="Fichas creadas hoy"
+              subtitulo={t("negocio.clientesNuevosDetalle")}
             />
           </div>
         ) : (
@@ -215,29 +213,29 @@ export default function DashboardPage() {
           // `*_propia`, así que estas cifras SON las de quien mira.
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard
-              titulo="Mis citas hoy"
+              titulo={t("propio.citas")}
               valor={numero(citas.length)}
               icono={CalendarDays}
               subtitulo={fecha(new Date())}
             />
             <StatCard
-              titulo="Completadas"
+              titulo={t("propio.completadas")}
               valor={numero(citas.filter((cita) => cita.estado === "completada").length)}
               icono={CheckCircle2}
-              subtitulo="De las de hoy"
+              subtitulo={t("propio.completadasDetalle")}
             />
             <StatCard
-              titulo="Llevo ganado"
+              titulo={t("propio.ganado")}
               valor={dinero(Number(propio?.totalCentavos ?? 0))}
               icono={DollarSign}
               acento
-              subtitulo="Comisión + propinas de hoy"
+              subtitulo={t("propio.ganadoDetalle")}
             />
             <StatCard
-              titulo="Propinas"
+              titulo={t("propio.propinas")}
               valor={dinero(Number(propio?.propinasCentavos ?? 0))}
               icono={Gift}
-              subtitulo="Íntegras para ti"
+              subtitulo={t("propio.propinasDetalle")}
             />
           </div>
         )}
@@ -246,11 +244,14 @@ export default function DashboardPage() {
       {/* La tendencia y el ranking son de quien lee reportes. Al barbero no se
           le ocultan por sensibles: es que su api no se los daría. */}
       {veReportes && (
-        <section className="grid grid-cols-1 gap-4 xl:grid-cols-3" aria-label="Ingresos">
+        <section
+          className="grid grid-cols-1 gap-4 xl:grid-cols-3"
+          aria-label={t("negocio.ingresos")}
+        >
           <div className="xl:col-span-2">
             <DashboardIngresosChart
               datos={puntos}
-              subtitulo="Últimos 30 días"
+              subtitulo={t("ultimos30")}
               disponible={serie.disponible}
             />
           </div>
@@ -262,14 +263,14 @@ export default function DashboardPage() {
         </section>
       )}
 
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-5" aria-label="Actividad">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-5" aria-label={t("actividad")}>
         <div className={veReportes ? "lg:col-span-3" : "lg:col-span-5"}>
           <DashboardCitasCard citas={citas} />
         </div>
         {veReportes && (
           <div className="flex flex-col gap-4 lg:col-span-2">
-            <DashboardBarberosCard filas={resumen} subtitulo="Hoy" />
-            <DashboardServiciosCard servicios={pulso?.serviciosTop ?? []} subtitulo="Hoy" />
+            <DashboardBarberosCard filas={resumen} subtitulo={t("hoy")} />
+            <DashboardServiciosCard servicios={pulso?.serviciosTop ?? []} subtitulo={t("hoy")} />
           </div>
         )}
       </section>

@@ -22,6 +22,7 @@ import type { Disponibilidad } from "@features/citas/types/citas.types"
 import type { Barbero } from "@features/barberos/types/barberos.types"
 import type { Cliente } from "@features/clientes/types/clientes.types"
 import type { LineaOferta } from "@features/servicios/types/servicios.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface CitasFormProps {
   sedeId: string
@@ -59,6 +60,7 @@ export function CitasForm({
   onConsultar,
   onSubmit,
 }: CitasFormProps) {
+  const t = useTextos("citas")
   const { hora, fecha: formatearFecha } = useFormato()
 
   const [clienteId, setClienteId] = useState("")
@@ -106,7 +108,7 @@ export function CitasForm({
     <div className="flex flex-col gap-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
-          <FieldLabel htmlFor="clienteId">Cliente</FieldLabel>
+          <FieldLabel htmlFor="clienteId">{t("form.cliente")}</FieldLabel>
           <Select value={clienteId} onValueChange={(valor) => setClienteId(valor ?? "")}>
             <SelectTrigger id="clienteId" className="w-full">
               <SelectValue placeholder="¿Quién viene?" />
@@ -122,7 +124,7 @@ export function CitasForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="barberoId">Barbero</FieldLabel>
+          <FieldLabel htmlFor="barberoId">{t("form.barbero")}</FieldLabel>
           <Select value={barberoId} onValueChange={(valor) => elegirBarbero(valor ?? "")}>
             <SelectTrigger id="barberoId" className="w-full">
               <SelectValue placeholder="¿Quién atiende?" />
@@ -143,7 +145,7 @@ export function CitasForm({
 
       {barberoId && (
         <Field>
-          <FieldLabel>Servicios</FieldLabel>
+          <FieldLabel>{t("form.servicios")}</FieldLabel>
           {oferta.length === 0 ? (
             <p className="rounded-lg border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
               Ese barbero todavía no ofrece nada. Su oferta se arma en Personas › Atienden.
@@ -179,7 +181,7 @@ export function CitasForm({
 
       {dia && (
         <Field>
-          <FieldLabel>Hora</FieldLabel>
+          <FieldLabel>{t("form.hora")}</FieldLabel>
           {cargandoDisponibilidad ? (
             <DataSkeleton variant="list" count={2} />
           ) : (
@@ -198,7 +200,7 @@ export function CitasForm({
       )}
 
       <Field>
-        <FieldLabel htmlFor="notas">Notas del cliente</FieldLabel>
+        <FieldLabel htmlFor="notas">{t("form.notas")}</FieldLabel>
         <Textarea
           id="notas"
           rows={2}
@@ -210,7 +212,7 @@ export function CitasForm({
 
       <Button type="button" disabled={!listo || cargando} onClick={enviar} className="h-10">
         {cargando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-        {iniciaEn ? `Reservar ${formatearFecha(iniciaEn)} ${hora(iniciaEn)}` : "Reservar"}
+        {iniciaEn ? `Reservar ${formatearFecha(iniciaEn)} ${hora(iniciaEn)}` : t("form.reservar")}
       </Button>
     </div>
   )

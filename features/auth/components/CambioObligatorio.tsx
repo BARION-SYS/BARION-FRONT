@@ -9,11 +9,12 @@ import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
-import { useTextos } from "@shared/providers/TextosProvider"
+import { useTextos } from "@shared/textos/useTextos"
 import {
   esquemaCambioContrasena,
   type DatosCambioContrasena,
 } from "@features/auth/schemas/auth.schema"
+import { erroresDe } from "@features/auth/schemas/errores"
 
 interface CambioObligatorioProps {
   /** Con qué nombre se dirige a la persona. Null en el staff de plataforma. */
@@ -52,7 +53,7 @@ const bloque: Variants = {
 export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: CambioObligatorioProps) {
   const t = useTextos()
   const [verContrasena, setVerContrasena] = useState(false)
-  const esquema = useMemo(() => esquemaCambioContrasena(t), [t])
+  const esquema = useMemo(() => esquemaCambioContrasena(erroresDe(t)), [t])
   const {
     register,
     handleSubmit,
@@ -81,10 +82,12 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
           <div className="flex flex-col gap-1.5">
             <h1 className="text-lg font-semibold">
               {nombre
-                ? t.auth.cambioObligatorio.saludo(nombre)
-                : t.auth.cambioObligatorio.tituloSinNombre}
+                ? t("auth.cambioObligatorio.saludo", { nombre: nombre })
+                : t("auth.cambioObligatorio.tituloSinNombre")}
             </h1>
-            <p className="text-sm text-muted-foreground">{t.auth.cambioObligatorio.descripcion}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("auth.cambioObligatorio.descripcion")}
+            </p>
           </div>
         </motion.div>
 
@@ -94,12 +97,12 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
           className="mt-6 flex flex-col gap-4"
         >
           <Field>
-            <FieldLabel htmlFor="contrasenaActual">{t.auth.cambioObligatorio.actual}</FieldLabel>
+            <FieldLabel htmlFor="contrasenaActual">{t("auth.cambioObligatorio.actual")}</FieldLabel>
             <Input
               id="contrasenaActual"
               type="password"
               autoComplete="current-password"
-              placeholder={t.auth.cambioObligatorio.actualPlaceholder}
+              placeholder={t("auth.cambioObligatorio.actualPlaceholder")}
               aria-invalid={Boolean(errors.contrasenaActual)}
               {...register("contrasenaActual")}
             />
@@ -108,7 +111,7 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
 
           <Field>
             <FieldLabel htmlFor="contrasenaNueva">
-              {t.auth.cambioObligatorio.contrasenaNueva}
+              {t("auth.cambioObligatorio.contrasenaNueva")}
             </FieldLabel>
             <div className="relative">
               <Input
@@ -124,8 +127,8 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
                 onClick={() => setVerContrasena((v) => !v)}
                 aria-label={
                   verContrasena
-                    ? t.auth.cambioObligatorio.ocultar
-                    : t.auth.cambioObligatorio.mostrar
+                    ? t("auth.cambioObligatorio.ocultar")
+                    : t("auth.cambioObligatorio.mostrar")
                 }
                 className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
               >
@@ -136,12 +139,12 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
                 )}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">{t.auth.cambioObligatorio.minimo}</p>
+            <p className="text-xs text-muted-foreground">{t("auth.cambioObligatorio.minimo")}</p>
             {errors.contrasenaNueva && <FieldError>{errors.contrasenaNueva.message}</FieldError>}
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="confirmacion">{t.auth.cambioObligatorio.repite}</FieldLabel>
+            <FieldLabel htmlFor="confirmacion">{t("auth.cambioObligatorio.repite")}</FieldLabel>
             <Input
               id="confirmacion"
               type={tipo}
@@ -154,14 +157,14 @@ export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: Cambi
 
           <Button type="submit" disabled={enviando} className="h-10 w-full">
             {enviando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-            {t.auth.cambioObligatorio.guardar}
+            {t("auth.cambioObligatorio.guardar")}
           </Button>
         </motion.form>
 
         {/* La única otra salida: nadie debe quedar encerrado en una pantalla. */}
         <motion.div variants={bloque} className="mt-4 text-center">
           <Button variant="ghost" onClick={onSalir} className="h-9 text-sm">
-            {t.comun.cerrarSesion}
+            {t("comun.cerrarSesion")}
           </Button>
         </motion.div>
       </motion.div>

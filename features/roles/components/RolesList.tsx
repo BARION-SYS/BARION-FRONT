@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import type { Rol } from "@features/roles/types/roles.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface RolesListProps {
   roles: Rol[]
@@ -12,13 +13,14 @@ interface RolesListProps {
 }
 
 export function RolesList({ roles, loading, onVer }: RolesListProps) {
+  const t = useTextos("roles")
   return (
     <Loadable
       loading={loading}
       isEmpty={roles.length === 0}
       variant="list"
       emptyState={
-        <p className="py-10 text-center text-sm text-muted-foreground">Todavía no hay roles.</p>
+        <p className="py-10 text-center text-sm text-muted-foreground">{t("sinRoles")}</p>
       }
     >
       <ul className="flex flex-col gap-2">

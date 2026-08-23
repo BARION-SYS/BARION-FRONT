@@ -19,7 +19,7 @@ import { coloresFondo, coloresMarca } from "@config/marca"
 import { foregroundPara, tokensDeTema } from "@shared/utils/color"
 import { useMarcaStore } from "@store/marca.store"
 import { notify } from "@shared/services/notify"
-import { useTextos } from "@shared/providers/TextosProvider"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface GrupoColoresProps {
   titulo: string
@@ -178,18 +178,18 @@ export function BrandStudio() {
   const aplicar = () => {
     setMarca({ colorMarca: borradorMarca, colorFondo: borradorFondo })
     setAbierto(false)
-    notify.success(t.marca.actualizados)
+    notify.success(t("marca.actualizados"))
   }
 
   const tokens = tokensDeTema(borradorMarca, borradorFondo, temaOscuro)
 
   return (
     <>
-      <InfoTooltip contenido={t.marca.boton}>
+      <InfoTooltip contenido={t("marca.boton")}>
         <Button
           variant="outline"
           size="icon"
-          aria-label={t.marca.boton}
+          aria-label={t("marca.boton")}
           onClick={() => alCambiarAbierto(true)}
         >
           <Palette aria-hidden />
@@ -199,7 +199,7 @@ export function BrandStudio() {
       <Modal
         open={abierto}
         onOpenChange={alCambiarAbierto}
-        titulo={t.marca.boton}
+        titulo={t("marca.boton")}
         descripcion="Se adaptan solos al tema claro y oscuro. Es tu preferencia: se guarda en este navegador y no cambia lo que ven los demás."
         size="lg"
         footer={
@@ -213,13 +213,13 @@ export function BrandStudio() {
               disabled={!borradorMarca && !borradorFondo}
               className="mr-auto gap-1.5 text-muted-foreground"
             >
-              <RotateCcw aria-hidden /> {t.marca.restablecer}
+              <RotateCcw aria-hidden /> {t("marca.restablecer")}
             </Button>
             <Button variant="outline" onClick={() => setAbierto(false)}>
-              {t.comun.cancelar}
+              {t("comun.cancelar")}
             </Button>
             <Button onClick={aplicar} disabled={sinCambios}>
-              {t.marca.aplicar}
+              {t("marca.aplicar")}
             </Button>
           </>
         }
@@ -227,18 +227,18 @@ export function BrandStudio() {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-[240px_1fr]">
           <div className="space-y-4">
             <GrupoColores
-              titulo={t.marca.colorPrimario}
+              titulo={t("marca.colorPrimario")}
               colores={coloresMarca}
               seleccionado={borradorMarca}
               alElegir={setBorradorMarca}
-              etiquetaCustom={t.marca.elegirPrimario}
+              etiquetaCustom={t("marca.elegirPrimario")}
             />
             <GrupoColores
-              titulo={t.marca.colorFondo}
+              titulo={t("marca.colorFondo")}
               colores={coloresFondo}
               seleccionado={borradorFondo}
               alElegir={setBorradorFondo}
-              etiquetaCustom={t.marca.elegirFondo}
+              etiquetaCustom={t("marca.elegirFondo")}
             />
             <p className="text-[11px] text-muted-foreground">
               La vista previa usa tu tema actual; cada color genera su variante clara y oscura

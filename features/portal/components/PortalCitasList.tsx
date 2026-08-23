@@ -5,7 +5,11 @@ import { Button } from "@shared/components/ui/button"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { formatDuration } from "@shared/utils/datetime"
-import { configEstadoCita, ESTADOS_NO_CANCELABLES } from "@features/citas/utils/estadoCita"
+import {
+  configEstadoCita,
+  textoEstadoCita,
+  ESTADOS_NO_CANCELABLES,
+} from "@features/citas/utils/estadoCita"
 import { resumenServicios } from "@features/citas/utils/servicios"
 import {
   dineroDe,
@@ -15,6 +19,7 @@ import {
   type ContextoFormato,
 } from "@features/portal/utils/formato"
 import type { Cita } from "@features/portal/types/portal.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalCitasListProps {
   citas: Cita[]
@@ -42,6 +47,8 @@ export function PortalCitasList({
   onCancelar,
   onCalificar,
 }: PortalCitasListProps) {
+  const tCita = useTextos("portal.cita")
+  const tEstados = useTextos("citas.estados")
   return (
     <Loadable loading={loading} variant="list" count={3} isEmpty={citas.length === 0}>
       <ul className="space-y-3">
@@ -60,13 +67,17 @@ export function PortalCitasList({
                     con {cita.barbero?.nombrePublico ?? "quien esté disponible"}
                   </p>
                 </div>
-                <StatusBadge tono={estado.tono} icono={estado.icono} etiqueta={estado.etiqueta} />
+                <StatusBadge
+                  tono={estado.tono}
+                  icono={estado.icono}
+                  etiqueta={textoEstadoCita(tEstados, cita.estado)}
+                />
               </div>
 
               <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs">
                 <div className="flex items-center gap-1.5">
                   <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
-                  <dt className="sr-only">Cuándo</dt>
+                  <dt className="sr-only">{tCita("cuando")}</dt>
                   <dd className="font-medium text-foreground">
                     {diaSemanaDe(cita.iniciaEn, formato)} {fechaCortaDe(cita.iniciaEn, formato)} ·{" "}
                     {horaDe(cita.iniciaEn, formato)}
@@ -74,17 +85,17 @@ export function PortalCitasList({
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
-                  <dt className="sr-only">Duración</dt>
+                  <dt className="sr-only">{tCita("duracion")}</dt>
                   <dd className="text-muted-foreground">{formatDuration(duracion)}</dd>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <dt className="text-muted-foreground">Total</dt>
+                  <dt className="text-muted-foreground">{tCita("total")}</dt>
                   <dd className="font-semibold text-primary tabular-nums">
                     {dineroDe(cita.precioCentavos, formato)}
                   </dd>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <dt className="text-muted-foreground">Código</dt>
+                  <dt className="text-muted-foreground">{tCita("codigo")}</dt>
                   <dd className="font-medium text-foreground tabular-nums">
                     {cita.codigoSeguimiento}
                   </dd>

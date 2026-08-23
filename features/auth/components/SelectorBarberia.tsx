@@ -6,7 +6,7 @@ import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { inicialesDe } from "@shared/utils/iniciales"
 import { Button } from "@shared/components/ui/button"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
-import { useTextos } from "@shared/providers/TextosProvider"
+import { useTextos } from "@shared/textos/useTextos"
 import type { BarberiaParaElegir } from "@features/auth/types/auth.types"
 
 interface SelectorBarberiaProps {
@@ -40,8 +40,8 @@ export function SelectorBarberia({ barberias, cargando, onElegir }: SelectorBarb
     >
       <LogoBarion variante="icono" priority className="mb-6" />
 
-      <h1 className="text-lg font-semibold">{t.auth.selectorBarberia.titulo}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{t.auth.selectorBarberia.descripcion}</p>
+      <h1 className="text-lg font-semibold">{t("auth.selectorBarberia.titulo")}</h1>
+      <p className="mt-1 text-sm text-muted-foreground">{t("auth.selectorBarberia.descripcion")}</p>
 
       <ul className="mt-6 flex flex-col gap-2">
         {barberias.map((barberia) => (
@@ -65,7 +65,7 @@ export function SelectorBarberia({ barberias, cargando, onElegir }: SelectorBarb
 
       <p className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">
         <Store className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-        {t.auth.selectorBarberia.atajo}
+        {t("auth.selectorBarberia.atajo")}
       </p>
     </motion.div>
   )

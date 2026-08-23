@@ -1,0 +1,1140 @@
+{
+  "comun": {
+    "buscar": "Search",
+    "buscarPlaceholder": "Search...",
+    "cancelar": "Cancel",
+    "cerrarSesion": "Sign out"
+  },
+  "idioma": {
+    "boton": "Language",
+    "cambiar": "Change language",
+    "automatico": "Same as the shop"
+  },
+  "tema": {
+    "boton": "Theme",
+    "cambiar": "Change theme",
+    "claro": "Light",
+    "oscuro": "Dark",
+    "sistema": "System"
+  },
+  "marca": {
+    "boton": "Panel colors",
+    "aplicar": "Apply",
+    "restablecer": "Reset",
+    "colorPrimario": "Primary color",
+    "colorFondo": "Background color",
+    "elegirPrimario": "Pick a custom primary color",
+    "elegirFondo": "Pick a custom background color",
+    "actualizados": "Colors updated"
+  },
+  "navegacion": {
+    "abrirMenu": "Open menu",
+    "cerrarMenu": "Close menu",
+    "principal": "Main navigation",
+    "secciones": "Sections",
+    "expandir": "Expand sidebar",
+    "colapsar": "Collapse sidebar",
+    "grupos": {
+      "principal": "Main",
+      "operacion": "Operations",
+      "finanzas": "Finance",
+      "herramientas": "Tools",
+      "admin-principal": "Platform",
+      "admin-herramientas": "Your account"
+    },
+    "rutas": {
+      "dashboard": {
+        "etiqueta": "Dashboard",
+        "titulo": "Dashboard",
+        "subtitulo": "How your shop is doing today"
+      },
+      "citas": {
+        "etiqueta": "Appointments",
+        "titulo": "Appointments",
+        "subtitulo": "Bookings and calendar"
+      },
+      "personas": {
+        "etiqueta": "People",
+        "titulo": "People",
+        "subtitulo": "Who works here: who signs in, who takes clients, and with what permissions"
+      },
+      "servicios": {
+        "etiqueta": "Services",
+        "titulo": "Services",
+        "subtitulo": "Your menu: what you offer, how long it takes and what it costs"
+      },
+      "sedes": {
+        "etiqueta": "Locations",
+        "titulo": "Locations",
+        "subtitulo": "Where the shop operates, with its hours and closures"
+      },
+      "clientes": {
+        "etiqueta": "Clients",
+        "titulo": "Clients",
+        "subtitulo": "Client base and loyalty"
+      },
+      "nomina": {
+        "etiqueta": "Payroll",
+        "titulo": "Payroll",
+        "subtitulo": "Commissions, tips and production"
+      },
+      "estadisticas": {
+        "etiqueta": "Analytics",
+        "titulo": "Analytics",
+        "subtitulo": "Business metrics and trends"
+      },
+      "mi-perfil": {
+        "etiqueta": "My profile",
+        "titulo": "My profile",
+        "subtitulo": "When you work and what you offer"
+      },
+      "qr": {
+        "etiqueta": "QR code",
+        "titulo": "QR code",
+        "subtitulo": "How clients sign up and book"
+      },
+      "notificaciones": {
+        "etiqueta": "Notifications",
+        "titulo": "Notifications",
+        "subtitulo": "What has happened in your shop"
+      },
+      "configuracion": {
+        "etiqueta": "Settings",
+        "titulo": "Settings",
+        "subtitulo": "Make the shop yours"
+      },
+      "admin": {
+        "etiqueta": "Overview",
+        "titulo": "Platform overview",
+        "subtitulo": "How many shops there are, in what state and where they operate"
+      },
+      "admin-barberias": {
+        "etiqueta": "Shops",
+        "titulo": "Shops",
+        "subtitulo": "Sign-up, profile, state and plan of every customer"
+      },
+      "admin-planes": {
+        "etiqueta": "Plans",
+        "titulo": "Plans",
+        "subtitulo": "What is sold: limits, features and price per country"
+      },
+      "admin-suscripciones": {
+        "etiqueta": "Subscriptions",
+        "titulo": "Subscriptions",
+        "subtitulo": "What each shop has bought and how long it lasts"
+      },
+      "admin-mercados": {
+        "etiqueta": "Markets",
+        "titulo": "Markets",
+        "subtitulo": "Where Barion operates and with what tax it invoices"
+      },
+      "admin-staff": {
+        "etiqueta": "Barion team",
+        "titulo": "Barion team",
+        "subtitulo": "Who can sign in to the platform, and with what email"
+      },
+      "admin-cuenta": {
+        "etiqueta": "My account",
+        "titulo": "My account",
+        "subtitulo": "Your password and how you sign in"
+      }
+    }
+  },
+  "navbar": {
+    "sedeActiva": "Current location: {nombre}",
+    "notificaciones": "Notifications",
+    "sinLeer": "Notifications, {cuantas, plural, one {# unread} other {# unread}}",
+    "marcarTodas": "Mark all as read",
+    "sinNotificaciones": "Nothing here yet",
+    "menuUsuario": "User menu: {nombre}, {rol}",
+    "staffPlataforma": "Barion staff",
+    "miPerfil": "My profile",
+    "miAgenda": "My schedule",
+    "configuracion": "Settings"
+  },
+  "auth": {
+    "errores": {
+      "correo": "Enter a valid email",
+      "contrasenaCorta": "Your password needs at least 8 characters",
+      "escribeLaActual": "Type the password you signed in with",
+      "minimo12": "At least 12 characters",
+      "noCoinciden": "The two passwords don't match",
+      "distintaDeLaDada": "Pick one that isn't the password you were given"
+    },
+    "login": {
+      "enLinea": "Online",
+      "tituloBarberia": "Sign in to your shop",
+      "tituloGlobal": "Admin panel",
+      "descripcionBarberia": "With your email and password. The same email can work at more than one shop: the door decides which one you walk into.",
+      "descripcionGlobal": "Welcome back. Your shop is waiting.",
+      "correo": "Email",
+      "correoPlaceholder": "you@yourshop.com",
+      "contrasena": "Password",
+      "mostrar": "Show password",
+      "ocultar": "Hide password",
+      "recordarme": "Remember me",
+      "olvidaste": "Forgot your password?",
+      "entrar": "Open the panel",
+      "o": "or",
+      "google": "Continue with Google",
+      "sinCuenta": "No account yet?",
+      "registrarse": "Sign your shop up, free",
+      "demo": "Demo access",
+      "demoEntrar": "Go in without credentials"
+    },
+    "selectorBarberia": {
+      "titulo": "Which shop are you going into?",
+      "descripcion": "Your account works at several. Pick the one you want to work in right now.",
+      "atajo": "Sign in from your shop's own address and you skip this step."
+    },
+    "recuperar": {
+      "titulo": "Get back in",
+      "descripcion": "Type the email you sign in with and we'll send a link to pick a new password.",
+      "enviadoTitulo": "Check your email",
+      "enviadoDescripcion": "If that address has a Barion account, a link to pick a new password is on its way. It expires in two hours and works once.",
+      "correo": "Email",
+      "enviar": "Send the link",
+      "volver": "Back to sign in"
+    },
+    "nuevaContrasena": {
+      "titulo": "Pick your password",
+      "descripcion": "The old one stops working the moment you save this.",
+      "contrasenaNueva": "New password",
+      "repite": "Type it again",
+      "minimo": "At least 12 characters.",
+      "guardar": "Save the password",
+      "mostrar": "Show the password",
+      "ocultar": "Hide the password",
+      "enlaceIncompleto": "This link is incomplete. Ask for a new one and open it from the email.",
+      "pedirOtro": "Ask for a new link"
+    },
+    "cambioObligatorio": {
+      "saludo": "Hi, {nombre}",
+      "tituloSinNombre": "Pick your password",
+      "descripcion": "You signed in with a password someone else set. Pick your own to carry on: the panel stays closed until you do.",
+      "actual": "Current password",
+      "actualPlaceholder": "The one you were given",
+      "contrasenaNueva": "New password",
+      "repite": "Type the new one again",
+      "minimo": "At least 12 characters.",
+      "mostrar": "Show the password",
+      "ocultar": "Hide the password",
+      "guardar": "Save and go in"
+    },
+    "panelMarca": {
+      "insignia": "Barbershop OS",
+      "tituloAntes": "The complete digital",
+      "tituloDestacado": "ecosystem",
+      "tituloDespues": "for your modern barbershop.",
+      "descripcion": "Appointments, barbers, payroll and clients from a single platform. Simple, fast and premium.",
+      "beneficios": {
+        "citas": {
+          "etiqueta": "Smart booking",
+          "descripcion": "Book, move and confirm"
+        },
+        "clientes": {
+          "etiqueta": "Client management",
+          "descripcion": "History and loyalty"
+        },
+        "estadisticas": {
+          "etiqueta": "Live analytics",
+          "descripcion": "The numbers that matter"
+        },
+        "qr": {
+          "etiqueta": "QR sign-up",
+          "descripcion": "Clients with no friction"
+        }
+      },
+      "cifras": {
+        "barberias": "Active shops",
+        "citas": "Appointments/week",
+        "uptime": "Uptime"
+      }
+    }
+  },
+  "notificaciones": {
+    "vacia": "Your inbox is empty",
+    "vaciaDetalle": "Alerts about your appointments, clients and team land here."
+  },
+  "equipo": {
+    "copiarContrasena": "Copy the password",
+    "contrasenaCopiada": "Copied to clipboard",
+    "contrasenaAviso": "They will have to change it the first time they sign in."
+  },
+  "roles": {
+    "sinRoles": "No roles yet.",
+    "capacidades": "Capabilities",
+    "activas": "{cuantas} enabled",
+    "heredaSi": "Comes with their role",
+    "heredaNo": "Not granted"
+  },
+  "segmentos": {
+    "volver": "Clients",
+    "nueva": "New tag",
+    "titulo": "Tags",
+    "subtitulo": "They group clients with something in common. Self-updating ones are recomputed overnight; manual ones are kept by the team from each client's profile.",
+    "administrar": "Manage tags",
+    "lista": {
+      "etiqueta": "Tag",
+      "agrupa": "Who it groups",
+      "clientes": "Clients",
+      "ultimaVez": "Last run",
+      "estado": "Status",
+      "acciones": "Actions",
+      "editar": "Edit",
+      "darDeBaja": "Retire",
+      "reactivar": "Restore",
+      "activa": "Active",
+      "deBaja": "Retired",
+      "noSePinta": "Not shown on the profile",
+      "manual": "Kept by the team",
+      "reglaDesconocida": "Unknown rule ({tipo})",
+      "reglaCon": "{etiqueta}: {valor}",
+      "pendienteDeCalculo": "Runs tonight",
+      "sinDatos": "No tags yet",
+      "sinDatosDetalle": "A tag groups clients with something in common and shows up on each profile."
+    },
+    "form": {
+      "tituloAlta": "New tag",
+      "tituloEdicion": "Edit tag",
+      "crear": "Create tag",
+      "guardar": "Save",
+      "grupoNombre": "What it's called",
+      "grupoQuienEntra": "Who gets in",
+      "grupoDondeSeVe": "Where it shows",
+      "nombre": "Name",
+      "nombreEjemplo": "Inactive",
+      "descripcionEjemplo": "Has not been back in over 60 days",
+      "nombreAyuda": "It shows next to the client, so shorter reads better.",
+      "descripcion": "Description",
+      "descripcionAyuda": "Optional. It's what tells you six months from now what whoever created it meant.",
+      "comoSeLlena": "How it fills up",
+      "sola": "On its own, every night",
+      "aMano": "By hand, one by one",
+      "tipoFijoAlta": "Chosen once and cannot be changed.",
+      "tipoFijoEdicion": "It cannot be changed after creation: its members would be left with nobody maintaining them.",
+      "regla": "Rule",
+      "avisoManual": "The team keeps this list from each client's profile. Nothing rebuilds it overnight, so it stays as is until someone changes it.",
+      "porDefecto": "Left empty, {valor} is used.",
+      "esEtiqueta": "Show it next to the client",
+      "esEtiquetaAyuda": "Without this it still exists and still filters, but it won't appear as a badge on their profile.",
+      "prioridad": "Priority",
+      "prioridadAyuda": "When someone falls into several, the highest number wins. That's what keeps their badge to a single one instead of changing day to day."
+    },
+    "baja": {
+      "titulo": "Retire the tag",
+      "confirmar": "Retire",
+      "detalle": "{nombre} will stop showing next to clients and stop working as a filter. Nothing is lost: you can restore it whenever you want, and its history is kept."
+    },
+    "criterios": {
+      "inactivos": "Haven't been back in a while",
+      "inactivosAyuda": "No visit in that long, or never since their profile was created.",
+      "inactivosParametro": "Days without returning",
+      "frecuentes": "Come in often",
+      "frecuentesAyuda": "That many visits or more.",
+      "frecuentesParametro": "Minimum visits",
+      "nuevos": "Just arrived",
+      "nuevosAyuda": "Profile created within that window.",
+      "nuevosParametro": "Days since the profile was created",
+      "cumpleanos": "Birthday this month",
+      "cumpleanosAyuda": "Recomputed nightly, so the month rolls over on its own.",
+      "gasto": "Have spent at least",
+      "gastoAyuda": "Total they have paid at this barbershop.",
+      "gastoParametro": "Minimum spend",
+      "riesgo": "Miss their appointments",
+      "riesgoAyuda": "Reliability score at or below. The lower it is, the more no-shows.",
+      "riesgoParametro": "Maximum score"
+    }
+  },
+  "citas": {
+    "estados": {
+      "reservada": "Booked",
+      "pendiente_confirmacion": "Awaiting confirmation",
+      "confirmada": "Confirmed",
+      "retrasada": "Running late",
+      "en_curso": "In progress",
+      "completada": "Completed",
+      "cancelada": "Cancelled",
+      "no_asistio": "No-show"
+    },
+    "toolbar": {
+      "dia": "Day",
+      "semana": "Week",
+      "lista": "List",
+      "anterior": "Previous",
+      "siguiente": "Next",
+      "estado": "Status",
+      "barbero": "Barber",
+      "reservar": "Book",
+      "todosLosBarberos": "All barbers",
+      "todosLosEstados": "All statuses"
+    },
+    "detalle": {
+      "cuando": "When",
+      "total": "Total",
+      "seguimiento": "Follow-up",
+      "servicios": "Services",
+      "historial": "Where it has been"
+    },
+    "form": {
+      "cliente": "Client",
+      "barbero": "Barber",
+      "servicios": "Services",
+      "hora": "Time",
+      "notas": "Client notes",
+      "reservar": "Book"
+    },
+    "sinCliente": "No client",
+    "sinTelefono": "No phone",
+    "propina": "Tip left by the client"
+  },
+  "clientes": {
+    "buscar": "Search client",
+    "buscarPlaceholder": "Name, phone or email",
+    "todasLasEtiquetas": "All tags",
+    "etiqueta": "Tag",
+    "etiquetaManual": "manual",
+    "etiquetasAyuda": "Tags come from appointments and are rebuilt every night.",
+    "etiquetasManualesAyuda": " The ones marked «manual» are kept by the team.",
+    "registrar": "Add client",
+    "guardar": "Save changes",
+    "form": {
+      "avisoTitulo": "This is a profile, not a login account.",
+      "avisoUno": "It's for the walk-in: it adds to their history and you can book them in.",
+      "avisoDos": "They don't sign in anywhere and can't book themselves from the storefront — their barber books for them.",
+      "avisoTres": "Anyone arriving through the public link signs up on their own: they verify their phone with a code and book whenever they want.",
+      "telefonoAlta": "This is where appointment reminders go. Unique within the barbershop, and it stays unverified: only they can do that, with the code from the public link.",
+      "grupoQuienEs": "Who they are",
+      "grupoAviso": "How to reach them",
+      "grupoPreferencias": "To serve them better",
+      "nombre": "First name",
+      "nombreEjemplo": "Laura",
+      "apellido": "Last name",
+      "apellidoEjemplo": "Méndez",
+      "telefono": "Phone",
+      "telefonoCambio": "Changing it clears the verification: nobody has proven the new one.",
+      "correo": "Email",
+      "cumpleanos": "Birthday",
+      "seAtiendeCon": "Usually served by",
+      "sinPreferencia": "No preference",
+      "notas": "Internal notes",
+      "notasAyuda": "The client never sees these."
+    },
+    "detalle": {
+      "ficha": "Profile",
+      "historial": "History",
+      "permisos": "Communication consent",
+      "gastado": "Spent",
+      "visitas": "Visits",
+      "ultimaVisita": "Last visit",
+      "whatsapp": "WhatsApp",
+      "correo": "Email",
+      "etiqueta": "Tag",
+      "etiquetaAyuda": "Rebuilt every night from their appointments.",
+      "etiquetaManualAyuda": "Kept by the team manually.",
+      "historialAyuda": "Their visits, with what was charged for each",
+      "sinVisitas": "No visits yet",
+      "sinVisitasDetalle": "They haven't come in yet.",
+      "sinServicios": "No services",
+      "verificado": "Verified client",
+      "correoVerificado": "Email verified",
+      "telefonoVerificado": "Phone verified",
+      "sinVerificar": "Unverified",
+      "noReservaEnLinea": "Cannot book online",
+      "consentimientoAyuda": "Every change is stored as a new record: it's the proof of when they gave it",
+      "tratamiento": "Data processing",
+      "sms": "SMS"
+    },
+    "bloqueo": {
+      "motivo": "Reason (optional)",
+      "motivoEjemplo": "Three no-shows in a row in August",
+      "hastaCuando": "Until when"
+    }
+  },
+  "dashboard": {
+    "pagina": {
+      "indicadores": "Today at a glance",
+      "actividad": "Activity",
+      "hoy": "Today",
+      "ultimos30": "Last 30 days",
+      "sinPlanTitulo": "Today's key numbers",
+      "sinPlanDetalle": "Revenue, average ticket, tips and new clients come with a higher plan. Your schedule and your clients keep working the same.",
+      "negocio": {
+        "citas": "Appointments today",
+        "completadas": "Completed",
+        "canceladas": "{cuantas} cancelled",
+        "ingresos": "Revenue",
+        "ingresosDetalle": "Completed only",
+        "ticket": "Average ticket",
+        "ticketDetalle": "Per closed appointment",
+        "propinas": "Tips",
+        "propinasDetalle": "They go to the barber",
+        "clientesNuevos": "New clients",
+        "clientesNuevosDetalle": "Profiles created today"
+      },
+      "propio": {
+        "citas": "My appointments today",
+        "completadas": "Completed",
+        "completadasDetalle": "Out of today's",
+        "ganado": "Earned so far",
+        "ganadoDetalle": "Commission + tips for today",
+        "propinas": "Tips",
+        "propinasDetalle": "All yours"
+      }
+    },
+    "barberos": {
+      "titulo": "Revenue by barber",
+      "sinDatos": "Nobody has closed an appointment yet",
+      "retirado": "Former barber",
+      "citas": "{cuantas} appointments",
+      "participacion": "{nombre} share: {porcentaje}%"
+    },
+    "citasHoy": {
+      "titulo": "Today's appointments",
+      "verTodas": "See all",
+      "sinDatos": "Nothing booked for today",
+      "clienteSinNombre": "Client",
+      "total": "{cuantas, plural, one {appointment total} other {appointments total}}",
+      "completas": "completed",
+      "enCurso": "in progress",
+      "perdidas": "lost"
+    },
+    "ingresos": {
+      "titulo": "Revenue",
+      "sinDatos": "No trend yet",
+      "sinDatosDetalle": "History is computed overnight. Today's numbers are above."
+    },
+    "meta": {
+      "titulo": "Revenue vs target",
+      "conMeta": "Month over month",
+      "sinMeta": "No target set",
+      "sinDatos": "No monthly history yet",
+      "sinDatosDetalle": "Computed overnight.",
+      "serieIngresos": "Revenue",
+      "serieMeta": "Target"
+    },
+    "servicios": {
+      "titulo": "Best selling services",
+      "sinDatos": "Nothing sold yet"
+    }
+  },
+  "sedes": {
+    "nombre": "Name",
+    "nombreEjemplo": "Downtown",
+    "zonaHoraria": "Time zone",
+    "slugQr": "QR identifier",
+    "telefono": "Phone",
+    "moneda": "Currency",
+    "heredaDeLaBarberia": "Inherit the barbershop's",
+    "heredaAyuda": "Left blank it inherits the barbershop's.",
+    "direccion": "Address",
+    "calleEjemplo": "7th Ave #12-34",
+    "ciudad": "City",
+    "ciudadEjemplo": "Bogotá",
+    "ciudadAyuda": "It's what the storefront shows under the name.",
+    "primerDia": "First day of the week",
+    "lunes": "Monday",
+    "domingo": "Sunday",
+    "crear": "Create location",
+    "guardar": "Save location",
+    "editar": "Edit",
+    "desactivar": "Deactivate",
+    "reactivar": "Reactivate",
+    "desactivada": "Deactivated",
+    "cerrado": "Closed",
+    "cierre": {
+      "desde": "From",
+      "hasta": "Until",
+      "hastaAyuda": "This day is closed too.",
+      "motivo": "Reason",
+      "motivoEjemplo": "Year-end holidays",
+      "programar": "Schedule closure",
+      "guardar": "Save closure"
+    }
+  },
+  "servicios": {
+    "nombre": "Name",
+    "nombreEjemplo": "Classic cut",
+    "categoria": "Category",
+    "categoriaEjemplo": "Haircuts",
+    "categoriaAyuda": "Groups the menu. Free text.",
+    "sede": "Location",
+    "todasLasSedes": "All locations",
+    "moneda": "Currency",
+    "duracion": "Duration (min)",
+    "limpieza": "Cleanup (min)",
+    "precioReferencia": "Reference price",
+    "precioMinimo": "Minimum price",
+    "precioMaximo": "Maximum price",
+    "descripcion": "Description",
+    "destacar": "Feature on the storefront",
+    "destacado": "Featured",
+    "guardar": "Save service",
+    "crear": "Create service",
+    "proponer": "Propose service",
+    "editar": "Edit",
+    "retirar": "Remove from the menu",
+    "aprobarYPublicar": "Approve and publish",
+    "publicar": "Publish",
+    "estados": {
+      "enCarta": "On the menu",
+      "propuesto": "Proposed",
+      "retirado": "Removed"
+    },
+    "toolbar": {
+      "buscar": "Search service",
+      "categoria": "Category",
+      "todasLasCategorias": "All categories",
+      "estado": "Status",
+      "todoElCatalogo": "Whole menu",
+      "soloEnCarta": "On the menu only"
+    },
+    "asignar": {
+      "retiradoDeLaAgenda": "Removed from the schedule",
+      "hereda": "Inherits",
+      "nadieLoOfrece": "Nobody offers it: it won't show up when booking."
+    }
+  },
+  "nomina": {
+    "resumen": {
+      "produccion": "Total revenue",
+      "produccionDetalle": "What the client was charged",
+      "comisiones": "Commissions",
+      "comisionesDetalle": "Each barber's share",
+      "propinas": "Tips",
+      "propinasDetalle": "They go in full to whoever served",
+      "total": "Total payout",
+      "totalDetalle": "Commissions + tips + adjustments"
+    },
+    "retirado": "Former barber",
+    "detalle": {
+      "concepto": "Item",
+      "detalle": "Detail",
+      "monto": "Amount",
+      "cuando": "When",
+      "cobrado": "Charged",
+      "paraEl": "Their share",
+      "produccion": "Revenue",
+      "produccionDetalle": "What the client was charged",
+      "comision": "Commission",
+      "comisionCon": "Commission ({porcentaje})",
+      "comisionDetalle": "Their share of that revenue",
+      "propinas": "Tips",
+      "propinasDetalle": "In full",
+      "ajustes": "Adjustments",
+      "ajustesDetalle": "Corrections",
+      "tipos": {
+        "servicio": "Service",
+        "extra": "Extra",
+        "propina": "Tip",
+        "ajuste": "Adjustment"
+      }
+    },
+    "ajuste": {
+      "motivo": "Reason",
+      "motivoEjemplo": "Tip correction for cut BRN-4F2A9C",
+      "fecha": "Which date it falls on (optional)"
+    }
+  },
+  "personas": {
+    "nav": {
+      "personas": "People",
+      "roles": "Roles"
+    },
+    "estados": {
+      "yaNoTrabaja": "No longer works here",
+      "retirado": "Removed",
+      "ausenteHoy": "Away today",
+      "atiende": "Yes"
+    },
+    "lista": {
+      "cambiarRol": "Change role",
+      "retirarDeLaAgenda": "Remove from the schedule",
+      "devolverALaAgenda": "Return to the schedule",
+      "yaNoTrabajaAqui": "No longer works here (removes access and schedule)",
+      "quitarAcceso": "Revoke access"
+    },
+    "retiro": {
+      "citasPendientes": "{total, plural, one {# appointment of theirs is still ahead.} other {# appointments of theirs are still ahead.}}",
+      "aviso": "They have not been cancelled: these are clients already booked who must be told one by one. Call them and reassign from Appointments."
+    },
+    "alta": {
+      "quienEs": "Who they are",
+      "nombre": "Name",
+      "nombreEjemplo": "Carlos Ramírez",
+      "suAcceso": "Their access",
+      "correo": "Email",
+      "correoAyuda": "If they sign in with Google, it has to be this address.",
+      "telefono": "Phone (optional)",
+      "contrasenaInicial": "Initial password",
+      "contrasenaAyuda": "Leave it empty and we generate one",
+      "queHaceAqui": "What they do here",
+      "eligeUnRol": "Pick a role",
+      "sede": "Location",
+      "todasLasSedes": "All locations",
+      "atiendeAyuda": "They get their own schedule, commission and show on the storefront.",
+      "atiende": "Serves clients",
+      "comision": "Commission per service (%)",
+      "comisionAyuda": "Left blank they keep 100%."
+    },
+    "propia": {
+      "activo": "You show on the schedule and the storefront, and clients can book you.",
+      "inactivo": "Turn it on if you cut hair: you get your own schedule and clients can book you.",
+      "yoAtiendo": "I serve clients too",
+      "nombrePublico": "Public name",
+      "nombrePublicoEjemplo": "Camilo",
+      "titulo": "Title",
+      "tituloEjemplo": "Owner",
+      "comision": "Commission (%)"
+    }
+  },
+  "barberos": {
+    "nombrePublico": "Public name",
+    "nombreEjemplo": "Carlos Ramírez",
+    "titulo": "Title",
+    "tituloEjemplo": "Senior barber",
+    "telefono": "Phone",
+    "correo": "Email",
+    "comision": "Commission (%)",
+    "fechaContratacion": "Hire date",
+    "presentacion": "Bio",
+    "descansa": "Off",
+    "detalle": {
+      "perfil": "Profile",
+      "sinCuenta": "No account",
+      "barbero": "Barber",
+      "cienPorCiento": "Keeps 100%",
+      "retirar": "Remove from the team",
+      "reincorporar": "Reinstate",
+      "jornada": "Working hours",
+      "jornadaAyuda": "When they work. Not the location's hours: slots come from crossing both",
+      "servicios": "Services they offer",
+      "serviciosAyuda": "With the price and duration they charge",
+      "inactivo": "Inactive",
+      "ausenteHoy": "Away today",
+      "activo": "Active"
+    },
+    "ausencia": {
+      "desde": "From",
+      "hasta": "Until",
+      "tipo": "Type",
+      "motivo": "Reason",
+      "motivoEjemplo": "Year-end holidays",
+      "sinAusencias": "No absences recorded.",
+      "aprobada": "Approved",
+      "pendiente": "Pending",
+      "aprobar": "Approve the absence",
+      "cancelar": "Cancel the absence"
+    },
+    "excepcion": {
+      "fecha": "Date",
+      "entrada": "Start",
+      "salida": "End",
+      "motivo": "Reason",
+      "motivoEjemplo": "Doctor's appointment",
+      "programar": "Schedule special day",
+      "guardar": "Save special day",
+      "noAtiende": "Not working"
+    }
+  },
+  "estadisticas": {
+    "cancelaciones": {
+      "titulo": "Completed vs lost",
+      "sinDatos": "No history yet",
+      "completadas": "Completed",
+      "perdidas": "Lost"
+    },
+    "ocupacion": {
+      "titulo": "Utilization",
+      "sinDatos": "No utilization computed yet",
+      "sinDatosDetalle": "It needs declared shifts and the nightly computation."
+    },
+    "servicios": {
+      "titulo": "Service mix",
+      "sinDatos": "Nothing sold in this period"
+    },
+    "tendencia": {
+      "titulo": "Revenue trend",
+      "sinDatos": "No history yet",
+      "sinDatosDetalle": "The trend is computed nightly from closed appointments.",
+      "ingresosDelPeriodo": "Revenue for the period"
+    }
+  },
+  "primerosPasos": {
+    "hecho": "Done",
+    "titulo": "First steps",
+    "subtitulo": "What your barbershop still needs before it can take bookings"
+  },
+  "qr": {
+    "actividad": {
+      "titulo": "Came in through the code",
+      "sinDatos": "Nobody has come in through the code yet",
+      "sinDatosDetalle": "Whoever books or signs up after scanning it will show up here."
+    },
+    "capacidades": "Scanning the QR lets the client",
+    "codigo": {
+      "titulo": "Barbershop QR code",
+      "descargar": "Download",
+      "compartir": "Share",
+      "copiar": "Copy",
+      "copiado": "Copied"
+    },
+    "enlace": {
+      "titulo": "Booking link",
+      "copiar": "Copy",
+      "copiado": "Copied"
+    },
+    "porSede": {
+      "titulo": "By location",
+      "subtitulo": "Appointments attributed to each location's card"
+    }
+  },
+  "registro": {
+    "terminos": {
+      "aria": "I accept the terms and the privacy policy",
+      "heLeido": "I have read and accept the",
+      "terminos": "terms and conditions",
+      "yLa": "and the",
+      "privacidad": "privacy policy",
+      "encargo": ". They cover the processing of your clients' data, where your barbershop is the controller and Barion the processor."
+    },
+    "direccion": {
+      "buscando": "Looking for a free address"
+    },
+    "form": {
+      "tuBarberia": "Your barbershop",
+      "nombreComercial": "Barbershop name",
+      "nombreEjemplo": "The Cut Barbershop",
+      "pais": "Country where your barbershop operates",
+      "tusDatos": "Your details",
+      "tuCuenta": "Your owner account",
+      "tuNombre": "Your name",
+      "nombrePropietarioEjemplo": "Julián Restrepo",
+      "telefono": "Phone",
+      "telefonoAyuda": "So we can call you if needed.",
+      "correo": "Your email",
+      "correoAyuda": "That's where the link that publishes your storefront arrives.",
+      "contrasena": "Password",
+      "mostrarContrasena": "Show password",
+      "ocultarContrasena": "Hide password",
+      "contrasenaAyuda": "At least 12 characters.",
+      "continuaras": "You'll continue as"
+    },
+    "exito": {
+      "tuBarberia": "Your barbershop",
+      "tuPrueba": "Your trial",
+      "pruebaValor": "7 days · no card",
+      "pruebaDetalle": "You pick a plan when it ends",
+      "tuDireccion": "Your public address",
+      "direccionEsperando": "It goes live for your clients as soon as you open the email.",
+      "direccionLista": "It's live: share it and they can book with you.",
+      "loQueSigue": "What's next",
+      "montaTitulo": "Set up your barbershop.",
+      "montaDetalle": "Add your services with their price, the hours you work and your team. With that your schedule starts taking bookings.",
+      "correoTitulo": "Open the email we sent you.",
+      "correoDetalle": "Until you do, your public address isn't served to anyone.",
+      "comparteTitulo": "Share your address.",
+      "comparteDetalle": "Put it on Instagram, WhatsApp or a poster: from there they see your menu and book on their own.",
+      "entraConCorreo": "Sign in with the email and password you just chose.",
+      "entraConGoogle": "Sign in with the same Google button.",
+      "volverAlInicio": "Back to home"
+    },
+    "paseCaducado": "Your Google verification expired",
+    "verificacion": {
+      "entrarAlPanel": "Go to my dashboard",
+      "irAEntrar": "Go to sign in",
+      "verificandoTitulo": "Confirming your email",
+      "verificandoDetalle": "One moment. Don't close this tab.",
+      "listoTitulo": "Done, your barbershop is now visible",
+      "listoDetalle": "Your clients can find you and book from your public page.",
+      "invalidoTitulo": "This link no longer works",
+      "invalidoDetalle": "It may have expired or you may have used it already. If you confirmed before, there's nothing else to do: go to your dashboard."
+    }
+  },
+  "configuracion": {
+    "secciones": "Settings sections",
+    "apariencia": {
+      "logotipo": "Logo",
+      "subir": "Upload logo",
+      "vistaPrevia": "Client portal preview",
+      "vistaPreviaAyuda": "Indicative: it uses your dashboard colors, not the real portal's",
+      "reservaTuCita": "Book your appointment"
+    },
+    "general": {
+      "titulo": "Barbershop information",
+      "nombre": "Business name",
+      "impuesto": "Tax",
+      "incluido": "Included in the price",
+      "agregado": "Added at checkout",
+      "tasa": "Rate"
+    },
+    "ficha": {
+      "titulo": "Public face",
+      "subtitulo": "What someone booking from the portal sees",
+      "eslogan": "Tagline",
+      "esloganEjemplo": "Classic cuts, no queues",
+      "descripcion": "Description",
+      "ventajas": "Highlights",
+      "ventajaEjemplo": "Book in 30 seconds"
+    },
+    "notificaciones": {
+      "titulo": "Notification channels",
+      "subtitulo": "Pick how your clients get told about their appointments"
+    },
+    "seguridad": {
+      "titulo": "Account security",
+      "actual": "Current password",
+      "nueva": "New password",
+      "nuevaEjemplo": "At least 8 characters",
+      "confirmar": "Confirm new password",
+      "confirmarEjemplo": "Repeat the password"
+    }
+  },
+  "pagos": {
+    "enlaces": {
+      "titulo": "Payment links",
+      "subtitulo": "Generate an address and send it to whoever is paying. It expires in 24 hours.",
+      "copiar": "Copy",
+      "copiado": "Copied",
+      "caducado": "Expired",
+      "estados": {
+        "pendiente": "Unpaid",
+        "procesando": "In progress",
+        "aprobado": "Paid",
+        "rechazado": "Declined",
+        "error": "Unconfirmed",
+        "anulado": "Voided"
+      }
+    },
+    "medio": {
+      "titulo": "Payment method",
+      "subtitulo": "What your Barion subscription is charged to. The last one you save is the one charged.",
+      "seCobraraEl": "It will be charged on",
+      "accesoTerminaEl": "Your access ends on",
+      "sinMedio": "There's nothing to charge your subscription to",
+      "sinMedioAdmin": "Whoever administers the barbershop can save a card.",
+      "sinMedioPropio": "Save a card before the next renewal so you don't lose access.",
+      "predeterminado": "Charged to this one",
+      "tipos": {
+        "tarjeta": "Card",
+        "debito_automatico": "Direct debit",
+        "otro": "Other method"
+      },
+      "estados": {
+        "activo": "Valid",
+        "invalido": "Declined"
+      }
+    },
+    "retorno": {
+      "cerrar": "Dismiss the payment notice",
+      "confirmadoTitulo": "Payment confirmed",
+      "confirmadoDetalle": "Your plan is up to date and the invoice is already in your history. There's nothing else to do.",
+      "falloTitulo": "The payment didn't go through",
+      "volvisteTitulo": "You're back from the payment",
+      "falloDetalle": "That attempt didn't go through and you weren't charged. You can generate another link or save a card so the charge happens on its own.",
+      "volvisteDetalle": "We're waiting for the gateway to confirm. It can take a few minutes and there's no need to pay again: when it arrives, your plan and invoices update on their own."
+    },
+    "tarjeta": {
+      "numero": "Card number",
+      "titular": "Name on the card",
+      "titularEjemplo": "José Pérez",
+      "codigo": "Security code"
+    }
+  },
+  "suscripcion": {
+    "tipoPersona": {
+      "natural": "Individual",
+      "juridica": "Company"
+    },
+    "fiscales": {
+      "titulo": "Billing details",
+      "subtitulo": "Optional. Only if you need the invoice made out to a company",
+      "editar": "Edit",
+      "agregar": "Add",
+      "sinDatos": "You don't need to fill anything in",
+      "sinDatosDetalle": "Write to us before turning on billing and we'll sort it out with you.",
+      "nombreLegal": "Legal name",
+      "tipo": "Type",
+      "domicilio": "Tax address",
+      "municipio": "DANE municipality",
+      "enviamosA": "We send the invoice to",
+      "responsabilidades": "Tax obligations"
+    },
+    "form": {
+      "aNombreDe": "Made out to",
+      "tipo": "Type",
+      "documento": "Document",
+      "numero": "Number",
+      "razonSocial": "Legal name",
+      "nombreCompleto": "Full name",
+      "razonSocialEjemplo": "Inversiones El Corte S.A.S.",
+      "nombreEjemplo": "Carlos Ramírez",
+      "domicilio": "Tax address",
+      "direccion": "Address",
+      "direccionEjemplo": "10th St #43-12, suite 302",
+      "ciudad": "City",
+      "region": "State or province",
+      "codigoPostal": "Postal code",
+      "pais": "Country",
+      "codigoMunicipio": "DANE municipality code",
+      "responsabilidades": "Tax obligations",
+      "aDondeMandamos": "Where we send the invoice",
+      "correo": "Email",
+      "telefono": "Phone"
+    },
+    "facturas": {
+      "titulo": "Invoices",
+      "subtitulo": "The charges for your Barion subscription",
+      "sinDatos": "No invoices yet",
+      "sinDatosDetalle": "They'll show up here as soon as the first charge for your plan is issued.",
+      "numero": "Number",
+      "emitida": "Issued",
+      "estado": "Status",
+      "total": "Total",
+      "vence": "Due",
+      "pagada": "Paid",
+      "desglose": "Breakdown",
+      "concepto": "Item",
+      "cantidad": "Qty",
+      "importe": "Amount",
+      "lineaIlegible": "One line arrived in a format that couldn't be shown.",
+      "subtotal": "Subtotal",
+      "impuestos": "Taxes"
+    },
+    "planes": {
+      "titulo": "Plans",
+      "subtituloVacio": "What you can subscribe to",
+      "sinPlanes": "No plans published",
+      "sinPlanesDetalle": "Write to us and we'll help you pick the one that suits your barbershop.",
+      "subtitulo": "Change whenever you want. Downgrading doesn't deactivate anyone.",
+      "mensual": "Monthly",
+      "anual": "Yearly",
+      "tuPlan": "Your plan",
+      "renovar": "Renew this plan",
+      "cambiarA": "Switch to {plan}",
+      "funciones": {
+        "agenda": "Schedule and bookings",
+        "portal": "Public booking page",
+        "recordatorios": "Automatic reminders",
+        "clientes": "Client database",
+        "comisiones": "Commissions and payroll",
+        "campanas": "Communication campaigns",
+        "fidelidad": "Points and rewards",
+        "listaEspera": "Waitlist",
+        "reportes": "Reports and analytics",
+        "multisede": "Multiple locations"
+      }
+    },
+    "estados": {
+      "prueba": "On trial",
+      "activa": "Up to date",
+      "mora": "Payment due",
+      "cancelada": "Cancelled",
+      "sobre_limite": "Over the limit"
+    },
+    "resumen": {
+      "accesoTerminaEl": "Your access ends on",
+      "siguienteCobroEl": "Next charge on",
+      "venceHoy": "Due today",
+      "sedes": "Locations",
+      "barberos": "Barbers",
+      "sinLimite": "No limit on this plan",
+      "diasRestantes": "{dias, plural, one {# day left} other {# days left}}"
+    }
+  },
+  "portal": {
+    "cabecera": {
+      "volver": "Back to the storefront",
+      "abierto": "Open · {horario}",
+      "cerrado": "Closed now",
+      "misCitas": "My appointments",
+      "entrar": "Sign in"
+    },
+    "pasos": {
+      "progreso": "Booking progress",
+      "barbero": "Barber",
+      "servicio": "Service",
+      "agenda": "Time",
+      "datos": "Confirm"
+    },
+    "agenda": {
+      "hoy": "Today",
+      "sinCupo": "No slots",
+      "cupos": "{cupos, plural, one {# slot} other {# slots}}",
+      "sinCuposEsteDia": "No slots this day"
+    },
+    "resumen": {
+      "tuReserva": "Your booking",
+      "servicios": "Services",
+      "barbero": "Barber",
+      "cualquiera": "Anyone available",
+      "fecha": "Date",
+      "duracion": "Duration",
+      "sinServicios": "No services yet",
+      "pendiente": "Pending",
+      "total": "Total",
+      "totalDesde": "Total from"
+    },
+    "reserva": {
+      "nombre": "Your name",
+      "nombreEjemplo": "What they call you at the shop",
+      "celular": "Mobile",
+      "correo": "Email",
+      "notas": "Notes for the barber (optional)",
+      "notasEjemplo": "e.g. low fade, keep the beard short",
+      "enviarCodigo": "Send me the code",
+      "confirmarReserva": "Confirm booking"
+    },
+    "google": {
+      "continuaras": "You'll continue as",
+      "nombre": "Your name",
+      "nombreEjemplo": "Laura Gómez",
+      "telefono": "Phone",
+      "telefonoAyuda": "In case the barbershop needs to call you.",
+      "novedades": "I agree to receive news and offers",
+      "entrarAMisCitas": "Go to my appointments"
+    },
+    "otp": {
+      "seisDigitos": "The code is 6 digits",
+      "codigo": "Code from the email",
+      "confirmar": "Confirm"
+    },
+    "acceso": {
+      "correo": "Email",
+      "enviarCodigo": "Send me the code"
+    },
+    "cita": {
+      "tuCitaCon": "Your appointment, {nombre}",
+      "tuCita": "Your appointment",
+      "cuando": "When",
+      "servicios": "Services",
+      "barbero": "Barber",
+      "porAsignar": "To be assigned",
+      "totalEnLaBarberia": "Total to pay at the barbershop",
+      "duracion": "Duration",
+      "total": "Total",
+      "codigo": "Code"
+    },
+    "accion": {
+      "noSePudoAbrir": "We couldn't open this link",
+      "puntaje": "Rating from 1 to 5",
+      "comentarioEjemplo": "Whatever you want them to know",
+      "enviarCalificacion": "Send rating",
+      "motivoEjemplo": "Something came up, I found another time…",
+      "motivoAyuda": "It helps us improve. You can cancel without writing anything."
+    },
+    "misCitas": {
+      "titulo": "My appointments",
+      "conCitas": "Your appointments at this barbershop. You can cancel and rate what you had done.",
+      "sinSesion": "Sign in with the email you booked with — no passwords.",
+      "cancelarTitulo": "Cancel this appointment?",
+      "cancelarDetalle": "We free the slot for another client. You can book again whenever you want.",
+      "calificarTitulo": "How did it go?",
+      "calificarDetalle": "One rating per appointment. The barbershop publishes the comment if they approve it.",
+      "puntaje": "Rating"
+    },
+    "seguimiento": {
+      "noEncontrada": "We couldn't find this appointment"
+    }
+  }
+}

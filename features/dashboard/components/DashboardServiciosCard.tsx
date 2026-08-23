@@ -8,6 +8,7 @@ import { SinDatos } from "@shared/components/feedback/SinDatos"
 import { tokenDeColor } from "@shared/utils/color"
 import type { ServicioTop } from "@features/dashboard/types/dashboard.types"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface DashboardServiciosCardProps {
   servicios: ServicioTop[]
@@ -15,6 +16,7 @@ interface DashboardServiciosCardProps {
 }
 
 export function DashboardServiciosCard({ servicios, subtitulo }: DashboardServiciosCardProps) {
+  const t = useTextos("dashboard.servicios")
   const { numero, porcentaje } = useFormato()
 
   const total = servicios.reduce((suma, servicio) => suma + servicio.veces, 0)
@@ -28,7 +30,7 @@ export function DashboardServiciosCard({ servicios, subtitulo }: DashboardServic
 
   return (
     <SectionCard
-      titulo="Servicios más vendidos"
+      titulo={t("titulo")}
       accion={
         <span className="rounded-md bg-secondary px-2 py-1 text-[10px] text-muted-foreground">
           {subtitulo}
@@ -36,7 +38,7 @@ export function DashboardServiciosCard({ servicios, subtitulo }: DashboardServic
       }
     >
       {servicios.length === 0 ? (
-        <SinDatos titulo="Nada vendido todavía" alto={100} />
+        <SinDatos titulo={t("sinDatos")} alto={100} />
       ) : (
         <div className="flex items-center gap-4">
           <ResponsiveContainer width={100} height={100}>

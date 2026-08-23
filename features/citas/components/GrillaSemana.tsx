@@ -4,8 +4,9 @@ import { useFormato } from "@shared/hooks/useFormato"
 import { cn } from "@shared/utils/cn"
 import { tokenDeColor } from "@shared/utils/color"
 import { resumenServicios } from "@features/citas/utils/servicios"
-import { configEstadoCita } from "@features/citas/utils/estadoCita"
+import { textoEstadoCita } from "@features/citas/utils/estadoCita"
 import type { Cita } from "@features/citas/types/citas.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface GrillaSemanaProps {
   /** Fechas LOCALES de la sede, en orden. Una sola = vista de día. */
@@ -34,6 +35,8 @@ const HORA_MAX_POR_DEFECTO = 20
  * calendario, y las que hay resuelven otra cosa.
  */
 export function GrillaSemana({ fechas, citas, hoy, onSeleccionar }: GrillaSemanaProps) {
+  const tEstados = useTextos("citas.estados")
+  const t = useTextos("citas")
   const { hora, fechaClave, minutosLocales, diaSemanaCorto } = useFormato()
 
   const porFecha = new Map<string, Cita[]>(fechas.map((fecha) => [fecha, []]))
@@ -106,7 +109,6 @@ export function GrillaSemana({ fechas, citas, hoy, onSeleccionar }: GrillaSemana
                 const desde = ((inicio - horaMin * 60) / MINUTOS_POR_FILA) * ALTO_FILA_REM
                 const alto = ((fin - inicio) / MINUTOS_POR_FILA) * ALTO_FILA_REM
                 const color = tokenDeColor(cita.barbero?.indiceColor ?? 0)
-                const estado = configEstadoCita[cita.estado]
 
                 return (
                   <button
@@ -132,12 +134,12 @@ export function GrillaSemana({ fechas, citas, hoy, onSeleccionar }: GrillaSemana
                     )}
                   >
                     <span className="block truncate font-medium">
-                      {hora(cita.iniciaEn)} · {cita.cliente?.nombre ?? "Sin cliente"}
+                      {hora(cita.iniciaEn)} · {cita.cliente?.nombre ?? t("sinCliente")}
                     </span>
                     <span className="block truncate text-muted-foreground">
                       {resumenServicios(cita.servicios.map((linea) => linea.nombre))}
                     </span>
-                    <span className="sr-only">{estado.etiqueta}</span>
+                    <span className="sr-only">{textoEstadoCita(tEstados, cita.estado)}</span>
                   </button>
                 )
               })}

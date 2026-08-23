@@ -4,7 +4,6 @@ import { Analitica } from "@shared/components/analitica/Analitica"
 import { TooltipProvider } from "@shared/components/ui/tooltip"
 import { Toaster } from "@shared/components/ui/sonner"
 import { TenantProvider } from "@shared/providers/TenantProvider"
-import { TextosProvider } from "@shared/providers/TextosProvider"
 import { ThemeProvider } from "@shared/providers/ThemeProvider"
 import "@/style/globals.css"
 
@@ -45,10 +44,12 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           <TenantProvider>
-            <TextosProvider>
-              <TooltipProvider>{children}</TooltipProvider>
-              <Toaster position="top-right" />
-            </TextosProvider>
+            {/* Sin proveedor de textos: el idioma vive en un store y el
+                traductor se construye donde se usa (`shared/textos/useTextos`).
+                Un contexto aquí solo serviría para volver a publicar lo que el
+                store ya publica. */}
+            <TooltipProvider>{children}</TooltipProvider>
+            <Toaster position="top-right" />
           </TenantProvider>
         </ThemeProvider>
         {/* Decide ella si se carga: fuera de producción no, y en las rutas

@@ -12,7 +12,7 @@ import { notify } from "@shared/services/notify"
 import { useAuth } from "@features/auth/hooks/useAuth"
 import { esRutaActiva, rutasDe, rutasVisibles, seccionesDe } from "@routes/rutasDashboard"
 import { useAuthStore } from "@store/auth.store"
-import { useTextos } from "@shared/providers/TextosProvider"
+import { useTextos } from "@shared/textos/useTextos"
 import { cn } from "@shared/utils/cn"
 
 // Entrada del chrome: cascada pausada desde la izquierda, con resorte suave.
@@ -78,7 +78,7 @@ export function Sidebar({
       <AnimatePresence>
         {abiertaEnMovil && (
           <motion.button
-            aria-label={t.navegacion.cerrarMenu}
+            aria-label={t("navegacion.cerrarMenu")}
             onClick={alCerrarMovil}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -97,7 +97,7 @@ export function Sidebar({
           abiertaEnMovil ? "translate-x-0" : "-translate-x-full",
           colapsada ? "lg:w-16" : "lg:w-60"
         )}
-        aria-label={t.navegacion.principal}
+        aria-label={t("navegacion.principal")}
       >
         {/* Marca */}
         <motion.div
@@ -129,7 +129,7 @@ export function Sidebar({
             variant="ghost"
             size="icon"
             onClick={alCerrarMovil}
-            aria-label={t.navegacion.cerrarMenu}
+            aria-label={t("navegacion.cerrarMenu")}
             className="ml-auto lg:hidden"
           >
             <X aria-hidden />
@@ -174,7 +174,7 @@ export function Sidebar({
         {/* Navegación agrupada por sección — desde routes/rutasDashboard.ts */}
         <motion.nav
           className="scroll-fino flex-1 space-y-1 overflow-x-hidden overflow-y-auto px-2 pb-4"
-          aria-label={t.navegacion.secciones}
+          aria-label={t("navegacion.secciones")}
           variants={contenedorNav}
           initial="oculto"
           animate="visible"
@@ -186,7 +186,7 @@ export function Sidebar({
               <motion.div
                 key={seccion.id}
                 role="group"
-                aria-label={t.navegacion.grupos[seccion.clave]}
+                aria-label={t(`navegacion.grupos.${seccion.clave}`)}
                 variants={itemNav}
               >
                 <p
@@ -198,7 +198,7 @@ export function Sidebar({
                       : "max-h-8 pt-4 pb-1.5 opacity-100"
                   )}
                 >
-                  {t.navegacion.grupos[seccion.clave]}
+                  {t(`navegacion.grupos.${seccion.clave}`)}
                 </p>
                 {/* Colapsada: separador sutil entre grupos en vez del rótulo */}
                 <div
@@ -214,7 +214,7 @@ export function Sidebar({
                     return (
                       <InfoTooltip
                         key={ruta.clave}
-                        contenido={t.navegacion.rutas[ruta.clave].etiqueta}
+                        contenido={t(`navegacion.rutas.${ruta.clave}.etiqueta`)}
                         side="right"
                         sideOffset={8}
                         activo={colapsada}
@@ -254,7 +254,7 @@ export function Sidebar({
                             aria-hidden
                           />
                           <span className={claseEtiqueta(colapsada)}>
-                            {t.navegacion.rutas[ruta.clave].etiqueta}
+                            {t(`navegacion.rutas.${ruta.clave}.etiqueta`)}
                           </span>
                         </Link>
                       </InfoTooltip>
@@ -274,7 +274,7 @@ export function Sidebar({
           className="border-t border-border p-3"
         >
           <InfoTooltip
-            contenido={t.comun.cerrarSesion}
+            contenido={t("comun.cerrarSesion")}
             side="right"
             sideOffset={8}
             activo={colapsada}
@@ -288,7 +288,7 @@ export function Sidebar({
               )}
             >
               <LogOut aria-hidden />
-              <span className={claseEtiqueta(colapsada)}>{t.comun.cerrarSesion}</span>
+              <span className={claseEtiqueta(colapsada)}>{t("comun.cerrarSesion")}</span>
             </Button>
           </InfoTooltip>
         </motion.div>
@@ -298,7 +298,7 @@ export function Sidebar({
           variant="outline"
           size="icon"
           onClick={alAlternarColapso}
-          aria-label={colapsada ? t.navegacion.expandir : t.navegacion.colapsar}
+          aria-label={colapsada ? t("navegacion.expandir") : t("navegacion.colapsar")}
           className="absolute top-20 -right-3 z-10 hidden size-6 rounded-full shadow-sm lg:flex"
         >
           <ChevronLeft

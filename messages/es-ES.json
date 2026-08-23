@@ -1,0 +1,19 @@
+{
+  "navegacion": {
+    "rutas": {
+      "sedes": {
+        "etiqueta": "Locales",
+        "titulo": "Locales",
+        "subtitulo": "Dónde opera la barbería, con su horario y sus cierres"
+      }
+    }
+  },
+  "navbar": {
+    "sedeActiva": "Local activo: {nombre}"
+  },
+  "auth": {
+    "errores": {
+      "correo": "Escribe un correo válido"
+    }
+  }
+}

@@ -3,7 +3,7 @@
 import { motion, type Variants } from "motion/react"
 import { BarChart3, CalendarDays, QrCode, Users } from "lucide-react"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
-import { useTextos } from "@shared/providers/TextosProvider"
+import { useTextos } from "@shared/textos/useTextos"
 
 /**
  * Lo que NO cambia con el idioma: qué icono acompaña a cada beneficio y qué
@@ -67,20 +67,20 @@ export function PanelMarca() {
         <motion.div className="flex items-center gap-4" variants={bloque}>
           <LogoBarion priority className="h-14" />
           <span className="rounded-full border border-border px-3 py-1 text-[10px] font-medium tracking-[0.2em] text-muted-foreground uppercase">
-            {t.auth.panelMarca.insignia}
+            {t("auth.panelMarca.insignia")}
           </span>
         </motion.div>
 
         <div className="space-y-7">
           <motion.div variants={bloque}>
             <h1 className="text-4xl leading-tight font-bold text-balance text-foreground">
-              {t.auth.panelMarca.tituloAntes}
+              {t("auth.panelMarca.tituloAntes")}
               <br />
-              <span className="text-primary">{t.auth.panelMarca.tituloDestacado}</span>{" "}
-              {t.auth.panelMarca.tituloDespues}
+              <span className="text-primary">{t("auth.panelMarca.tituloDestacado")}</span>{" "}
+              {t("auth.panelMarca.tituloDespues")}
             </h1>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              {t.auth.panelMarca.descripcion}
+              {t("auth.panelMarca.descripcion")}
             </p>
           </motion.div>
 
@@ -97,10 +97,10 @@ export function PanelMarca() {
                 </span>
                 <span>
                   <span className="block text-xs font-semibold text-foreground">
-                    {t.auth.panelMarca.beneficios[beneficio.clave].etiqueta}
+                    {t(`auth.panelMarca.beneficios.${beneficio.clave}.etiqueta`)}
                   </span>
                   <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                    {t.auth.panelMarca.beneficios[beneficio.clave].descripcion}
+                    {t(`auth.panelMarca.beneficios.${beneficio.clave}.descripcion`)}
                   </span>
                 </span>
               </motion.li>
@@ -113,7 +113,7 @@ export function PanelMarca() {
             <div key={cifra.clave} className="px-6 first:pl-0">
               <p className="text-lg font-bold text-primary tabular-nums">{cifra.valor}</p>
               <p className="text-[11px] text-muted-foreground">
-                {t.auth.panelMarca.cifras[cifra.clave]}
+                {t(`auth.panelMarca.cifras.${cifra.clave}`)}
               </p>
             </div>
           ))}

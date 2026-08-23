@@ -15,6 +15,7 @@ import { ChartTooltip } from "@shared/components/charts/ChartTooltip"
 import { SinDatos } from "@shared/components/feedback/SinDatos"
 import type { PuntoGrafica } from "@features/dashboard/utils/serie"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface DashboardIngresosChartProps {
   datos: PuntoGrafica[]
@@ -28,16 +29,13 @@ export function DashboardIngresosChart({
   subtitulo,
   disponible,
 }: DashboardIngresosChartProps) {
+  const t = useTextos("dashboard.ingresos")
   const { dinero, compacto } = useFormato()
 
   return (
-    <SectionCard titulo="Ingresos" subtitulo={subtitulo}>
+    <SectionCard titulo={t("titulo")} subtitulo={subtitulo}>
       {!disponible ? (
-        <SinDatos
-          titulo="Todavía no hay tendencia"
-          detalle="La historia se calcula cada noche. Los datos de hoy sí están arriba."
-          icono={TrendingUp}
-        />
+        <SinDatos titulo={t("sinDatos")} detalle={t("sinDatosDetalle")} icono={TrendingUp} />
       ) : (
         <ResponsiveContainer width="100%" height={180}>
           <AreaChart data={datos} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>

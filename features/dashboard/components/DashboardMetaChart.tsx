@@ -7,6 +7,7 @@ import { ChartTooltip } from "@shared/components/charts/ChartTooltip"
 import { SinDatos } from "@shared/components/feedback/SinDatos"
 import type { PuntoGrafica } from "@features/dashboard/utils/serie"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface DashboardMetaChartProps {
   datos: PuntoGrafica[]
@@ -16,19 +17,13 @@ interface DashboardMetaChartProps {
 }
 
 export function DashboardMetaChart({ datos, disponible, hayMetas }: DashboardMetaChartProps) {
+  const t = useTextos("dashboard.meta")
   const { dinero, compacto } = useFormato()
 
   return (
-    <SectionCard
-      titulo="Ingresos vs meta"
-      subtitulo={hayMetas ? "Comparativo mensual" : "Sin meta fijada"}
-    >
+    <SectionCard titulo={t("titulo")} subtitulo={hayMetas ? t("conMeta") : t("sinMeta")}>
       {!disponible ? (
-        <SinDatos
-          titulo="Todavía no hay historia mensual"
-          detalle="Se calcula cada noche."
-          icono={Target}
-        />
+        <SinDatos titulo={t("sinDatos")} detalle={t("sinDatosDetalle")} icono={Target} />
       ) : (
         <>
           <ResponsiveContainer width="100%" height={180}>
@@ -55,7 +50,7 @@ export function DashboardMetaChart({ datos, disponible, hayMetas }: DashboardMet
                 content={
                   <ChartTooltip
                     formatear={(entrada) =>
-                      `${entrada.name === "ingresos" ? "Ingresos" : "Meta"}: ${dinero(
+                      `${entrada.name === "ingresos" ? t("serieIngresos") : t("serieMeta")}: ${dinero(
                         Number(entrada.value)
                       )}`
                     }

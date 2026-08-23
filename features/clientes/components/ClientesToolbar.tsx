@@ -1,5 +1,6 @@
 "use client"
 
+import { useTextos } from "@shared/textos/useTextos"
 import { Search } from "lucide-react"
 import { Input } from "@shared/components/ui/input"
 import {
@@ -31,6 +32,7 @@ export function ClientesToolbar({
   onBuscar,
   onSegmento,
 }: ClientesToolbarProps) {
+  const t = useTextos("clientes")
   // Las dinámicas las rehace el job nocturno desde las citas; las estáticas las
   // mantiene alguien a mano. Se distingue porque una etiqueta que nadie sabe de
   // dónde sale se lee como un juicio del sistema sobre el cliente.
@@ -46,8 +48,8 @@ export function ClientesToolbar({
         <Input
           value={buscar}
           onChange={(e) => onBuscar(e.target.value)}
-          placeholder="Nombre, teléfono o correo"
-          aria-label="Buscar cliente"
+          placeholder={t("buscarPlaceholder")}
+          aria-label={t("buscar")}
           className="pl-9"
         />
       </div>
@@ -69,16 +71,16 @@ export function ClientesToolbar({
             value={segmentoId || TODOS}
             onValueChange={(valor) => onSegmento(!valor || valor === TODOS ? "" : valor)}
           >
-            <SelectTrigger aria-label="Etiqueta" className="w-full">
+            <SelectTrigger aria-label={t("etiqueta")} className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={TODOS}>Todas las etiquetas</SelectItem>
+              <SelectItem value={TODOS}>{t("todasLasEtiquetas")}</SelectItem>
               {segmentos.map((segmento) => (
                 <SelectItem key={segmento.id} value={segmento.id}>
                   {segmento.nombre}
                   {segmento.tipo === "estatico" && (
-                    <span className="text-xs text-muted-foreground">· a mano</span>
+                    <span className="text-xs text-muted-foreground">· {t("etiquetaManual")}</span>
                   )}
                 </SelectItem>
               ))}
@@ -86,9 +88,10 @@ export function ClientesToolbar({
           </Select>
 
           <p className="px-1 text-xs text-muted-foreground">
-            Las etiquetas salen de las citas y se rehacen cada noche.
-            {hayManuales && " Las marcadas «a mano» las mantiene el equipo."}
+            {t("etiquetasAyuda")}
+            {hayManuales && t("etiquetasManualesAyuda")}
           </p>
+
         </>
       )}
 

@@ -24,11 +24,13 @@ import { Modal } from "@shared/components/modals/Modal"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useMarcaStore } from "@store/marca.store"
+import { usePortalStore } from "@store/portal.store"
 import type {
   DatosRegistrarClienteGoogle,
   DatosSolicitarCodigo,
 } from "@features/portal/schemas/portal.schema"
 import type { Cita } from "@features/portal/types/portal.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 /** Qué se pinta: pedir el correo, escribir el código, o ya lo suyo. */
 type FaseAcceso = "correo" | "codigo" | "google" | "citas"
@@ -84,6 +86,8 @@ function ContenedorMisCitas({ slug }: { slug: string }) {
   const [puntaje, setPuntaje] = useState(5)
 
   const setMarca = useMarcaStore((s) => s.setMarca)
+  const setRegion = usePortalStore((s) => s.setRegion)
+  const t = useTextos("portal.misCitas")
 
   // La api devuelve aquí tras el viaje al proveedor: `google=listo` cuando dejó
   // el pase, `error=…` cuando no pudo. El pase NO viaja por la dirección —va en
@@ -112,7 +116,10 @@ function ContenedorMisCitas({ slug }: { slug: string }) {
       colorMarca: barberia.marca.colorMarca,
       colorFondo: barberia.marca.colorFondo,
     })
-  }, [barberia, setMarca])
+    // Y su país, que es de donde sale el idioma del escaparate: aquí no hay una
+    // persona con preferencia guardada, hay una barbería concreta.
+    setRegion(regionDePais(barberia.pais) ?? null)
+  }, [barberia, setMarca, setRegion])
 
   /**
    * Quien vuelve con la cookie viva no tiene que volver a identificarse: se
@@ -272,12 +279,10 @@ function ContenedorMisCitas({ slug }: { slug: string }) {
                 {barberia.nombreComercial}
               </p>
               <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Mis citas
+                {t("titulo")}
               </h1>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                {faseEfectiva === "citas"
-                  ? "Tus citas en esta barbería. Puedes cancelar y calificar lo atendido."
-                  : "Entra con el correo con el que reservaste — sin contraseñas."}
+                {faseEfectiva === "citas" ? t("conCitas") : t("sinSesion")}
               </p>
             </header>
 
@@ -375,8 +380,8 @@ function ContenedorMisCitas({ slug }: { slug: string }) {
       <Modal
         open={!!citaACancelar}
         onOpenChange={(abierto) => !abierto && setCitaACancelar(null)}
-        titulo="¿Cancelar esta cita?"
-        descripcion="Liberamos el cupo para otro cliente. Puedes volver a reservar cuando quieras."
+        titulo={t("cancelarTitulo")}
+        descripcion={t("cancelarDetalle")}
         size="sm"
         footer={
           <>
@@ -410,8 +415,8 @@ function ContenedorMisCitas({ slug }: { slug: string }) {
       <Modal
         open={!!citaACalificar}
         onOpenChange={(abierto) => !abierto && setCitaACalificar(null)}
-        titulo="¿Cómo te fue?"
-        descripcion="Una calificación por cita. El comentario lo publica la barbería si lo aprueba."
+        titulo={t("calificarTitulo")}
+        descripcion={t("calificarDetalle")}
         size="sm"
         footer={
           <Button
@@ -424,7 +429,7 @@ function ContenedorMisCitas({ slug }: { slug: string }) {
           </Button>
         }
       >
-        <div className="flex justify-center gap-2" role="radiogroup" aria-label="Puntaje">
+        <div className="flex justify-center gap-2" role="radiogroup" aria-label={t("puntaje")}>
           {[1, 2, 3, 4, 5].map((valor) => (
             <button
               key={valor}

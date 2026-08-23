@@ -7,6 +7,7 @@ import { Button } from "@shared/components/ui/button"
 import { Field, FieldDescription, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Textarea } from "@shared/components/ui/textarea"
 import { esquemaCalificar, type DatosCalificar } from "@features/portal/schemas/portal.schema"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalAccionPuntajeFormProps {
   onSubmit: (datos: DatosCalificar) => Promise<void>
@@ -25,6 +26,7 @@ interface PortalAccionPuntajeFormProps {
  * un día divergieran.
  */
 export function PortalAccionPuntajeForm({ onSubmit, cargando }: PortalAccionPuntajeFormProps) {
+  const t = useTextos("portal.accion")
   const {
     control,
     register,
@@ -50,7 +52,7 @@ export function PortalAccionPuntajeForm({ onSubmit, cargando }: PortalAccionPunt
               id="puntaje"
               className="flex justify-center gap-1.5 py-1"
               role="radiogroup"
-              aria-label="Puntaje de 1 a 5"
+              aria-label={t("puntaje")}
               aria-invalid={!!errors.puntaje}
             >
               {[1, 2, 3, 4, 5].map((valor) => (
@@ -85,7 +87,7 @@ export function PortalAccionPuntajeForm({ onSubmit, cargando }: PortalAccionPunt
           id="comentario"
           rows={3}
           maxLength={1000}
-          placeholder="Lo que quieras que sepan"
+          placeholder={t("comentarioEjemplo")}
           aria-invalid={!!errors.comentario}
           {...register("comentario")}
         />
@@ -101,7 +103,7 @@ export function PortalAccionPuntajeForm({ onSubmit, cargando }: PortalAccionPunt
         disabled={deshabilitado}
         className="h-12 w-full cursor-pointer text-sm font-semibold"
       >
-        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : "Enviar calificación"}
+        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : t("enviarCalificacion")}
       </Button>
     </form>
   )

@@ -9,6 +9,7 @@ import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Textarea } from "@shared/components/ui/textarea"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { inicialesDe } from "@features/portal/utils/formato"
+import { useTextos } from "@shared/textos/useTextos"
 import {
   esquemaReservaConSesion,
   type DatosReservaConSesion,
@@ -56,6 +57,7 @@ export function PortalSesionForm({
   onSubmit,
   onNoSoyYo,
 }: PortalSesionFormProps) {
+  const t = useTextos("portal.reserva")
   const {
     register,
     control,
@@ -101,11 +103,11 @@ export function PortalSesionForm({
       )}
 
       <Field data-invalid={!!errors.notas}>
-        <FieldLabel htmlFor="notas">Notas para el barbero (opcional)</FieldLabel>
+        <FieldLabel htmlFor="notas">{t("notas")}</FieldLabel>
         <Textarea
           id="notas"
           rows={2}
-          placeholder="Ej. fade bajo, dejar la barba corta"
+          placeholder={t("notasEjemplo")}
           aria-invalid={!!errors.notas}
           className="text-base"
           {...register("notas")}
@@ -151,9 +153,9 @@ export function PortalSesionForm({
         {deshabilitado ? (
           <Loader2 className="animate-spin" aria-hidden />
         ) : verificado ? (
-          "Confirmar reserva"
+          t("confirmarReserva")
         ) : (
-          "Enviarme el código"
+          t("enviarCodigo")
         )}
       </Button>
     </form>

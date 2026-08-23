@@ -8,6 +8,7 @@ import { Button } from "@shared/components/ui/button"
 import { Field, FieldDescription, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Textarea } from "@shared/components/ui/textarea"
 import { esquemaCancelar, type DatosCancelar } from "@features/portal/schemas/portal.schema"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalAccionCancelarFormProps {
   onSubmit: (datos: DatosCancelar) => Promise<void>
@@ -40,6 +41,7 @@ export function PortalAccionCancelarForm({
   hrefPortal,
   cargando,
 }: PortalAccionCancelarFormProps) {
+  const t = useTextos("portal.accion")
   const {
     register,
     handleSubmit,
@@ -59,11 +61,11 @@ export function PortalAccionCancelarForm({
           id="motivo"
           rows={3}
           maxLength={500}
-          placeholder="Me surgió un imprevisto, encontré otro horario…"
+          placeholder={t("motivoEjemplo")}
           aria-invalid={!!errors.motivo}
           {...register("motivo")}
         />
-        <FieldDescription>Nos ayuda a mejorar. Puedes cancelar sin escribir nada.</FieldDescription>
+        <FieldDescription>{t("motivoAyuda")}</FieldDescription>
         <FieldError errors={[errors.motivo]} />
       </Field>
 

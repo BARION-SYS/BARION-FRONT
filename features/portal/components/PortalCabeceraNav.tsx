@@ -7,6 +7,7 @@ import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { cn } from "@shared/utils/cn"
 import { inicialesDe } from "@features/portal/utils/formato"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalCabeceraNavProps {
   nombre: string
@@ -44,6 +45,7 @@ export function PortalCabeceraNav({
   hrefVolver,
   acceso,
 }: PortalCabeceraNavProps) {
+  const t = useTextos("portal.cabecera")
   return (
     <header className="sticky top-0 z-20 shrink-0 border-b border-border bg-card/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 w-full max-w-[1400px] items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
@@ -52,7 +54,7 @@ export function PortalCabeceraNav({
             render={<Link href={hrefVolver} />}
             variant="ghost"
             size="icon"
-            aria-label="Volver al portal"
+            aria-label={t("volver")}
           >
             <ChevronLeft aria-hidden />
           </Button>
@@ -71,7 +73,7 @@ export function PortalCabeceraNav({
               aria-hidden
             />
             <span className="truncate">
-              {abiertoAhora ? `Abierto · ${horarioHoy}` : "Cerrado ahora"}
+              {abiertoAhora ? t("abierto", { horario: horarioHoy }) : t("cerrado")}
             </span>
           </p>
         </div>
@@ -86,10 +88,10 @@ export function PortalCabeceraNav({
           >
             {acceso === "cliente" ? <CalendarCheck aria-hidden /> : <LogIn aria-hidden />}
             <span className="hidden text-xs font-semibold sm:inline">
-              {acceso === "cliente" ? "Mis citas" : "Entrar"}
+              {acceso === "cliente" ? t("misCitas") : t("entrar")}
             </span>
             <span className="sr-only sm:hidden">
-              {acceso === "cliente" ? "Mis citas" : "Entrar"}
+              {acceso === "cliente" ? t("misCitas") : t("entrar")}
             </span>
           </Button>
         )}

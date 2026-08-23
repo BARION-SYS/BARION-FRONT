@@ -13,6 +13,8 @@ import { horarioDeHoy } from "@features/portal/utils/horarios"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { getErrorMessage } from "@shared/utils/error"
 import { useMarcaStore } from "@store/marca.store"
+import { usePortalStore } from "@store/portal.store"
+import { regionDePais } from "@config/regiones"
 import type { DatosAccionEnlace } from "@features/portal/schemas/portal.schema"
 
 /**
@@ -84,6 +86,7 @@ export default function AccionEnlacePage({
 
   const ejecutado = useRef(false)
   const setMarca = useMarcaStore((s) => s.setMarca)
+  const setRegion = usePortalStore((s) => s.setRegion)
 
   // La ficha, con el mismo mecanismo que el escaparate: esta pantalla se abre
   // desde una bandeja de entrada y tiene que llevar la marca de SU barbería.
@@ -97,7 +100,10 @@ export default function AccionEnlacePage({
       colorMarca: barberia.marca.colorMarca,
       colorFondo: barberia.marca.colorFondo,
     })
-  }, [barberia, setMarca])
+    // Y su país, que es de donde sale el idioma del escaparate: aquí no hay una
+    // persona con preferencia guardada, hay una barbería concreta.
+    setRegion(regionDePais(barberia.pais) ?? null)
+  }, [barberia, setMarca, setRegion])
 
   /**
    * Ejecutar el enlace. Se usa dos veces: al abrir con el cuerpo vacío y, si la

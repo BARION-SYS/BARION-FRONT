@@ -12,6 +12,9 @@ import { horarioDeHoy } from "@features/portal/utils/horarios"
 import { Button } from "@shared/components/ui/button"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { useMarcaStore } from "@store/marca.store"
+import { usePortalStore } from "@store/portal.store"
+import { regionDePais } from "@config/regiones"
+import { useTextos } from "@shared/textos/useTextos"
 
 /**
  * SEGUIMIENTO DE UNA CITA — `/b/{slug}/seguimiento/{codigo}`.
@@ -45,6 +48,8 @@ export default function SeguimientoPage({
   } = usePortal()
 
   const setMarca = useMarcaStore((s) => s.setMarca)
+  const setRegion = usePortalStore((s) => s.setRegion)
+  const t = useTextos("portal.seguimiento")
 
   useEffect(() => {
     void fetchPortal(slug)
@@ -60,7 +65,10 @@ export default function SeguimientoPage({
       colorMarca: barberia.marca.colorMarca,
       colorFondo: barberia.marca.colorFondo,
     })
-  }, [barberia, setMarca])
+    // Y su país, que es de donde sale el idioma del escaparate: aquí no hay una
+    // persona con preferencia guardada, hay una barbería concreta.
+    setRegion(regionDePais(barberia.pais) ?? null)
+  }, [barberia, setMarca, setRegion])
 
   const sede = barberia?.sedes[0] ?? null
 
@@ -106,7 +114,7 @@ export default function SeguimientoPage({
             >
               <SearchX className="h-7 w-7 text-muted-foreground" />
             </span>
-            <h1 className="mt-4 text-xl font-bold text-foreground">No encontramos esta cita</h1>
+            <h1 className="mt-4 text-xl font-bold text-foreground">{t("noEncontrada")}</h1>
             <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
               El código <span className="font-semibold tabular-nums">{codigo}</span> no corresponde
               a ninguna cita de {barberia?.nombreComercial ?? "esta barbería"}. Puede estar mal

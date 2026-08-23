@@ -9,6 +9,7 @@ import { Button, buttonVariants } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
 import { cn } from "@shared/utils/cn"
+import { useTextos } from "@shared/textos/useTextos"
 import {
   esquemaSolicitarCodigo,
   type DatosSolicitarCodigo,
@@ -31,6 +32,7 @@ interface PortalAccesoFormProps {
  * regla no se mueve.
  */
 export function PortalAccesoForm({ onSubmit, slug, cargando }: PortalAccesoFormProps) {
+  const t = useTextos("portal.acceso")
   const {
     register,
     handleSubmit,
@@ -70,7 +72,7 @@ export function PortalAccesoForm({ onSubmit, slug, cargando }: PortalAccesoFormP
       </div>
 
       <Field data-invalid={!!errors.email}>
-        <FieldLabel htmlFor="correo-acceso">Correo</FieldLabel>
+        <FieldLabel htmlFor="correo-acceso">{t("correo")}</FieldLabel>
         <Input
           id="correo-acceso"
           type="email"
@@ -90,7 +92,7 @@ export function PortalAccesoForm({ onSubmit, slug, cargando }: PortalAccesoFormP
         disabled={deshabilitado}
         className="h-12 w-full cursor-pointer text-sm font-semibold"
       >
-        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : "Enviarme el código"}
+        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : t("enviarCodigo")}
       </Button>
     </form>
   )

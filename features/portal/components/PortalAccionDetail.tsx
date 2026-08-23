@@ -14,6 +14,7 @@ import {
 import { Button } from "@shared/components/ui/button"
 import { copiaPorResultado } from "@features/portal/constants/acciones"
 import type { ResultadoAccion } from "@features/portal/types/portal.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 const iconoPorResultado = {
   confirmada: CheckCircle2,
@@ -50,6 +51,7 @@ export function PortalAccionDetail({
   hrefPortal,
   hrefCitas,
 }: PortalAccionDetailProps) {
+  const t = useTextos("portal.accion")
   const copia = resultado ? copiaPorResultado[resultado] : null
   const Icono = resultado ? iconoPorResultado[resultado] : LinkIcon
   const exito = copia?.tono === "exito"
@@ -80,7 +82,7 @@ export function PortalAccionDetail({
           id="titulo-accion"
           className="mt-4 text-xl font-bold tracking-tight text-foreground sm:text-2xl"
         >
-          {resultado ? mensaje : "No pudimos abrir este enlace"}
+          {resultado ? mensaje : t("noSePudoAbrir")}
         </h1>
 
         <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground" role="status">

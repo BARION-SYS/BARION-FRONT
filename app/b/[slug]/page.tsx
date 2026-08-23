@@ -32,6 +32,7 @@ import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useMarcaStore } from "@store/marca.store"
+import { usePortalStore } from "@store/portal.store"
 import type { Cliente } from "@features/clientes/types/clientes.types"
 import type { DatosContacto, DatosReservaConSesion } from "@features/portal/schemas/portal.schema"
 import type { PasoReserva, ServicioOfrecido } from "@features/portal/types/portal.types"
@@ -123,6 +124,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
   const [contacto, setContacto] = useState<DatosContacto | null>(null)
 
   const setMarca = useMarcaStore((s) => s.setMarca)
+  const setRegion = usePortalStore((s) => s.setRegion)
 
   /**
    * La marca del cartón QR se captura ANTES de pedir nada, y en el mismo efecto:
@@ -153,7 +155,10 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
       colorMarca: barberia.marca.colorMarca,
       colorFondo: barberia.marca.colorFondo,
     })
-  }, [barberia, setMarca])
+    // Y su país, que es de donde sale el idioma del escaparate: aquí no hay una
+    // persona con preferencia guardada, hay una barbería concreta.
+    setRegion(regionDePais(barberia.pais) ?? null)
+  }, [barberia, setMarca, setRegion])
 
   /**
    * La sede de trabajo: **la del cartón que escaneó el cliente**.

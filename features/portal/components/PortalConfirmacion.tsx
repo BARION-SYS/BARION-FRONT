@@ -15,6 +15,7 @@ import {
   type ContextoFormato,
 } from "@features/portal/utils/formato"
 import type { Cita, SedePortal } from "@features/portal/types/portal.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalConfirmacionProps {
   /** La cita tal como la devolvió la api: el comprobante no se reconstruye. */
@@ -39,6 +40,7 @@ export function PortalConfirmacion({
   formato,
   onReservarOtra,
 }: PortalConfirmacionProps) {
+  const tCita = useTextos("portal.cita")
   const duracionTotal = cita.servicios.reduce((suma, linea) => suma + linea.duracionMin, 0)
   const { calle, ciudad } = direccionLegible(sede?.direccion ?? null)
   const ubicacion = [calle, ciudad].filter(Boolean).join(", ")
@@ -74,27 +76,27 @@ export function PortalConfirmacion({
 
         <dl className="mt-6 space-y-3 rounded-xl bg-secondary/50 p-4 text-left">
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-xs text-muted-foreground">Cuándo</dt>
+            <dt className="text-xs text-muted-foreground">{tCita("cuando")}</dt>
             <dd className="text-right text-sm font-semibold text-foreground">
               {diaSemanaDe(cita.iniciaEn, formato)} {fechaCortaDe(cita.iniciaEn, formato)} ·{" "}
               {horaDe(cita.iniciaEn, formato)}
             </dd>
           </div>
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-xs text-muted-foreground">Servicios</dt>
+            <dt className="text-xs text-muted-foreground">{tCita("servicios")}</dt>
             <dd className="text-right text-sm font-medium text-foreground">
               {resumenServicios(cita.servicios.map((linea) => linea.nombre))} ·{" "}
               {formatDuration(duracionTotal)}
             </dd>
           </div>
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-xs text-muted-foreground">Barbero</dt>
+            <dt className="text-xs text-muted-foreground">{tCita("barbero")}</dt>
             <dd className="text-right text-sm font-medium text-foreground">
-              {cita.barbero?.nombrePublico ?? "Por asignar"}
+              {cita.barbero?.nombrePublico ?? tCita("porAsignar")}
             </dd>
           </div>
           <div className="flex items-baseline justify-between gap-3 border-t border-dashed border-border pt-3">
-            <dt className="text-xs text-muted-foreground">Total a pagar en la barbería</dt>
+            <dt className="text-xs text-muted-foreground">{tCita("totalEnLaBarberia")}</dt>
             <dd className="text-right text-base font-bold text-primary tabular-nums">
               {dineroDe(cita.precioCentavos, formato)}
             </dd>

@@ -15,6 +15,7 @@ import { Button } from "@shared/components/ui/button"
 import { Checkbox } from "@shared/components/ui/checkbox"
 import { Field, FieldDescription, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalGoogleFormProps {
   onSubmit: (datos: DatosRegistrarClienteGoogle) => Promise<void>
@@ -46,6 +47,7 @@ export function PortalGoogleForm({
   paisSugerido,
   cargando,
 }: PortalGoogleFormProps) {
+  const t = useTextos("portal.google")
   const {
     register,
     handleSubmit,
@@ -76,7 +78,7 @@ export function PortalGoogleForm({
           <LogoGoogle className="size-[18px]" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground">Continuarás como</p>
+          <p className="text-xs text-muted-foreground">{t("continuaras")}</p>
           <p className="truncate text-sm font-medium text-foreground">{preregistro.email}</p>
         </div>
       </div>
@@ -87,11 +89,11 @@ export function PortalGoogleForm({
       </p>
 
       <Field data-invalid={!!errors.nombre}>
-        <FieldLabel htmlFor="google-nombre">Tu nombre</FieldLabel>
+        <FieldLabel htmlFor="google-nombre">{t("nombre")}</FieldLabel>
         <Input
           id="google-nombre"
           autoComplete="name"
-          placeholder="Laura Gómez"
+          placeholder={t("nombreEjemplo")}
           aria-invalid={!!errors.nombre}
           className="h-11 text-base"
           {...register("nombre")}
@@ -106,7 +108,7 @@ export function PortalGoogleForm({
           está delante es un cliente en su móvil, sin cuenta y a punto de
           abandonar si algo le rebota */}
       <Field data-invalid={!!errors.telefonoE164}>
-        <FieldLabel htmlFor="google-telefono">Teléfono</FieldLabel>
+        <FieldLabel htmlFor="google-telefono">{t("telefono")}</FieldLabel>
         <Controller
           control={control}
           name="telefonoE164"
@@ -122,7 +124,7 @@ export function PortalGoogleForm({
             />
           )}
         />
-        <FieldDescription>Por si la barbería necesita llamarte.</FieldDescription>
+        <FieldDescription>{t("telefonoAyuda")}</FieldDescription>
         <FieldError errors={[errors.telefonoE164]} />
       </Field>
 
@@ -137,7 +139,7 @@ export function PortalGoogleForm({
             <Checkbox
               checked={field.value === true}
               onCheckedChange={(marcado) => field.onChange(marcado === true)}
-              aria-label="Acepto recibir novedades y promociones"
+              aria-label={t("novedades")}
             />
             <span className="text-xs text-muted-foreground">
               Quiero recibir novedades y promociones de esta barbería.
@@ -152,7 +154,7 @@ export function PortalGoogleForm({
         disabled={deshabilitado}
         className="h-12 w-full cursor-pointer text-sm font-semibold"
       >
-        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : "Entrar a mis citas"}
+        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : t("entrarAMisCitas")}
       </Button>
     </form>
   )

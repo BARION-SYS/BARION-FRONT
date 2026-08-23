@@ -6,6 +6,7 @@ import { IDIOMA_POR_REGION, type Idioma } from "@shared/textos/config"
 import { mensajesEnUS, mensajesEsCO, mensajesEsES, type Mensajes } from "@shared/textos/completitud"
 import { useTenant } from "@shared/providers/TenantProvider"
 import { useIdiomaStore } from "@store/idioma.store"
+import { usePortalStore } from "@store/portal.store"
 
 const MENSAJES: Record<Idioma, Mensajes> = {
   "es-CO": mensajesEsCO,
@@ -29,10 +30,14 @@ const MENSAJES: Record<Idioma, Mensajes> = {
  *
  * ── De dónde sale el idioma, y en qué orden ─────────────────────────────────
  *
- * Primero lo que esa persona eligió; si no eligió nada, la región base del
- * producto.
+ * 1. **Lo que esa persona eligió**, si eligió algo (`idioma.store`).
+ * 2. **La región de la barbería que se está mirando**, en el portal
+ *    (`portal.store`): ahí no hay una persona con preferencia guardada, hay un
+ *    cliente que entró por un enlace, y lo que sí hay es una barbería concreta
+ *    de un país concreto. Su escaparate se lee en su idioma sin que nadie elija.
+ * 3. **La región base del producto**, que es el respaldo del panel.
  *
- * **El del navegador no participa**, y es deliberado: el
+ * **El del navegador no participa en ninguno de los tres**, y es deliberado: el
  * navegador es de quien mira y el panel es del negocio — un técnico que abre el
  * panel de una barbería colombiana con Chrome en inglés no debería cambiarle el
  * idioma a nadie.
@@ -45,8 +50,9 @@ const MENSAJES: Record<Idioma, Mensajes> = {
  */
 export function useIdioma(): Idioma {
   const elegido = useIdiomaStore((estado) => estado.idioma)
+  const regionDelPortal = usePortalStore((estado) => estado.region)
   const tenant = useTenant()
-  return elegido ?? IDIOMA_POR_REGION[tenant.region]
+  return elegido ?? IDIOMA_POR_REGION[regionDelPortal ?? tenant.region]
 }
 
 /**

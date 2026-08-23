@@ -11,6 +11,7 @@ import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
 import { Controller } from "react-hook-form"
 import { esquemaContacto, type DatosContacto } from "@features/portal/schemas/portal.schema"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalReservaFormProps {
   onSubmit: (datos: DatosContacto) => Promise<void>
@@ -40,6 +41,7 @@ interface PortalReservaFormProps {
  * la api lo guarda con su origen, su versión de política, la IP y el user agent.
  */
 export function PortalReservaForm({ onSubmit, paisSugerido, cargando }: PortalReservaFormProps) {
+  const t = useTextos("portal.reserva")
   const {
     register,
     control,
@@ -55,11 +57,11 @@ export function PortalReservaForm({ onSubmit, paisSugerido, cargando }: PortalRe
   return (
     <form className="space-y-4" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
       <Field data-invalid={!!errors.nombre}>
-        <FieldLabel htmlFor="nombre">Tu nombre</FieldLabel>
+        <FieldLabel htmlFor="nombre">{t("nombre")}</FieldLabel>
         <Input
           id="nombre"
           autoComplete="name"
-          placeholder="Como te llaman en la barbería"
+          placeholder={t("nombreEjemplo")}
           aria-invalid={!!errors.nombre}
           className="h-11 text-base"
           {...register("nombre")}
@@ -73,7 +75,7 @@ export function PortalReservaForm({ onSubmit, paisSugerido, cargando }: PortalRe
           +573001112233» le pide que descifre un estándar para no perder la
           reserva */}
       <Field data-invalid={!!errors.telefonoE164}>
-        <FieldLabel htmlFor="telefonoE164">Celular</FieldLabel>
+        <FieldLabel htmlFor="telefonoE164">{t("celular")}</FieldLabel>
         <Controller
           control={control}
           name="telefonoE164"
@@ -96,7 +98,7 @@ export function PortalReservaForm({ onSubmit, paisSugerido, cargando }: PortalRe
       </Field>
 
       <Field data-invalid={!!errors.email}>
-        <FieldLabel htmlFor="email">Correo</FieldLabel>
+        <FieldLabel htmlFor="email">{t("correo")}</FieldLabel>
         <Input
           id="email"
           type="email"
@@ -114,10 +116,10 @@ export function PortalReservaForm({ onSubmit, paisSugerido, cargando }: PortalRe
       </Field>
 
       <Field data-invalid={!!errors.notas}>
-        <FieldLabel htmlFor="notas">Notas para el barbero (opcional)</FieldLabel>
+        <FieldLabel htmlFor="notas">{t("notas")}</FieldLabel>
         <Input
           id="notas"
-          placeholder="Ej. fade bajo, dejar la barba corta"
+          placeholder={t("notasEjemplo")}
           aria-invalid={!!errors.notas}
           className="h-11 text-base"
           {...register("notas")}
@@ -156,7 +158,7 @@ export function PortalReservaForm({ onSubmit, paisSugerido, cargando }: PortalRe
         disabled={deshabilitado}
         className="h-12 w-full cursor-pointer text-sm font-semibold"
       >
-        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : "Enviarme el código"}
+        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : t("enviarCodigo")}
       </Button>
     </form>
   )

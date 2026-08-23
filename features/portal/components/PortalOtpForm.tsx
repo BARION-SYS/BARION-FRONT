@@ -7,6 +7,7 @@ import { z } from "zod"
 import { Button } from "@shared/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import { useTextos } from "@shared/textos/useTextos"
 
 /** Solo el código: el correo y los datos los tiene ya la página. */
 const esquemaSoloCodigo = z.object({
@@ -32,6 +33,7 @@ interface PortalOtpFormProps {
  * correo ES la sesión**, y también el registro.
  */
 export function PortalOtpForm({ destino, onSubmit, onReenviar, cargando }: PortalOtpFormProps) {
+  const t = useTextos("portal.otp")
   const {
     register,
     handleSubmit,
@@ -58,7 +60,7 @@ export function PortalOtpForm({ destino, onSubmit, onReenviar, cargando }: Porta
       </div>
 
       <Field data-invalid={!!errors.codigo}>
-        <FieldLabel htmlFor="codigo">Código del correo</FieldLabel>
+        <FieldLabel htmlFor="codigo">{t("codigo")}</FieldLabel>
         <Input
           id="codigo"
           inputMode="numeric"
@@ -78,7 +80,7 @@ export function PortalOtpForm({ destino, onSubmit, onReenviar, cargando }: Porta
         disabled={deshabilitado}
         className="h-12 w-full cursor-pointer text-sm font-semibold"
       >
-        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : "Confirmar"}
+        {deshabilitado ? <Loader2 className="animate-spin" aria-hidden /> : t("confirmar")}
       </Button>
 
       <Button

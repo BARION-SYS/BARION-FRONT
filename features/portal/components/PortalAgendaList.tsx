@@ -10,6 +10,7 @@ import {
   type ContextoFormato,
 } from "@features/portal/utils/formato"
 import type { DiaAgenda } from "@features/portal/types/portal.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalAgendaListProps {
   agenda: DiaAgenda[]
@@ -45,6 +46,7 @@ export function PortalAgendaList({
   onSeleccionarDia,
   onSeleccionarFranja,
 }: PortalAgendaListProps) {
+  const t = useTextos("portal.agenda")
   const dia = agenda.find((candidato) => candidato.fecha === fechaDia) ?? agenda[0]
   const franjas = dia?.franjas.filter((franja) => franja.disponible) ?? []
 
@@ -73,7 +75,7 @@ export function PortalAgendaList({
                   )}
                 >
                   <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-                    {diaAgenda.fecha === hoy ? "Hoy" : diaSemanaDeFecha(diaAgenda.fecha)}
+                    {diaAgenda.fecha === hoy ? t("hoy") : diaSemanaDeFecha(diaAgenda.fecha)}
                   </span>
                   <span
                     className={cn(
@@ -84,7 +86,7 @@ export function PortalAgendaList({
                     {diaCortoDeFecha(diaAgenda.fecha)}
                   </span>
                   <span className="text-[10px] text-muted-foreground tabular-nums">
-                    {sinCupos ? "Sin cupo" : `${diaAgenda.cupos} cupos`}
+                    {sinCupos ? t("sinCupo") : t("cupos", { cupos: diaAgenda.cupos })}
                   </span>
                 </button>
               </li>
@@ -95,7 +97,7 @@ export function PortalAgendaList({
         {franjas.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-8 text-center">
             <CalendarX2 className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden />
-            <p className="mt-2 text-sm font-medium text-foreground">Sin cupos este día</p>
+            <p className="mt-2 text-sm font-medium text-foreground">{t("sinCuposEsteDia")}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               Elige otro día en la tira de arriba.
             </p>

@@ -14,6 +14,7 @@ import {
   type ContextoFormato,
 } from "@features/portal/utils/formato"
 import type { ServicioOfrecido } from "@features/portal/types/portal.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PortalResumenDetailProps {
   /** N servicios por cita: la lista completa que el cliente lleva elegida. */
@@ -63,28 +64,33 @@ export function PortalResumenDetail({
   compacta,
   sinCta,
 }: PortalResumenDetailProps) {
+  const t = useTextos("portal.resumen")
   const hayServicios = servicios.length > 0
   const total = sumaCentavos(servicios.map((servicio) => servicio.precioCentavos ?? "0"))
   const duracionTotal = servicios.reduce((suma, servicio) => suma + servicio.duracionRealMin, 0)
   const nombresServicios = resumenServicios(servicios.map((servicio) => servicio.nombre))
 
   const filas = [
-    { icono: Scissors, etiqueta: "Servicios", valor: hayServicios ? nombresServicios : undefined },
+    {
+      icono: Scissors,
+      etiqueta: t("servicios"),
+      valor: hayServicios ? nombresServicios : undefined,
+    },
     {
       icono: User,
-      etiqueta: "Barbero",
-      valor: nombreBarbero ?? (puedeContinuar ? "Cualquiera disponible" : undefined),
+      etiqueta: t("barbero"),
+      valor: nombreBarbero ?? (puedeContinuar ? t("cualquiera") : undefined),
     },
     {
       icono: CalendarDays,
-      etiqueta: "Fecha",
+      etiqueta: t("fecha"),
       valor: inicio
         ? `${diaSemanaDe(inicio, formato)} ${fechaCortaDe(inicio, formato)} · ${horaDe(inicio, formato)}`
         : undefined,
     },
     {
       icono: Clock,
-      etiqueta: "Duración",
+      etiqueta: t("duracion"),
       valor: hayServicios ? formatDuration(duracionTotal) : undefined,
     },
   ]
@@ -113,7 +119,7 @@ export function PortalResumenDetail({
       <div className="flex items-center gap-3 border-t border-border bg-card/95 p-3 backdrop-blur-md">
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs text-muted-foreground">
-            {hayServicios ? nombresServicios : "Sin servicios todavía"}
+            {hayServicios ? nombresServicios : t("sinServicios")}
           </p>
           <p className="text-lg font-bold text-foreground tabular-nums">
             {hayServicios ? dineroDe(total, formato) : "—"}
@@ -126,7 +132,7 @@ export function PortalResumenDetail({
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
-      <p className="text-sm font-semibold text-foreground">Tu reserva</p>
+      <p className="text-sm font-semibold text-foreground">{t("tuReserva")}</p>
 
       <dl className="mt-4 space-y-3">
         {filas.map(({ icono: Icono, etiqueta, valor }) => (
@@ -142,7 +148,7 @@ export function PortalResumenDetail({
                   valor ? "font-medium text-foreground" : "text-muted-foreground"
                 )}
               >
-                {valor ?? "Pendiente"}
+                {valor ?? t("pendiente")}
               </dd>
             </div>
           </div>
@@ -151,7 +157,7 @@ export function PortalResumenDetail({
 
       <div className="mt-4 flex items-baseline justify-between border-t border-dashed border-border pt-4">
         <span className="text-xs tracking-wide text-muted-foreground uppercase">
-          {precioExacto ? "Total" : "Total desde"}
+          {precioExacto ? t("total") : t("totalDesde")}
         </span>
         <span className="text-xl font-bold text-primary tabular-nums">
           {hayServicios ? dineroDe(total, formato) : "—"}

@@ -27,6 +27,7 @@ Este archivo define arquitectura y convenciones. NO lista los features a propós
 | Tailwind CSS 4          | Estilos (tokens en `style/globals.css`)            |
 | shadcn/ui               | Primitivos UI (`shared/components/ui/`)            |
 | Zod                     | Validación de lo que el front envía a la API       |
+| next-intl               | Mensajes ICU (misma librería que `BARION-WEB`)     |
 | axios (`ApiClient`)     | HTTP (`lib/http/`)                                 |
 | react-hook-form         | Formularios (+ `standardSchemaResolver`)           |
 | next-themes             | Tema claro/oscuro                                  |
@@ -46,6 +47,7 @@ Cada feature agrupa todo su código. `shared/` solo para lo usado en 2+ features
 ├── lib/        # Infra técnica: http/ (ApiClient + instancias)
 ├── config/     # env.ts (vars de entorno) + regiones.ts (CO/COP, US/USD, ES/EUR)
 ├── routes/     # Fuente única de rutas (la barra lateral y el encabezado se generan de aquí)
+├── messages/   # Los textos, en JSON con formato ICU — uno por idioma (ver § Idioma)
 └── style/      # globals.css — tema claro/oscuro, tokens
 ```
 
@@ -194,16 +196,16 @@ Mismo esquema que GORA-ADMIN: **componente = feature primero + rol en inglés**,
 
 Usar siempre el más específico; rutas relativas y barriles (`index.ts`) PROHIBIDOS.
 
-| Alias         | Resuelve a                  |
-| ------------- | --------------------------- |
-| `@features/*` | `./features/*`              |
-| `@shared/*`   | `./shared/*`                |
-| `@store/*`    | `./store/*`                 |
-| `@lib/*`      | `./lib/*`                   |
-| `@config/*`   | `./config/*`                |
-| `@routes/*`   | `./routes/*`                |
-| `@public/*`   | `./public/*`                |
-| `@/*`         | fallback (`app/`, `style/`) |
+| Alias         | Resuelve a                                |
+| ------------- | ----------------------------------------- |
+| `@features/*` | `./features/*`                            |
+| `@shared/*`   | `./shared/*`                              |
+| `@store/*`    | `./store/*`                               |
+| `@lib/*`      | `./lib/*`                                 |
+| `@config/*`   | `./config/*`                              |
+| `@routes/*`   | `./routes/*`                              |
+| `@public/*`   | `./public/*`                              |
+| `@/*`         | raíz — su uso real es `@/messages/*.json` |
 
 ## Formato de código (Prettier)
 
@@ -215,50 +217,141 @@ Usar siempre el más específico; rutas relativas y barriles (`index.ts`) PROHIB
 
 ## Idioma (i18n)
 
-**Ningún texto que lea una persona se escribe dentro de un componente.** Sale del
-diccionario: `const t = useTextos()` y después `t.navbar.miPerfil`. Aplica a lo
-visible y también a lo que solo oye un lector de pantalla —`aria-label`,
+**Ningún texto que lea una persona se escribe dentro de un componente.** Aplica a
+lo visible y también a lo que solo oye un lector de pantalla —`aria-label`,
 `placeholder`, `title`—, que es donde más se olvida.
 
+La librería es **`next-intl`**, la misma que `BARION-WEB`, y los mensajes van en
+**JSON con formato ICU**.
+
 ```text
+messages/
+├── README.md      # por qué JSON, por qué es-ES es corto, cómo se escribe un plural
+├── es-CO.json     # el BASE: aquí se escribe primero y de aquí sale el tipo
+├── es-ES.json     # SOLO las diferencias sobre es-CO
+└── en-US.json     # completo, declarado con el tipo del base
+
 shared/textos/
-├── config.ts                # los tres idiomas, el de cada mercado y cómo se llaman
-├── fusionar.ts              # un diccionario escrito como DIFERENCIAS de otro
-└── diccionarios/
-    ├── es-CO.ts             # el BASE: aquí se escribe primero, y de aquí sale el tipo
-    ├── es-ES.ts             # solo lo que en España se dice de otra forma
-    └── en-US.ts             # completo, y declarado con el tipo del base
+├── config.ts        # los tres idiomas, el de cada mercado y cómo se llaman
+├── completitud.ts   # el chequeo de claves y la fusión de es-ES
+├── fusionar.ts      # un catálogo escrito como DIFERENCIAS de otro
+└── useTextos.ts     # el hook: idioma del store + traductor
 ```
 
-- **Son `.ts` y no `.json` a propósito**: `en-US` se declara `: Diccionario`, así
-  que **una clave sin traducir no compila**. Es el único fallo de i18n que no se
-  ve al probar — la pantalla no revienta, le habla en español a quien no lo
-  entiende. Con JSON haría falta un script que compare listas.
-- **Una frase con un dato adentro es una función**, no trozos concatenados:
-  `sedeActiva: (nombre) => ...`. El orden de las palabras cambia entre idiomas y
-  media frase no se puede recolocar. Los plurales, un `if` dentro de esa misma
-  función.
-- **`es-ES` es una lista de diferencias** sobre `es-CO` (`fusionar`), no una
-  copia: dos archivos completos se separan, y el que se queda viejo es siempre
-  el que menos se abre.
-- **El idioma sale de la persona y, si no eligió, de la región de la barbería**
-  (`store/idioma.store.ts`, `TextosProvider`). El del navegador NO participa: es
-  de quien mira, y el panel es del negocio. Se cambia en el navbar
-  (`SelectorIdioma`), junto al tema y a los colores.
-- **`useFormato()` formatea con el idioma activo**, no con el de la región: texto
-  en inglés y meses en español es peor que no traducir.
-- **Lo que NO se traduce**: lo que llega de la api. Nombres de servicios, de
-  sedes y de personas son datos de la barbería — traducir un dato es
-  inventárselo. Tampoco los mensajes de error de la api, que llegan ya
-  redactados; lo que el front redacta es su propio copy.
-- Una ruta nueva de `routes/` **no compila sin su entrada en el diccionario**: su
-  `clave` está tipada contra él (`ClaveRuta`). El nombre de una sección no vive
-  en la ruta — la ruta dice a dónde se va y con qué permiso.
+### Cómo se usa
 
-**Estado**: la maquinaria está y el chrome (navegación, navbar, sidebar, tema,
-colores) va por diccionario. **El resto de las features todavía tiene el texto
-embebido** y va entrando pantalla por pantalla; mientras tanto conviven las dos
-formas, y lo que se toque se convierte.
+```tsx
+const t = useTextos("dashboard.barberos")
+
+<SectionCard titulo={t("titulo")} />
+<SinDatos titulo={t("sinDatos")} />
+{t("citas", { cuantas: numero(fila.citas) })}
+```
+
+- **El espacio se declara al pedir el hook y las claves son relativas a él.** Un
+  componente dice de qué parte del catálogo habla, y mover un bloque no obliga a
+  reescribir cada línea.
+- **`useTextos()` sin espacio** devuelve el traductor de raíz y las claves llevan
+  el camino entero (`t("navbar.miPerfil")`). Es para las piezas que cruzan varias
+  áreas de verdad —el navbar enseña tema, idioma, marca y notificaciones a la
+  vez—, no un atajo. En un componente de feature, necesitar la raíz suele
+  significar que el texto está en el espacio equivocado.
+- **Una clave que no existe no compila, y a un mensaje con `{nombre}` dentro no
+  se le puede olvidar el dato**: `createTranslator` infiere las dos cosas del
+  propio JSON.
+- **Una clave construida se escribe con plantilla**, no indexando:
+  ``t(`navegacion.rutas.${ruta.clave}.titulo`)``. Sigue estando tipada, porque
+  `ClaveRuta` es una unión cerrada que sale del catálogo.
+
+### Por qué NO hay un provider de textos
+
+Porque no hace falta. **El idioma vive en un store** (`store/idioma.store.ts`) y
+`createTranslator` es una función suelta: se le pasan el idioma y los mensajes y
+devuelve el traductor. Un contexto encima solo serviría para volver a publicar lo
+que el store ya publica, y añadiría un sitio más donde el árbol puede quedar mal
+ordenado.
+
+`NextIntlClientProvider` existe para lo que este panel no necesita: mensajes que
+bajan desde un componente de servidor. Aquí todo lo que pinta texto es cliente.
+
+### Las reglas del catálogo
+
+- **JSON y no TypeScript**, y esto cambió: los mensajes vivían en `.ts` para que
+  el compilador cazara una clave sin traducir. El chequeo se conserva —lo hace
+  `completitud.ts` en una línea, `const mensajesEnUS: typeof esCO = enUS`— y a
+  cambio el contenido queda en un formato que puede abrir una agencia de
+  traducción o un TMS sin tocar el repositorio. Un `.ts` con funciones dentro, no.
+- **Una frase con un dato adentro es un mensaje ICU**, nunca trozos concatenados:
+  `"Sede activa: {nombre}"`. El orden de las palabras cambia entre idiomas.
+- **Los plurales los resuelve ICU**, no un `if`:
+  `"{cuantas, plural, one {cita total} other {citas totales}}"`. El español y el
+  inglés tienen dos formas; el polaco tres y el árabe seis.
+- **`es-ES` es una lista de diferencias** sobre `es-CO` (`fusionar`), no una
+  copia: dos archivos completos se separan, y el que se queda viejo es siempre el
+  que menos se abre.
+- **La ESTRUCTURA no se mete en el catálogo.** Una tabla de dominio guarda lo que
+  no cambia con el idioma —el nombre de un parámetro del contrato, el orden de
+  una lista, el ícono de un estado— y el catálogo solo su texto. Mezclarlos
+  obliga a repetir esos datos en los tres idiomas, y el día que alguien corrija
+  uno se envía **un valor distinto según el idioma del panel**. Ejemplos:
+  `features/segmentos/constants/criterios.ts` y `features/citas/utils/estadoCita.ts`.
+- **Un mapa a nivel de módulo es lo que obliga a dejar español dentro**: fuera del
+  componente no alcanza ningún hook. Se parte en dos — la lista y su orden se
+  quedan, el texto se lee dentro.
+- **Lo que NO se traduce**: lo que llega de la api. Nombres de servicios, de sedes
+  y de personas son datos de la barbería — traducir un dato es inventárselo.
+  Tampoco los mensajes de error de la api, que llegan ya redactados.
+- **Ni el vocabulario oficial de una autoridad**, aunque esté escrito aquí y en
+  español. «Cédula de ciudadanía» es un documento colombiano concreto, igual que
+  el NIF español o el EIN estadounidense, y «Autorretenedor» es una
+  responsabilidad que publica la DIAN: traducirlos inventaría un documento que no
+  existe, y quien lo busca en su cartera necesita leer el nombre que lleva
+  impreso. Viven en `features/suscripcion/utils/fiscal.ts`, con la razón escrita
+  al lado para que nadie los «arregle» en la próxima pasada.
+- **Los schemas de zod reciben las frases ya resueltas**, no el traductor
+  (`features/auth/schemas/errores.ts`): zod las quiere como cadenas al construir
+  el schema, y así esa capa no sabe de idiomas. El español es el valor por
+  defecto para que el service —que no es un componente— llame al mismo schema.
+- Una ruta nueva de `routes/` **no compila sin su entrada en el catálogo**: su
+  `clave` está tipada contra él (`ClaveRuta`).
+
+### De dónde sale el idioma
+
+**En el panel**, de quien lo usa; si no eligió, de la región base del producto.
+
+**En el portal es otra pregunta y tiene otra respuesta.** Ahí no hay una persona
+con preferencia guardada —hay un cliente que entró por un enlace—, pero sí hay
+una barbería concreta, y la api dice de qué país es
+(`GET /publico/barberias/:slug` devuelve `pais`, `moneda` y `locale`). Así que el
+escaparate de una barbería española se lee en español de España sin que nadie
+elija nada. **No es una preferencia: es un dato del negocio**, igual que su
+moneda.
+
+Lo transporta `store/portal.store.ts`, que cada página del portal escribe con su
+ficha —igual que ya hacía con los colores— y que **no usa `persist` a propósito**:
+guardarlo haría que el escaparate de la siguiente barbería arrancara con el país
+de la anterior.
+
+El orden completo que resuelve `useIdioma`:
+
+1. Lo que esa persona eligió (`idioma.store`).
+2. La región de la barbería que se está mirando (`portal.store`).
+3. La región base del producto.
+
+**El del navegador no participa en ninguno de los tres**: es de quien mira, y el
+panel es del negocio. Se cambia en el navbar (`SelectorIdioma`), junto al tema y
+a los colores. `useFormato()` formatea con el idioma activo y no con el de la
+región — texto en inglés y meses en español es peor que no traducir.
+
+⚠️ **Lo único que sigue sin decidirse**: si el cliente del portal puede cambiarlo.
+Hoy no se le ofrece selector. Añadirlo sería escribir en `idioma.store`, que ya
+tiene prioridad sobre lo anterior — un componente y ninguna reestructuración.
+
+**Estado**: **21 features enteras** —todas menos `plataforma`— más el chrome.
+115 de 183 `.tsx`, y 27 espacios con 854 claves en el catálogo.
+
+Queda `plataforma` (21): la usa el staff de Barion, no un cliente, así que es la
+más grande y la de menos valor.
 
 ## Pruebas
 

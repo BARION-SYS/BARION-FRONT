@@ -12,6 +12,7 @@ import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { useFormato } from "@shared/hooks/useFormato"
 import type { Servicio } from "@features/servicios/types/servicios.types"
 import type { TonoEstado } from "@shared/types/ui.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface ServiciosListProps {
   servicios: Servicio[]
@@ -38,6 +39,7 @@ export function ServiciosList({
   onAlternarActivo,
   onAsignar,
 }: ServiciosListProps) {
+  const t = useTextos("servicios")
   const { dinero } = useFormato()
 
   return (
@@ -65,7 +67,7 @@ export function ServiciosList({
                   {servicio.destacado && (
                     <Star
                       className="size-3.5 shrink-0 text-(--advertencia)"
-                      aria-label="Destacado"
+                      aria-label={t("destacado")}
                     />
                   )}
                 </p>
@@ -86,7 +88,7 @@ export function ServiciosList({
                   : "sin referencia"}
               </span>
 
-              <StatusBadge tono={estado.tono} etiqueta={estado.etiqueta} compacta />
+              <StatusBadge tono={estado.tono} etiqueta={t(`estados.${estado.clave}`)} compacta />
 
               {gestiona && (
                 <DropdownMenu>
@@ -95,7 +97,9 @@ export function ServiciosList({
                     <span className="sr-only">Acciones de {servicio.nombre}</span>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEditar(servicio)}>Editar</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEditar(servicio)}>
+                      {t("editar")}
+                    </DropdownMenuItem>
                     {/* Primero de las acciones que no son editar: un servicio
                         que nadie ofrece no se puede reservar, así que asignarlo
                         es el paso siguiente a crearlo, no una opción escondida. */}
@@ -106,10 +110,10 @@ export function ServiciosList({
                       {/* Publicar es lo mismo que aprobar: la propuesta de un
                           barbero llega inactiva y esto es lo que la abre. */}
                       {servicio.activo
-                        ? "Retirar del catálogo"
+                        ? t("retirar")
                         : servicio.requiereAprobacion
-                          ? "Aprobar y publicar"
-                          : "Publicar"}
+                          ? t("aprobarYPublicar")
+                          : t("publicar")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -122,10 +126,22 @@ export function ServiciosList({
   )
 }
 
-function estadoDe(servicio: Servicio): { tono: TonoEstado; etiqueta: string } {
-  if (servicio.activo) return { tono: "exito", etiqueta: "En carta" }
-  // Inactivo por dos razones distintas, y para quien administra no son lo
-  // mismo: una espera su decisión, la otra ya la tomó.
-  if (servicio.requiereAprobacion) return { tono: "advertencia", etiqueta: "Propuesto" }
-  return { tono: "neutro", etiqueta: "Retirado" }
+/**
+ * Cómo se pinta un servicio según su estado.
+ *
+ * Devuelve el tono y la CLAVE de su nombre, no el nombre: el color es diseño y
+ * no cambia con el idioma, el texto sí. Antes devolvía las dos cosas y por eso
+ * esta función —que está a nivel de módulo, donde no alcanza ningún hook—
+ * obligaba a dejar español dentro.
+ *
+ * Inactivo por dos razones distintas, y para quien administra no son lo mismo:
+ * una espera su decisión, la otra ya la tomó.
+ */
+function estadoDe(servicio: Servicio): {
+  tono: TonoEstado
+  clave: "enCarta" | "propuesto" | "retirado"
+} {
+  if (servicio.activo) return { tono: "exito", clave: "enCarta" }
+  if (servicio.requiereAprobacion) return { tono: "advertencia", clave: "propuesto" }
+  return { tono: "neutro", clave: "retirado" }
 }

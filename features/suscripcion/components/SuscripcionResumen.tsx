@@ -5,6 +5,7 @@ import { Button } from "@shared/components/ui/button"
 import { Progress } from "@shared/components/ui/progress"
 import { useFormato } from "@shared/hooks/useFormato"
 import type { TonoEstado } from "@shared/types/ui.types"
+import { useTextos } from "@shared/textos/useTextos"
 import type {
   EstadoSuscripcion,
   Suscripcion,
@@ -19,15 +20,16 @@ interface SuscripcionResumenProps {
   onReanudar: () => void
 }
 
-const presentacion: Record<
-  EstadoSuscripcion,
-  { etiqueta: string; tono: TonoEstado; icono: typeof Clock }
-> = {
-  prueba: { etiqueta: "En prueba", tono: "info", icono: Clock },
-  activa: { etiqueta: "Al día", tono: "exito", icono: CheckCircle2 },
-  mora: { etiqueta: "Pago pendiente", tono: "peligro", icono: AlertTriangle },
-  cancelada: { etiqueta: "Cancelada", tono: "neutro", icono: CircleSlash },
-  sobre_limite: { etiqueta: "Sobre el límite", tono: "advertencia", icono: AlertTriangle },
+/**
+ * Cómo se PINTA cada estado de la suscripción: tono e ícono. Su nombre sale del
+ * catálogo dentro del componente — a nivel de módulo no alcanza ningún hook.
+ */
+const presentacion: Record<EstadoSuscripcion, { tono: TonoEstado; icono: typeof Clock }> = {
+  prueba: { tono: "info", icono: Clock },
+  activa: { tono: "exito", icono: CheckCircle2 },
+  mora: { tono: "peligro", icono: AlertTriangle },
+  cancelada: { tono: "neutro", icono: CircleSlash },
+  sobre_limite: { tono: "advertencia", icono: AlertTriangle },
 }
 
 /**
@@ -41,6 +43,8 @@ export function SuscripcionResumen({
   onCancelar,
   onReanudar,
 }: SuscripcionResumenProps) {
+  const t = useTextos("suscripcion.resumen")
+  const tEstados = useTextos("suscripcion.estados")
   const { fecha } = useFormato()
   const estado = presentacion[suscripcion.estado]
   const baja = suscripcion.cancelaAlFinPeriodo && !suscripcion.canceladaEn
@@ -53,14 +57,20 @@ export function SuscripcionResumen({
           ? "Estás probando Barion. Elige un plan antes de que termine para no perder el acceso."
           : "Tu plan con Barion"
       }
-      accion={<StatusBadge etiqueta={estado.etiqueta} tono={estado.tono} icono={estado.icono} />}
+      accion={
+        <StatusBadge
+          etiqueta={tEstados(suscripcion.estado)}
+          tono={estado.tono}
+          icono={estado.icono}
+        />
+      }
     >
       <div className="space-y-5">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           {suscripcion.vigenteHasta && (
             <span className="inline-flex items-center gap-2 text-muted-foreground">
               <CalendarClock className="size-4" aria-hidden />
-              {baja ? "Tu acceso termina el" : "Siguiente cobro el"}{" "}
+              {baja ? t("accesoTerminaEl") : t("siguienteCobroEl")}{" "}
               <strong className="font-medium text-foreground">
                 {fecha(suscripcion.vigenteHasta)}
               </strong>
@@ -69,8 +79,8 @@ export function SuscripcionResumen({
           {suscripcion.diasRestantes !== null && (
             <span className="text-muted-foreground">
               {suscripcion.diasRestantes === 0
-                ? "Vence hoy"
-                : `Quedan ${suscripcion.diasRestantes} días`}
+                ? t("venceHoy")
+                : t("diasRestantes", { dias: suscripcion.diasRestantes })}
             </span>
           )}
         </div>
@@ -102,8 +112,8 @@ export function SuscripcionResumen({
         )}
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Tope titulo="Sedes" uso={suscripcion.uso.sedes} />
-          <Tope titulo="Barberos" uso={suscripcion.uso.barberos} />
+          <Tope titulo={t("sedes")} uso={suscripcion.uso.sedes} />
+          <Tope titulo={t("barberos")} uso={suscripcion.uso.barberos} />
         </div>
 
         {!soloLectura && suscripcion.estado !== "cancelada" && (
@@ -129,6 +139,7 @@ export function SuscripcionResumen({
  * final no informa de nada y sugiere un límite que no existe.
  */
 function Tope({ titulo, uso }: { titulo: string; uso: UsoContraTope }) {
+  const tResumen = useTextos("suscripcion.resumen")
   const porcentaje = uso.limite ? Math.min(100, Math.round((uso.usado / uso.limite) * 100)) : null
 
   return (
@@ -148,7 +159,7 @@ function Tope({ titulo, uso }: { titulo: string; uso: UsoContraTope }) {
           className={uso.excedido ? "[&>*]:bg-destructive" : undefined}
         />
       ) : (
-        <p className="text-xs text-muted-foreground">Sin límite en este plan</p>
+        <p className="text-xs text-muted-foreground">{tResumen("sinLimite")}</p>
       )}
     </div>
   )

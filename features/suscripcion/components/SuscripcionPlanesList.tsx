@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@shared/components/ui/tabs"
 import { useFormato } from "@shared/hooks/useFormato"
 import { cn } from "@shared/utils/cn"
 import type { DatosElegirPlan } from "@features/suscripcion/schemas/suscripcion.schema"
+import { useTextos } from "@shared/textos/useTextos"
 import type {
   PeriodoCobro,
   PlanPublicado,
@@ -23,24 +24,6 @@ interface SuscripcionPlanesListProps {
   onElegir: (datos: DatosElegirPlan) => void
 }
 
-/**
- * Nombre visible de cada función del plan. Las claves son banderas de producto y
- * la api las manda tal cual: traducirlas aquí es lo que permite cambiar el texto
- * de venta sin tocar la lógica de nadie.
- */
-const NOMBRE_FUNCION: Record<string, string> = {
-  agenda: "Agenda y reservas",
-  portal: "Página pública de reservas",
-  recordatorios: "Recordatorios automáticos",
-  clientes: "Base de clientes",
-  comisiones: "Comisiones y nómina",
-  campanas: "Campañas de comunicación",
-  fidelidad: "Puntos y premios",
-  listaEspera: "Lista de espera",
-  reportes: "Reportes y estadísticas",
-  multisede: "Varias sedes",
-}
-
 export function SuscripcionPlanesList({
   planes,
   suscripcion,
@@ -49,6 +32,22 @@ export function SuscripcionPlanesList({
   cargando,
   onElegir,
 }: SuscripcionPlanesListProps) {
+  const t = useTextos("suscripcion.planes")
+  const tFunciones = useTextos("suscripcion.planes.funciones")
+
+  /**
+   * El nombre visible de una función del plan.
+   *
+   * Las claves son banderas de producto y **la api las manda tal cual**, así que
+   * aquí no hay unión cerrada que tipar: es el único sitio del panel donde la
+   * clave del mensaje llega de fuera. Una función que este panel todavía no sabe
+   * nombrar se enseña con su clave en vez de desaparecer — un plan con una fila
+   * menos se lee como un plan más pobre.
+   */
+  const nombreDeFuncion = (funcion: string): string => {
+    const clave = funcion as Parameters<typeof tFunciones>[0]
+    return tFunciones.has(clave) ? tFunciones(clave) : funcion
+  }
   const { dineroEn } = useFormato()
   const [periodo, setPeriodo] = useState<PeriodoCobro>("mensual")
 
@@ -62,25 +61,22 @@ export function SuscripcionPlanesList({
 
   if (planes.length === 0) {
     return (
-      <SectionCard titulo="Planes" subtitulo="Lo que se puede contratar">
-        <SinDatos
-          titulo="No hay planes publicados"
-          detalle="Escríbenos y te ayudamos a elegir el que le sirve a tu barbería."
-        />
+      <SectionCard titulo={t("titulo")} subtitulo={t("subtituloVacio")}>
+        <SinDatos titulo={t("sinPlanes")} detalle={t("sinPlanesDetalle")} />
       </SectionCard>
     )
   }
 
   return (
     <SectionCard
-      titulo="Planes"
-      subtitulo="Cambia cuando quieras. Bajar de plan no desactiva a nadie."
+      titulo={t("titulo")}
+      subtitulo={t("subtitulo")}
       accion={
         periodosDisponibles.size > 1 ? (
           <Tabs value={periodo} onValueChange={(valor) => setPeriodo(valor as PeriodoCobro)}>
             <TabsList>
-              <TabsTrigger value="mensual">Mensual</TabsTrigger>
-              <TabsTrigger value="anual">Anual</TabsTrigger>
+              <TabsTrigger value="mensual">{t("mensual")}</TabsTrigger>
+              <TabsTrigger value="anual">{t("anual")}</TabsTrigger>
             </TabsList>
           </Tabs>
         ) : undefined
@@ -104,7 +100,9 @@ export function SuscripcionPlanesList({
               <header className="space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-foreground">{plan.nombre}</h3>
-                  {actual && <span className="text-[10px] font-medium text-primary">Tu plan</span>}
+                  {actual && (
+                    <span className="text-[10px] font-medium text-primary">{t("tuPlan")}</span>
+                  )}
                 </div>
                 {precio ? (
                   <p className="text-lg font-semibold text-foreground">
@@ -124,7 +122,7 @@ export function SuscripcionPlanesList({
                 {plan.funciones.map((funcion) => (
                   <li key={funcion} className="flex items-start gap-2 text-xs text-foreground">
                     <Check className="mt-0.5 size-3.5 shrink-0 text-(--exito)" aria-hidden />
-                    {NOMBRE_FUNCION[funcion] ?? funcion}
+                    {nombreDeFuncion(funcion)}
                   </li>
                 ))}
               </ul>
@@ -144,7 +142,7 @@ export function SuscripcionPlanesList({
                   disabled={!contratable || cargando}
                   onClick={() => onElegir({ planCodigo: plan.codigo, periodo })}
                 >
-                  {actual ? "Renovar en este plan" : `Cambiar a ${plan.nombre}`}
+                  {actual ? t("renovar") : t("cambiarA", { plan: plan.nombre })}
                 </Button>
               </div>
             </article>

@@ -19,6 +19,7 @@ import { inicialesDe } from "@shared/utils/iniciales"
 import type { Ganancia, ResumenNomina } from "@features/nomina/types/nomina.types"
 import { comisionEfectiva } from "@features/nomina/utils/periodo"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface NominaBarberoDetailProps {
   fila: ResumenNomina
@@ -31,13 +32,6 @@ interface NominaBarberoDetailProps {
   onAjustar: () => void
 }
 
-const ETIQUETA_TIPO: Record<Ganancia["tipo"], string> = {
-  servicio: "Servicio",
-  extra: "Extra",
-  propina: "Propina",
-  ajuste: "Ajuste",
-}
-
 export function NominaBarberoDetail({
   fila,
   asientos,
@@ -46,27 +40,30 @@ export function NominaBarberoDetail({
   puedeAjustar,
   onAjustar,
 }: NominaBarberoDetailProps) {
+  const t = useTextos("nomina.detalle")
+  const tNomina = useTextos("nomina")
   const { dinero, fechaHora, porcentaje } = useFormato()
 
-  const nombre = fila.barbero?.nombrePublico ?? "Barbero retirado"
+  const nombre = fila.barbero?.nombrePublico ?? tNomina("retirado")
   const color = tokenDeColor(fila.barbero?.indiceColor ?? 0)
   const comision = comisionEfectiva(fila.produccionCentavos, fila.comisionCentavos)
 
   const desglose = [
     {
-      concepto: "Producción",
-      detalle: "Lo que se le cobró al cliente",
+      concepto: t("produccion"),
+      detalle: t("produccionDetalle"),
       centavos: fila.produccionCentavos,
     },
     {
-      concepto: comision === null ? "Comisión" : `Comisión (${porcentaje(comision)})`,
-      detalle: "Su parte de esa producción",
+      concepto:
+        comision === null ? t("comision") : t("comisionCon", { porcentaje: porcentaje(comision) }),
+      detalle: t("comisionDetalle"),
       centavos: fila.comisionCentavos,
     },
-    { concepto: "Propinas", detalle: "Íntegras", centavos: fila.propinasCentavos },
+    { concepto: t("propinas"), detalle: t("propinasDetalle"), centavos: fila.propinasCentavos },
     // Solo si las hay: una fila en cero invita a preguntar qué se corrigió.
     ...(fila.ajustesCentavos !== "0"
-      ? [{ concepto: "Ajustes", detalle: "Correcciones", centavos: fila.ajustesCentavos }]
+      ? [{ concepto: t("ajustes"), detalle: t("ajustesDetalle"), centavos: fila.ajustesCentavos }]
       : []),
   ]
 
@@ -94,9 +91,9 @@ export function NominaBarberoDetail({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Concepto</TableHead>
-              <TableHead className="hidden sm:table-cell">Detalle</TableHead>
-              <TableHead className="text-right">Monto</TableHead>
+              <TableHead>{t("concepto")}</TableHead>
+              <TableHead className="hidden sm:table-cell">{t("detalle")}</TableHead>
+              <TableHead className="text-right">{t("monto")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -136,10 +133,10 @@ export function NominaBarberoDetail({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Cuándo</TableHead>
+                  <TableHead>{t("cuando")}</TableHead>
                   <TableHead>Qué</TableHead>
-                  <TableHead className="hidden sm:table-cell">Cobrado</TableHead>
-                  <TableHead className="text-right">Para él</TableHead>
+                  <TableHead className="hidden sm:table-cell">{t("cobrado")}</TableHead>
+                  <TableHead className="text-right">{t("paraEl")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -149,7 +146,7 @@ export function NominaBarberoDetail({
                       {fechaHora(asiento.ganadoEn)}
                     </TableCell>
                     <TableCell>
-                      {asiento.descripcionCongelada ?? ETIQUETA_TIPO[asiento.tipo]}
+                      {asiento.descripcionCongelada ?? t(`tipos.${asiento.tipo}`)}
                     </TableCell>
                     <TableCell className="hidden tabular-nums sm:table-cell">
                       {dinero(Number(asiento.brutoCentavos))}

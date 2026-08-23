@@ -5,12 +5,9 @@ import { Loadable } from "@shared/components/feedback/Loadable"
 import { SinDatos } from "@shared/components/feedback/SinDatos"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { Button } from "@shared/components/ui/button"
-import {
-  ETIQUETA_TIPO_DOCUMENTO,
-  ETIQUETA_TIPO_PERSONA,
-  type ReglasFiscales,
-} from "@features/suscripcion/utils/fiscal"
+import { ETIQUETA_TIPO_DOCUMENTO, type ReglasFiscales } from "@features/suscripcion/utils/fiscal"
 import type { DatosFiscales } from "@features/suscripcion/types/suscripcion.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface SuscripcionDatosFiscalesCardProps {
   datos: DatosFiscales | null
@@ -42,14 +39,16 @@ export function SuscripcionDatosFiscalesCard({
   soloLectura,
   onEditar,
 }: SuscripcionDatosFiscalesCardProps) {
+  const t = useTextos("suscripcion.fiscales")
+  const tPersona = useTextos("suscripcion.tipoPersona")
   return (
     <SectionCard
-      titulo="Datos de facturación"
-      subtitulo="Opcional. Solo si necesitas la factura a nombre de una empresa"
+      titulo={t("titulo")}
+      subtitulo={t("subtitulo")}
       accion={
         reglas && !soloLectura ? (
           <Button variant="outline" size="sm" onClick={onEditar}>
-            {datos ? "Editar" : "Agregar"}
+            {datos ? t("editar") : t("agregar")}
           </Button>
         ) : undefined
       }
@@ -61,14 +60,14 @@ export function SuscripcionDatosFiscalesCard({
         emptyState={
           reglas ? (
             <SinDatos
-              titulo="No hace falta que pongas nada"
+              titulo={t("sinDatos")}
               detalle="Te cobramos igual y la factura sale a tu nombre como consumidor final. Agrégalos solo si necesitas que vaya a nombre de tu empresa, por ejemplo para deducir el gasto."
               alto={160}
             />
           ) : (
             <SinDatos
               titulo={`Barion todavía no factura en ${codigoPais ?? "tu país"}`}
-              detalle="Escríbenos antes de activar el cobro y lo resolvemos contigo."
+              detalle={t("sinDatosDetalle")}
               alto={160}
             />
           )
@@ -76,28 +75,28 @@ export function SuscripcionDatosFiscalesCard({
       >
         {datos && (
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Dato etiqueta="Nombre legal" valor={datos.razonSocial} />
+            <Dato etiqueta={t("nombreLegal")} valor={datos.razonSocial} />
             <Dato
               etiqueta={ETIQUETA_TIPO_DOCUMENTO[datos.tipoDocumento]}
               valor={datos.numeroDocumento}
               tabular
             />
-            <Dato etiqueta="Tipo" valor={ETIQUETA_TIPO_PERSONA[datos.tipoPersona]} />
+            <Dato etiqueta={t("tipo")} valor={tPersona(datos.tipoPersona)} />
             {datos.direccionFiscal && (
               <Dato
-                etiqueta="Domicilio fiscal"
+                etiqueta={t("domicilio")}
                 valor={`${datos.direccionFiscal.calle}, ${datos.direccionFiscal.ciudad} (${datos.direccionFiscal.pais})`}
               />
             )}
             {datos.codigoMunicipio && (
-              <Dato etiqueta="Municipio DANE" valor={datos.codigoMunicipio} tabular />
+              <Dato etiqueta={t("municipio")} valor={datos.codigoMunicipio} tabular />
             )}
             {datos.emailFacturacion && (
-              <Dato etiqueta="Enviamos la factura a" valor={datos.emailFacturacion} />
+              <Dato etiqueta={t("enviamosA")} valor={datos.emailFacturacion} />
             )}
             {datos.responsabilidades.length > 0 && (
               <div className="flex flex-col gap-1 sm:col-span-2">
-                <dt className="text-xs text-muted-foreground">Responsabilidades</dt>
+                <dt className="text-xs text-muted-foreground">{t("responsabilidades")}</dt>
                 <dd className="flex flex-wrap gap-1.5">
                   {datos.responsabilidades.map((codigo) => (
                     <StatusBadge key={codigo} etiqueta={codigo} tono="neutro" />

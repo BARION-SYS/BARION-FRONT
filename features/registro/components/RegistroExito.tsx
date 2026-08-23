@@ -7,6 +7,7 @@ import { rutasWeb } from "@routes/rutasPublicas"
 import type { RegistroVista } from "@features/registro/types/registro.types"
 import { EnlaceCopiable } from "@shared/components/enlaces/EnlaceCopiable"
 import { Button } from "@shared/components/ui/button"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface RegistroExitoProps {
   registro: RegistroVista
@@ -44,6 +45,7 @@ const cascada: Variants = {
  * así que la pantalla cambia entera en vez de tachar una línea.
  */
 export function RegistroExito({ registro, origen }: RegistroExitoProps) {
+  const t = useTextos("registro.exito")
   const enlacePortal = `${origen}/b/${registro.slug}`
   const esperaCorreo = registro.correoVerificacion !== null
 
@@ -92,7 +94,7 @@ export function RegistroExito({ registro, origen }: RegistroExitoProps) {
             <Store className="size-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <dt className="text-xs text-muted-foreground">Tu barbería</dt>
+            <dt className="text-xs text-muted-foreground">{t("tuBarberia")}</dt>
             <dd className="truncate text-sm font-semibold text-foreground">
               {registro.nombreComercial}
             </dd>
@@ -107,12 +109,10 @@ export function RegistroExito({ registro, origen }: RegistroExitoProps) {
             <Check className="size-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <dt className="text-xs text-muted-foreground">Tu prueba</dt>
+            <dt className="text-xs text-muted-foreground">{t("tuPrueba")}</dt>
             <dd className="text-sm font-semibold text-foreground">
-              7 días · sin tarjeta
-              <span className="ml-1.5 font-normal text-muted-foreground">
-                El plan se elige al terminarla
-              </span>
+              {t("pruebaValor")}
+              <span className="ml-1.5 font-normal text-muted-foreground">{t("pruebaDetalle")}</span>
             </dd>
           </div>
         </div>
@@ -124,17 +124,13 @@ export function RegistroExito({ registro, origen }: RegistroExitoProps) {
           una barbería que no es la suya */}
       <motion.div className="mt-4" variants={bloque}>
         <EnlaceCopiable
-          etiqueta="Tu dirección pública"
-          descripcion={
-            esperaCorreo
-              ? "Se le sirve a tus clientes en cuanto abras el correo."
-              : "Ya responde: compártela y pueden reservar contigo."
-          }
+          etiqueta={t("tuDireccion")}
+          descripcion={esperaCorreo ? t("direccionEsperando") : t("direccionLista")}
           valor={enlacePortal}
         />
       </motion.div>
 
-      <motion.ol className="mt-7 space-y-2.5" variants={bloque} aria-label="Lo que sigue">
+      <motion.ol className="mt-7 space-y-2.5" variants={bloque} aria-label={t("loQueSigue")}>
         <li className="flex gap-3 rounded-xl border border-border bg-card p-4">
           <span
             className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
@@ -143,11 +139,8 @@ export function RegistroExito({ registro, origen }: RegistroExitoProps) {
             <LayoutDashboard className="size-3.5" />
           </span>
           <p className="text-sm leading-relaxed">
-            <span className="font-medium">Monta tu barbería.</span>{" "}
-            <span className="text-muted-foreground">
-              Añade tus servicios con su precio, las horas en que atiendes y a tu equipo. Con eso tu
-              agenda empieza a aceptar reservas.
-            </span>
+            <span className="font-medium">{t("montaTitulo")}</span>{" "}
+            <span className="text-muted-foreground">{t("montaDetalle")}</span>
           </p>
         </li>
 
@@ -161,18 +154,13 @@ export function RegistroExito({ registro, origen }: RegistroExitoProps) {
           <p className="text-sm leading-relaxed">
             {esperaCorreo ? (
               <>
-                <span className="font-medium">Abre el correo que te enviamos.</span>{" "}
-                <span className="text-muted-foreground">
-                  Hasta que lo hagas, tu dirección pública no se le sirve a nadie.
-                </span>
+                <span className="font-medium">{t("correoTitulo")}</span>{" "}
+                <span className="text-muted-foreground">{t("correoDetalle")}</span>
               </>
             ) : (
               <>
-                <span className="font-medium">Comparte tu dirección.</span>{" "}
-                <span className="text-muted-foreground">
-                  Ponla en tu Instagram, en WhatsApp o en un cartel: desde ahí ven tu carta y
-                  reservan solos.
-                </span>
+                <span className="font-medium">{t("comparteTitulo")}</span>{" "}
+                <span className="text-muted-foreground">{t("comparteDetalle")}</span>
               </>
             )}
           </p>
@@ -195,15 +183,13 @@ export function RegistroExito({ registro, origen }: RegistroExitoProps) {
         </Button>
 
         <p className="text-center text-xs text-muted-foreground">
-          {esperaCorreo
-            ? "Entra con el correo y la contraseña que acabas de elegir."
-            : "Entra con el mismo botón de Google."}{" "}
+          {esperaCorreo ? t("entraConCorreo") : t("entraConGoogle")}{" "}
           {/* Otro dominio: <a>, no next/link */}
           <a
             href={rutasWeb.inicio}
             className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
-            Volver al inicio
+            {t("volverAlInicio")}
           </a>
         </p>
       </motion.div>

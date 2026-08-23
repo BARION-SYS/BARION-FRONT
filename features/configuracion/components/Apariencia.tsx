@@ -1,6 +1,7 @@
 import { Store } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { SectionCard } from "@shared/components/cards/SectionCard"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface AparienciaProps {
   nombreBarberia: string
@@ -11,9 +12,10 @@ interface AparienciaProps {
 // por eso es orientativa: el color real del portal es el de la barbería y viaja
 // con su ficha desde la api.
 export function Apariencia({ nombreBarberia }: AparienciaProps) {
+  const t = useTextos("configuracion.apariencia")
   return (
     <div className="space-y-4">
-      <SectionCard titulo="Logotipo">
+      <SectionCard titulo={t("logotipo")}>
         <Button
           variant="ghost"
           className="h-auto w-full cursor-pointer flex-col gap-3 rounded-xl border-2 border-dashed border-border p-8 whitespace-normal transition-colors hover:border-primary/50 motion-reduce:transition-none"
@@ -25,7 +27,7 @@ export function Apariencia({ nombreBarberia }: AparienciaProps) {
             <Store className="size-6 text-primary" />
           </span>
           <span className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-foreground">Subir logotipo</span>
+            <span className="text-sm font-medium text-foreground">{t("subir")}</span>
             <span className="text-xs font-normal text-muted-foreground">
               PNG, JPG hasta 2MB · Recomendado 200×200px
             </span>
@@ -33,10 +35,7 @@ export function Apariencia({ nombreBarberia }: AparienciaProps) {
         </Button>
       </SectionCard>
 
-      <SectionCard
-        titulo="Vista previa del portal de clientes"
-        subtitulo="Orientativa: se pinta con los colores de tu panel, no con los del portal real"
-      >
+      <SectionCard titulo={t("vistaPrevia")} subtitulo={t("vistaPreviaAyuda")}>
         {/* Simulación decorativa del portal público — no interactiva */}
         <div aria-hidden className="rounded-xl border border-border bg-background p-4">
           <div className="mb-4 flex items-center gap-2">
@@ -46,7 +45,7 @@ export function Apariencia({ nombreBarberia }: AparienciaProps) {
             </span>
             <span>
               <span className="block text-xs font-bold text-foreground">{nombreBarberia}</span>
-              <span className="block text-[10px] text-muted-foreground">Reserva tu cita</span>
+              <span className="block text-[10px] text-muted-foreground">{t("reservaTuCita")}</span>
             </span>
           </div>
           <span className="block w-full rounded-lg bg-primary py-2.5 text-center text-sm font-bold text-primary-foreground">

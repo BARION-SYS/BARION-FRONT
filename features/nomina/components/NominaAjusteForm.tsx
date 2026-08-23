@@ -6,6 +6,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@shared/compone
 import { Input } from "@shared/components/ui/input"
 import { Textarea } from "@shared/components/ui/textarea"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 import {
   esquemaAjuste,
   type DatosAjuste,
@@ -41,6 +42,7 @@ export const ID_FORM_AJUSTE = "form-ajuste-nomina"
  * a dar otro que tampoco es. Se dice en pantalla porque nadie lo deduce.
  */
 export function NominaAjusteForm({ barberoId, nombre, onSubmit }: NominaAjusteFormProps) {
+  const t = useTextos("nomina.ajuste")
   const { moneda } = useFormato()
 
   const {
@@ -80,11 +82,11 @@ export function NominaAjusteForm({ barberoId, nombre, onSubmit }: NominaAjusteFo
       </Field>
 
       <Field data-invalid={!!errors.motivo}>
-        <FieldLabel htmlFor="motivo">Motivo</FieldLabel>
+        <FieldLabel htmlFor="motivo">{t("motivo")}</FieldLabel>
         <Textarea
           id="motivo"
           rows={3}
-          placeholder="Corrección de la propina del corte BRN-4F2A9C"
+          placeholder={t("motivoEjemplo")}
           aria-invalid={!!errors.motivo}
           {...register("motivo")}
         />
@@ -95,7 +97,7 @@ export function NominaAjusteForm({ barberoId, nombre, onSubmit }: NominaAjusteFo
       </Field>
 
       <Field data-invalid={!!errors.ganadoEn}>
-        <FieldLabel htmlFor="ganadoEn">En qué fecha cae (opcional)</FieldLabel>
+        <FieldLabel htmlFor="ganadoEn">{t("fecha")}</FieldLabel>
         <Input
           id="ganadoEn"
           type="date"

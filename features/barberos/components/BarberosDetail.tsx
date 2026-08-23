@@ -11,6 +11,7 @@ import { tokenDeColor } from "@shared/utils/color"
 import { inicialesDe } from "@shared/utils/iniciales"
 import type { TonoEstado } from "@shared/types/ui.types"
 import type { Barbero, JornadaSemanal } from "@features/barberos/types/barberos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface BarberosDetailProps {
   barbero: Barbero
@@ -40,6 +41,7 @@ export function BarberosDetail({
   onOferta,
   onAlternarActivo,
 }: BarberosDetailProps) {
+  const t = useTextos("barberos.detalle")
   const { dinero } = useFormato()
   const color = tokenDeColor(barbero.indiceColor)
   const estado = estadoDe(barbero)
@@ -52,7 +54,7 @@ export function BarberosDetail({
   return (
     <div className="flex flex-col gap-4">
       <SectionCard
-        titulo="Perfil"
+        titulo={t("perfil")}
         accion={
           gestiona ? (
             <div className="flex gap-2">
@@ -80,12 +82,12 @@ export function BarberosDetail({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-base font-semibold">{barbero.nombrePublico}</h3>
-              <StatusBadge tono={estado.tono} etiqueta={estado.etiqueta} compacta />
+              <StatusBadge tono={estado.tono} etiqueta={t(estado.clave)} compacta />
               {!barbero.tieneAcceso && (
-                <StatusBadge tono="neutro" etiqueta="Sin cuenta" icono={KeyRound} compacta />
+                <StatusBadge tono="neutro" etiqueta={t("sinCuenta")} icono={KeyRound} compacta />
               )}
             </div>
-            <p className="text-sm text-muted-foreground">{barbero.titulo ?? "Barbero"}</p>
+            <p className="text-sm text-muted-foreground">{barbero.titulo ?? t("barbero")}</p>
             {barbero.calificacion !== null && (
               <p className="mt-1 flex items-center gap-1 text-xs text-primary">
                 <Star className="size-3 fill-primary" aria-hidden />
@@ -110,7 +112,7 @@ export function BarberosDetail({
             <Scissors className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             <span>
               {barbero.comisionBps === null
-                ? "Se lleva el 100 %"
+                ? t("cienPorCiento")
                 : `Comisión pactada del ${barbero.comisionBps / 100} %`}
             </span>
           </div>
@@ -131,22 +133,16 @@ export function BarberosDetail({
             className="mt-4 self-start"
             onClick={onAlternarActivo}
           >
-            {barbero.activo ? "Retirar del equipo" : "Reincorporar"}
+            {barbero.activo ? t("retirar") : t("reincorporar")}
           </Button>
         )}
       </SectionCard>
 
-      <SectionCard
-        titulo="Jornada"
-        subtitulo="Cuándo atiende. No es el horario de la sede: los cupos salen de cruzar los dos"
-      >
+      <SectionCard titulo={t("jornada")} subtitulo={t("jornadaAyuda")}>
         <HorarioSemanal tramos={jornada?.tramos ?? []} />
       </SectionCard>
 
-      <SectionCard
-        titulo="Servicios que ofrece"
-        subtitulo="Con el precio y la duración que él cobra"
-      >
+      <SectionCard titulo={t("servicios")} subtitulo={t("serviciosAyuda")}>
         {barbero.oferta.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             Todavía no ofrece ningún servicio.
@@ -174,10 +170,18 @@ export function BarberosDetail({
   )
 }
 
-/** Tres estados, y ninguno se distingue solo por color: cada uno lleva etiqueta. */
-function estadoDe(barbero: Barbero): { etiqueta: string; tono: TonoEstado } {
-  if (!barbero.activo) return { etiqueta: "Inactivo", tono: "neutro" }
+/**
+ * Tres estados, y ninguno se distingue solo por color: cada uno lleva etiqueta.
+ *
+ * Devuelve la CLAVE y no el texto: el tono es diseño y no cambia con el idioma.
+ * Además esta función vive fuera del componente, donde no alcanza ningún hook.
+ */
+function estadoDe(barbero: Barbero): {
+  clave: "inactivo" | "ausenteHoy" | "activo"
+  tono: TonoEstado
+} {
+  if (!barbero.activo) return { clave: "inactivo", tono: "neutro" }
   return barbero.enVacaciones
-    ? { etiqueta: "Ausente hoy", tono: "advertencia" }
-    : { etiqueta: "Activo", tono: "exito" }
+    ? { clave: "ausenteHoy", tono: "advertencia" }
+    : { clave: "activo", tono: "exito" }
 }

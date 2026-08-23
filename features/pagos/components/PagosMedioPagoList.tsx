@@ -6,6 +6,7 @@ import { SinDatos } from "@shared/components/feedback/SinDatos"
 import { Button } from "@shared/components/ui/button"
 import { useFormato } from "@shared/hooks/useFormato"
 import type { ConfiguracionPasarela, MedioPago } from "@features/pagos/types/pagos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PagosMedioPagoListProps {
   mediosPago: MedioPago[]
@@ -43,6 +44,7 @@ export function PagosMedioPagoList({
   onAgregar,
   onRetirar,
 }: PagosMedioPagoListProps) {
+  const t = useTextos("pagos.medio")
   const { fecha } = useFormato()
   // Guardar una tarjeta exige tokenizar en el navegador, y eso es propio de cada
   // pasarela: hoy solo está montado el widget de Wompi.
@@ -53,8 +55,8 @@ export function PagosMedioPagoList({
 
   return (
     <SectionCard
-      titulo="Método de pago"
-      subtitulo="Con qué se cobra tu suscripción a Barion. El último que guardes es el que cobra."
+      titulo={t("titulo")}
+      subtitulo={t("subtitulo")}
       accion={
         !soloLectura && puedeGuardar ? (
           <Button size="sm" variant="outline" disabled={cargandoAction} onClick={onAgregar}>
@@ -68,7 +70,7 @@ export function PagosMedioPagoList({
         {proximoCobroEn && (
           <p className="inline-flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <CalendarClock className="size-4" aria-hidden />
-            {renovacionActiva ? "Se cobrará el" : "Tu acceso termina el"}{" "}
+            {renovacionActiva ? t("seCobraraEl") : t("accesoTerminaEl")}{" "}
             <strong className="font-medium text-foreground">{fecha(proximoCobroEn)}</strong>
             {!renovacionActiva && <span>— no habrá cobro, la baja ya está pedida</span>}
           </p>
@@ -104,12 +106,8 @@ export function PagosMedioPagoList({
           isEmpty={mediosPago.length === 0}
           emptyState={
             <SinDatos
-              titulo="No hay con qué cobrar tu suscripción"
-              detalle={
-                soloLectura
-                  ? "Quien administre la barbería puede guardar una tarjeta."
-                  : "Guarda una tarjeta antes de la próxima renovación para no perder el acceso."
-              }
+              titulo={t("sinMedio")}
+              detalle={soloLectura ? t("sinMedioAdmin") : t("sinMedioPropio")}
               icono={CreditCard}
               alto={140}
             />

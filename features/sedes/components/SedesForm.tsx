@@ -17,6 +17,7 @@ import { monedas } from "@config/regiones"
 import { zonasHorarias } from "@shared/utils/i18n"
 import { esquemaSede, type DatosSede } from "@features/sedes/schemas/sedes.schema"
 import type { Sede } from "@features/sedes/types/sedes.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface SedesFormProps {
   /** Sin sede = alta. Con sede = edición. */
@@ -33,6 +34,7 @@ interface SedesFormProps {
  * comparten hora. Cambiarla reinterpreta toda la agenda futura de esa sede.
  */
 export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
+  const t = useTextos("sedes")
   const editando = Boolean(sede)
   const zonas = zonasHorarias()
 
@@ -60,14 +62,14 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
   return (
     <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="flex flex-col gap-5">
       <Field>
-        <FieldLabel htmlFor="nombre">Nombre</FieldLabel>
-        <Input id="nombre" placeholder="Sede Centro" {...register("nombre")} />
+        <FieldLabel htmlFor="nombre">{t("nombre")}</FieldLabel>
+        <Input id="nombre" placeholder={t("nombreEjemplo")} {...register("nombre")} />
         {errors.nombre && <FieldError>{errors.nombre.message}</FieldError>}
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
-          <FieldLabel htmlFor="zonaHoraria">Zona horaria</FieldLabel>
+          <FieldLabel htmlFor="zonaHoraria">{t("zonaHoraria")}</FieldLabel>
           {/* Sin pieza shadcn de combobox instalada: select nativo con datalist
               para poder escribir y filtrar entre varios cientos de zonas. */}
           <Input
@@ -88,7 +90,7 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="slugQr">Identificador del QR</FieldLabel>
+          <FieldLabel htmlFor="slugQr">{t("slugQr")}</FieldLabel>
           <Input id="slugQr" placeholder="centro" {...register("slugQr")} />
           <p className="text-xs text-muted-foreground">
             Se imprime en el código de la sede: cambiarlo invalida los ya repartidos.
@@ -99,7 +101,7 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
-          <FieldLabel htmlFor="telefono">Teléfono</FieldLabel>
+          <FieldLabel htmlFor="telefono">{t("telefono")}</FieldLabel>
           <Input id="telefono" placeholder="+573001112233" {...register("telefono")} />
           {errors.telefono && <FieldError>{errors.telefono.message}</FieldError>}
         </Field>
@@ -109,7 +111,7 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
           name="moneda"
           render={({ field }) => (
             <Field>
-              <FieldLabel htmlFor="moneda">Moneda</FieldLabel>
+              <FieldLabel htmlFor="moneda">{t("moneda")}</FieldLabel>
               <Select
                 value={field.value ?? "_heredar"}
                 onValueChange={(valor) => field.onChange(valor === "_heredar" ? undefined : valor)}
@@ -118,7 +120,7 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="_heredar">Hereda la de la barbería</SelectItem>
+                  <SelectItem value="_heredar">{t("heredaDeLaBarberia")}</SelectItem>
                   {monedas.map((moneda) => (
                     <SelectItem key={moneda} value={moneda}>
                       {moneda}
@@ -126,7 +128,7 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">En blanco hereda la de la barbería.</p>
+              <p className="text-xs text-muted-foreground">{t("heredaAyuda")}</p>
               {errors.moneda && <FieldError>{errors.moneda.message}</FieldError>}
             </Field>
           )}
@@ -135,15 +137,15 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
-          <FieldLabel htmlFor="calle">Dirección</FieldLabel>
-          <Input id="calle" placeholder="Cra 7 #12-34" {...register("direccion.calle")} />
+          <FieldLabel htmlFor="calle">{t("direccion")}</FieldLabel>
+          <Input id="calle" placeholder={t("calleEjemplo")} {...register("direccion.calle")} />
           {errors.direccion?.calle && <FieldError>{errors.direccion.calle.message}</FieldError>}
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="ciudad">Ciudad</FieldLabel>
-          <Input id="ciudad" placeholder="Bogotá" {...register("direccion.ciudad")} />
-          <p className="text-xs text-muted-foreground">Es lo que el portal pinta bajo el nombre.</p>
+          <FieldLabel htmlFor="ciudad">{t("ciudad")}</FieldLabel>
+          <Input id="ciudad" placeholder={t("ciudadEjemplo")} {...register("direccion.ciudad")} />
+          <p className="text-xs text-muted-foreground">{t("ciudadAyuda")}</p>
           {errors.direccion?.ciudad && <FieldError>{errors.direccion.ciudad.message}</FieldError>}
         </Field>
       </div>
@@ -153,7 +155,7 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
         name="inicioSemana"
         render={({ field }) => (
           <Field>
-            <FieldLabel htmlFor="inicioSemana">Primer día de la semana</FieldLabel>
+            <FieldLabel htmlFor="inicioSemana">{t("primerDia")}</FieldLabel>
             <Select
               value={String(field.value)}
               onValueChange={(valor) => field.onChange(Number(valor))}
@@ -162,8 +164,8 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Lunes</SelectItem>
-                <SelectItem value="0">Domingo</SelectItem>
+                <SelectItem value="1">{t("lunes")}</SelectItem>
+                <SelectItem value="0">{t("domingo")}</SelectItem>
               </SelectContent>
             </Select>
             {errors.inicioSemana && <FieldError>{errors.inicioSemana.message}</FieldError>}
@@ -173,7 +175,7 @@ export function SedesForm({ sede, cargando, onSubmit }: SedesFormProps) {
 
       <Button type="submit" disabled={cargando} className="h-10">
         {cargando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-        {editando ? "Guardar sede" : "Crear sede"}
+        {editando ? t("guardar") : t("crear")}
       </Button>
     </form>
   )

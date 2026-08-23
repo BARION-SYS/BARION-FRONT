@@ -11,6 +11,7 @@ import { Switch } from "@shared/components/ui/switch"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { esquemaAtiendoYo, type DatosAtiendoYo } from "@features/barberos/schemas/barberos.schema"
 import type { Barbero } from "@features/barberos/types/barberos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PersonasAtiendoCardProps {
   /** Ficha propia, o `null` si quien mira no atiende. */
@@ -49,6 +50,7 @@ export function PersonasAtiendoCard({
   onActivar,
   onDesactivar,
 }: PersonasAtiendoCardProps) {
+  const t = useTextos("personas.propia")
   const atiende = miPerfil !== null && miPerfil.activo
   const [abierto, setAbierto] = useState(false)
 
@@ -93,9 +95,7 @@ export function PersonasAtiendoCard({
               Yo también atiendo
             </FieldLabel>
             <p className="mt-1 text-xs text-muted-foreground">
-              {atiende
-                ? "Apareces en la agenda y en el escaparate, y se te pueden reservar citas."
-                : "Actívalo si cortas tú: se te abre agenda propia y el cliente puede reservarte."}
+              {atiende ? t("activo") : t("inactivo")}
             </p>
           </div>
         </div>
@@ -104,7 +104,7 @@ export function PersonasAtiendoCard({
           checked={atiende}
           disabled={cargando}
           onCheckedChange={alCambiar}
-          aria-label="Yo también atiendo"
+          aria-label={t("yoAtiendo")}
         />
       </div>
 
@@ -120,10 +120,10 @@ export function PersonasAtiendoCard({
         >
           <div className="grid gap-4 sm:grid-cols-3">
             <Field data-invalid={!!errors.nombrePublico}>
-              <FieldLabel htmlFor="nombrePublicoPropio">Nombre público</FieldLabel>
+              <FieldLabel htmlFor="nombrePublicoPropio">{t("nombrePublico")}</FieldLabel>
               <Input
                 id="nombrePublicoPropio"
-                placeholder="Camilo"
+                placeholder={t("nombrePublicoEjemplo")}
                 aria-invalid={!!errors.nombrePublico}
                 {...register("nombrePublico")}
               />
@@ -131,13 +131,13 @@ export function PersonasAtiendoCard({
             </Field>
 
             <Field data-invalid={!!errors.titulo}>
-              <FieldLabel htmlFor="tituloPropio">Título</FieldLabel>
-              <Input id="tituloPropio" placeholder="Propietario" {...register("titulo")} />
+              <FieldLabel htmlFor="tituloPropio">{t("titulo")}</FieldLabel>
+              <Input id="tituloPropio" placeholder={t("tituloEjemplo")} {...register("titulo")} />
               <FieldError errors={[errors.titulo]} />
             </Field>
 
             <Field data-invalid={!!errors.comisionBps}>
-              <FieldLabel htmlFor="comisionBpsPropia">Comisión (%)</FieldLabel>
+              <FieldLabel htmlFor="comisionBpsPropia">{t("comision")}</FieldLabel>
               <Input
                 id="comisionBpsPropia"
                 type="number"

@@ -3,6 +3,7 @@
 import { CalendarClock, Trash2 } from "lucide-react"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import type { ExcepcionJornada } from "@features/barberos/types/barberos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface BarberosExcepcionesListProps {
   excepciones: ExcepcionJornada[]
@@ -20,6 +21,7 @@ export function BarberosExcepcionesList({
   onEditar,
   onEliminar,
 }: BarberosExcepcionesListProps) {
+  const t = useTextos("barberos.excepcion")
   return (
     <Loadable
       loading={loading}
@@ -45,12 +47,16 @@ export function BarberosExcepcionesList({
                 className="min-w-0 flex-1 text-left"
               >
                 <p className="text-sm">{excepcion.fecha}</p>
-                <p className="truncate text-xs text-muted-foreground">{descripcion(excepcion)}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {descripcion(excepcion, t("noAtiende"))}
+                </p>
               </button>
             ) : (
               <div className="min-w-0 flex-1">
                 <p className="text-sm">{excepcion.fecha}</p>
-                <p className="truncate text-xs text-muted-foreground">{descripcion(excepcion)}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {descripcion(excepcion, t("noAtiende"))}
+                </p>
               </div>
             )}
             {gestiona && (
@@ -70,7 +76,14 @@ export function BarberosExcepcionesList({
   )
 }
 
-function descripcion(excepcion: ExcepcionJornada): string {
-  const horario = excepcion.cerrado ? "No atiende" : `${excepcion.inicio} — ${excepcion.fin}`
+/**
+ * Qué pasa ese día, en una línea.
+ *
+ * El traductor entra por parámetro porque esta función vive fuera del
+ * componente, donde no alcanza ningún hook. El motivo NO se traduce: lo escribió
+ * quien programó el día.
+ */
+function descripcion(excepcion: ExcepcionJornada, noAtiende: string): string {
+  const horario = excepcion.cerrado ? noAtiende : `${excepcion.inicio} — ${excepcion.fin}`
   return excepcion.motivo ? `${horario} · ${excepcion.motivo}` : horario
 }

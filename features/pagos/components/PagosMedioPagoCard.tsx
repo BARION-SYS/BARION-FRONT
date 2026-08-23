@@ -2,7 +2,8 @@ import { AlertTriangle, CreditCard, Trash2 } from "lucide-react"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { Button } from "@shared/components/ui/button"
 import type { TonoEstado } from "@shared/types/ui.types"
-import type { EstadoMedioPago, MedioPago, TipoMedioPago } from "@features/pagos/types/pagos.types"
+import type { EstadoMedioPago, MedioPago } from "@features/pagos/types/pagos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PagosMedioPagoCardProps {
   medio: MedioPago
@@ -11,15 +12,13 @@ interface PagosMedioPagoCardProps {
   onRetirar: (medio: MedioPago) => void
 }
 
-const ETIQUETA_TIPO: Record<TipoMedioPago, string> = {
-  tarjeta: "Tarjeta",
-  debito_automatico: "Débito automático",
-  otro: "Otro medio",
-}
-
-const PRESENTACION_ESTADO: Record<EstadoMedioPago, { etiqueta: string; tono: TonoEstado }> = {
-  activo: { etiqueta: "Vigente", tono: "exito" },
-  invalido: { etiqueta: "Rechazada", tono: "peligro" },
+/**
+ * El tono de cada estado del medio de pago. Su nombre, y el del tipo, salen del
+ * catálogo dentro del componente: aquí no alcanza ningún hook.
+ */
+const TONO_POR_ESTADO: Record<EstadoMedioPago, TonoEstado> = {
+  activo: "exito",
+  invalido: "peligro",
 }
 
 /**
@@ -36,7 +35,11 @@ export function PagosMedioPagoCard({
   cargando,
   onRetirar,
 }: PagosMedioPagoCardProps) {
-  const estado = PRESENTACION_ESTADO[medio.estado]
+  const t = useTextos("pagos.medio")
+  const estado = {
+    etiqueta: t(`estados.${medio.estado}`),
+    tono: TONO_POR_ESTADO[medio.estado],
+  }
   const vence =
     medio.expiraMes !== null && medio.expiraAnio !== null
       ? `${String(medio.expiraMes).padStart(2, "0")}/${medio.expiraAnio}`
@@ -49,13 +52,13 @@ export function PagosMedioPagoCard({
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="text-sm font-medium text-foreground">
-            {medio.marca ?? ETIQUETA_TIPO[medio.tipo]}
+            {medio.marca ?? t(`tipos.${medio.tipo}`)}
             {medio.ultimos4 && (
               <span className="text-muted-foreground"> •••• {medio.ultimos4}</span>
             )}
           </span>
           <StatusBadge etiqueta={estado.etiqueta} tono={estado.tono} />
-          {medio.predeterminado && <StatusBadge etiqueta="Se cobra con esta" tono="primario" />}
+          {medio.predeterminado && <StatusBadge etiqueta={t("predeterminado")} tono="primario" />}
         </div>
 
         {vence && <p className="text-xs text-muted-foreground">Vence {vence}</p>}

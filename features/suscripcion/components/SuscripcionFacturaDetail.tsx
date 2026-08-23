@@ -15,6 +15,7 @@ import {
 import { useFormato } from "@shared/hooks/useFormato"
 import { ESTADO_FACTURA, lineasDeFactura } from "@features/suscripcion/utils/facturas"
 import type { FacturaDetalle } from "@features/suscripcion/types/suscripcion.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface SuscripcionFacturaDetailProps {
   factura: FacturaDetalle | null
@@ -27,6 +28,7 @@ interface SuscripcionFacturaDetailProps {
  * descargarla cuando existe el documento.
  */
 export function SuscripcionFacturaDetail({ factura, cargando }: SuscripcionFacturaDetailProps) {
+  const t = useTextos("suscripcion.facturas")
   const { dineroEn, fecha, numero } = useFormato()
 
   if (cargando || !factura) return <DataSkeleton variant="form" count={4} />
@@ -43,14 +45,14 @@ export function SuscripcionFacturaDetail({ factura, cargando }: SuscripcionFactu
       </header>
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Dato etiqueta="Emitida" valor={fecha(factura.emitidaEn)} />
+        <Dato etiqueta={t("emitida")} valor={fecha(factura.emitidaEn)} />
         {/* Sin fecha se dice que no la hay: un guion, nunca la de hoy. */}
-        <Dato etiqueta="Vence" valor={factura.venceEn ? fecha(factura.venceEn) : "—"} />
-        <Dato etiqueta="Pagada" valor={factura.pagadaEn ? fecha(factura.pagadaEn) : "—"} />
+        <Dato etiqueta={t("vence")} valor={factura.venceEn ? fecha(factura.venceEn) : "—"} />
+        <Dato etiqueta={t("pagada")} valor={factura.pagadaEn ? fecha(factura.pagadaEn) : "—"} />
       </dl>
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">Desglose</h3>
+        <h3 className="text-sm font-medium">{t("desglose")}</h3>
 
         {lineas.length === 0 ? (
           <p className="text-sm text-muted-foreground">
@@ -61,9 +63,9 @@ export function SuscripcionFacturaDetail({ factura, cargando }: SuscripcionFactu
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Concepto</TableHead>
-                  <TableHead className="text-right">Cant.</TableHead>
-                  <TableHead className="text-right">Importe</TableHead>
+                  <TableHead>{t("concepto")}</TableHead>
+                  <TableHead className="text-right">{t("cantidad")}</TableHead>
+                  <TableHead className="text-right">{t("importe")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -87,7 +89,7 @@ export function SuscripcionFacturaDetail({ factura, cargando }: SuscripcionFactu
         {ilegibles > 0 && (
           <p className="text-xs text-(--advertencia)">
             {ilegibles === 1
-              ? "Una línea llegó en un formato que no se pudo mostrar."
+              ? t("lineaIlegible")
               : `${numero(ilegibles)} líneas llegaron en un formato que no se pudo mostrar.`}{" "}
             El total sigue siendo el del documento.
           </p>
@@ -95,9 +97,9 @@ export function SuscripcionFacturaDetail({ factura, cargando }: SuscripcionFactu
       </section>
 
       <dl className="flex flex-col gap-2 border-t border-border pt-4">
-        <Total etiqueta="Subtotal" valor={importe(factura.subtotalCentavos)} />
-        <Total etiqueta="Impuestos" valor={importe(factura.impuestoCentavos)} />
-        <Total etiqueta="Total" valor={importe(factura.totalCentavos)} destacado />
+        <Total etiqueta={t("subtotal")} valor={importe(factura.subtotalCentavos)} />
+        <Total etiqueta={t("impuestos")} valor={importe(factura.impuestoCentavos)} />
+        <Total etiqueta={t("total")} valor={importe(factura.totalCentavos)} destacado />
       </dl>
 
       {/* El PDF lo publica la pasarela: sin documento no hay botón, ni siquiera

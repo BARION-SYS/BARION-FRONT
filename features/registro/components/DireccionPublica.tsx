@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react"
 import { Globe, Link2 } from "lucide-react"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface DireccionPublicaProps {
   /** Dominio por el que se sirve la aplicación. Vacío en el primer render. */
@@ -35,6 +36,7 @@ interface DireccionPublicaProps {
  * lo que va impreso en el cartón y lo que dicta por teléfono.
  */
 export function DireccionPublica({ origen, slug, ajustado, resolviendo }: DireccionPublicaProps) {
+  const t = useTextos("registro.direccion")
   const dominio = origen.replace(/^https?:\/\//, "")
 
   return (
@@ -75,7 +77,7 @@ export function DireccionPublica({ origen, slug, ajustado, resolviendo }: Direcc
             >
               <Link2 className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               <DataSkeleton variant="text" count={1} className="flex-1" />
-              <span className="sr-only">Buscando una dirección libre</span>
+              <span className="sr-only">{t("buscando")}</span>
             </motion.div>
           ) : slug ? (
             <motion.div

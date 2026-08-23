@@ -15,6 +15,7 @@ import {
   type DatosSeguridad,
 } from "@features/configuracion/schemas/configuracion.schema"
 import type { ProveedorVinculado } from "@features/auth/types/auth.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface SeguridadProps {
   onSubmit: (datos: DatosSeguridad) => Promise<void>
@@ -48,6 +49,7 @@ export function Seguridad({
   onDesconectar,
   cargandoDesconexion,
 }: SeguridadProps) {
+  const t = useTextos("configuracion.seguridad")
   const {
     register,
     handleSubmit,
@@ -70,10 +72,10 @@ export function Seguridad({
   })
 
   return (
-    <SectionCard titulo="Seguridad de la cuenta">
+    <SectionCard titulo={t("titulo")}>
       <form className="space-y-4" onSubmit={enviar} noValidate>
         <Field data-invalid={!!errors.contrasenaActual}>
-          <FieldLabel htmlFor="contrasena-actual">Contraseña actual</FieldLabel>
+          <FieldLabel htmlFor="contrasena-actual">{t("actual")}</FieldLabel>
           <Input
             id="contrasena-actual"
             type="password"
@@ -86,11 +88,11 @@ export function Seguridad({
         </Field>
 
         <Field data-invalid={!!errors.contrasenaNueva}>
-          <FieldLabel htmlFor="contrasena-nueva">Nueva contraseña</FieldLabel>
+          <FieldLabel htmlFor="contrasena-nueva">{t("nueva")}</FieldLabel>
           <Input
             id="contrasena-nueva"
             type="password"
-            placeholder="Mínimo 8 caracteres"
+            placeholder={t("nuevaEjemplo")}
             autoComplete="new-password"
             aria-invalid={!!errors.contrasenaNueva}
             {...register("contrasenaNueva")}
@@ -99,11 +101,11 @@ export function Seguridad({
         </Field>
 
         <Field data-invalid={!!errors.confirmarContrasena}>
-          <FieldLabel htmlFor="confirmar-contrasena">Confirmar nueva contraseña</FieldLabel>
+          <FieldLabel htmlFor="confirmar-contrasena">{t("confirmar")}</FieldLabel>
           <Input
             id="confirmar-contrasena"
             type="password"
-            placeholder="Repite la contraseña"
+            placeholder={t("confirmarEjemplo")}
             autoComplete="new-password"
             aria-invalid={!!errors.confirmarContrasena}
             {...register("confirmarContrasena")}

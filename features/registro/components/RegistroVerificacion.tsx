@@ -6,6 +6,7 @@ import { CheckCircle2, Loader2, XCircle, type LucideIcon } from "lucide-react"
 import { rutasPublicas } from "@routes/rutasPublicas"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button } from "@shared/components/ui/button"
+import { useTextos } from "@shared/textos/useTextos"
 
 export type EstadoVerificacion = "verificando" | "listo" | "invalido"
 
@@ -38,6 +39,7 @@ interface RegistroVerificacionProps {
  * ayudaría a quien está probando enlaces ajenos.
  */
 export function RegistroVerificacion({ estado, mensaje }: RegistroVerificacionProps) {
+  const t = useTextos("registro.verificacion")
   const vista = VISTAS[estado]
 
   return (
@@ -68,10 +70,10 @@ export function RegistroVerificacion({ estado, mensaje }: RegistroVerificacionPr
 
         <div className="space-y-2">
           <h1 className="text-xl font-semibold text-balance text-foreground sm:text-2xl">
-            {vista.titulo}
+            {t(`${estado}Titulo`)}
           </h1>
           <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
-            {mensaje ?? vista.detalle}
+            {mensaje ?? t(`${estado}Detalle`)}
           </p>
         </div>
 
@@ -83,7 +85,7 @@ export function RegistroVerificacion({ estado, mensaje }: RegistroVerificacionPr
               variant={estado === "listo" ? "default" : "outline"}
               render={<Link href={rutasPublicas.entrar} />}
             >
-              {estado === "listo" ? "Entrar a mi panel" : "Ir a entrar"}
+              {estado === "listo" ? t("entrarAlPanel") : t("irAEntrar")}
             </Button>
 
             {/* Lo que de verdad acaba de cambiar, dicho donde se entiende: la
@@ -102,31 +104,21 @@ export function RegistroVerificacion({ estado, mensaje }: RegistroVerificacionPr
 }
 
 interface VistaVerificacion {
-  titulo: string
-  detalle: string
   icono: LucideIcon
   /** Token de color, no un color: el tema decide el valor. */
   tono: "--info" | "--exito" | "--destructive"
 }
 
+/**
+ * Cómo se PINTA cada estado de la verificación.
+ *
+ * Solo el ícono y el tono: el texto sale del catálogo dentro del componente,
+ * porque a nivel de módulo no alcanza ningún hook. Las claves de los tres
+ * mensajes se construyen desde el propio estado (`{estado}Titulo`), que es
+ * seguro porque `EstadoVerificacion` es una unión cerrada.
+ */
 const VISTAS: Record<EstadoVerificacion, VistaVerificacion> = {
-  verificando: {
-    titulo: "Confirmando tu correo",
-    detalle: "Un segundo. No cierres esta pestaña.",
-    icono: Loader2,
-    tono: "--info",
-  },
-  listo: {
-    titulo: "Listo, tu barbería ya es visible",
-    detalle: "Tus clientes pueden encontrarte y reservar desde tu página pública.",
-    icono: CheckCircle2,
-    tono: "--exito",
-  },
-  invalido: {
-    titulo: "Este enlace ya no sirve",
-    detalle:
-      "Puede que haya caducado o que ya lo hayas usado. Si ya confirmaste antes, no hay nada más que hacer: entra a tu panel.",
-    icono: XCircle,
-    tono: "--destructive",
-  },
+  verificando: { icono: Loader2, tono: "--info" },
+  listo: { icono: CheckCircle2, tono: "--exito" },
+  invalido: { icono: XCircle, tono: "--destructive" },
 }

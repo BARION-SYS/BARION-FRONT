@@ -20,6 +20,7 @@ import { inicialesDe } from "@shared/utils/iniciales"
 import type { Persona } from "@features/personas/types/personas.types"
 import type { Rol } from "@features/roles/types/roles.types"
 import type { TonoEstado } from "@shared/types/ui.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PersonasListProps {
   personas: Persona[]
@@ -64,6 +65,8 @@ export function PersonasList({
   onRevocar,
   onAlternarAgenda,
 }: PersonasListProps) {
+  const t = useTextos("personas.lista")
+  const tEstados = useTextos("personas.estados")
   // El rol viaja como código; el nombre se pinta desde el catálogo de roles.
   const nombreDeRol = (codigo: string) => roles.find((r) => r.codigo === codigo)?.nombre ?? codigo
 
@@ -80,8 +83,8 @@ export function PersonasList({
     >
       <ul className="flex flex-col gap-2">
         {personas.map((persona) => {
-          const acceso = estadoDeAcceso(persona, nombreDeRol)
-          const agenda = estadoDeAgenda(persona)
+          const acceso = estadoDeAcceso(persona, nombreDeRol, tEstados)
+          const agenda = estadoDeAgenda(persona, tEstados)
           const puedeAlgo =
             (gestionaEquipo && persona.acceso !== null) ||
             (gestionaPermisos && persona.acceso !== null) ||
@@ -160,7 +163,7 @@ export function PersonasList({
 
                     {gestionaEquipo && persona.acceso && (
                       <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>Cambiar rol</DropdownMenuSubTrigger>
+                        <DropdownMenuSubTrigger>{t("cambiarRol")}</DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
                           {roles
                             .filter((rol) => rol.codigo !== persona.acceso?.rol)
@@ -191,7 +194,7 @@ export function PersonasList({
                     */}
                     {gestionaAgenda && persona.agenda && puedeMoverAgenda(persona) && (
                       <DropdownMenuItem onClick={() => onAlternarAgenda(persona)}>
-                        {persona.agenda.activo ? "Retirar de la agenda" : "Devolver a la agenda"}
+                        {persona.agenda.activo ? t("retirarDeLaAgenda") : t("devolverALaAgenda")}
                       </DropdownMenuItem>
                     )}
 
@@ -209,9 +212,7 @@ export function PersonasList({
                           que no se sostiene.
                         */}
                         <DropdownMenuItem onClick={() => onRevocar(persona)}>
-                          {persona.agenda?.activo
-                            ? "Ya no trabaja aquí (quita acceso y agenda)"
-                            : "Quitar acceso"}
+                          {persona.agenda?.activo ? t("yaNoTrabajaAqui") : t("quitarAcceso")}
                         </DropdownMenuItem>
                       </>
                     )}
@@ -246,19 +247,28 @@ function puedeMoverAgenda(persona: Persona): boolean {
  */
 function estadoDeAcceso(
   persona: Persona,
-  nombreDeRol: (codigo: string) => string
+  nombreDeRol: (codigo: string) => string,
+  textoEstado: (clave: ClaveEstado) => string
 ): { etiqueta: string; tono: TonoEstado } | null {
   if (!persona.acceso) return null
+  // El nombre del rol viene de la api y NO se traduce; lo de al lado sí. Por eso
+  // el traductor entra por parámetro igual que `nombreDeRol`: la función resuelve
+  // texto y no puede llamar a un hook desde fuera del componente.
   return persona.acceso.estado === "activa"
     ? { etiqueta: nombreDeRol(persona.acceso.rol), tono: "info" }
-    : { etiqueta: "Ya no trabaja aquí", tono: "neutro" }
+    : { etiqueta: textoEstado("yaNoTrabaja"), tono: "neutro" }
 }
 
 /** Y si atiende. El de vacaciones sigue siendo alguien que atiende. */
-function estadoDeAgenda(persona: Persona): { etiqueta: string; tono: TonoEstado } | null {
+function estadoDeAgenda(
+  persona: Persona,
+  textoEstado: (clave: ClaveEstado) => string
+): { etiqueta: string; tono: TonoEstado } | null {
   if (!persona.agenda) return null
-  if (!persona.agenda.activo) return { etiqueta: "Retirado", tono: "neutro" }
+  if (!persona.agenda.activo) return { etiqueta: textoEstado("retirado"), tono: "neutro" }
   return persona.agenda.enVacaciones
-    ? { etiqueta: "Ausente hoy", tono: "advertencia" }
-    : { etiqueta: "Sí", tono: "exito" }
+    ? { etiqueta: textoEstado("ausenteHoy"), tono: "advertencia" }
+    : { etiqueta: textoEstado("atiende"), tono: "exito" }
 }
+
+type ClaveEstado = "yaNoTrabaja" | "retirado" | "ausenteHoy" | "atiende"

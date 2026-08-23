@@ -15,6 +15,7 @@ import {
 } from "@shared/components/ui/select"
 import { esquemaAusencia, type DatosAusencia } from "@features/barberos/schemas/barberos.schema"
 import type { OpcionCatalogo } from "@features/catalogos/types/catalogos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface BarberosAusenciaFormProps {
   /** `GET /catalogos` — `tiposAusencia`. */
@@ -40,6 +41,7 @@ export function BarberosAusenciaForm({
   cargando,
   onSubmit,
 }: BarberosAusenciaFormProps) {
+  const t = useTextos("barberos.ausencia")
   const {
     register,
     control,
@@ -68,13 +70,13 @@ export function BarberosAusenciaForm({
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field data-invalid={!!errors.iniciaEn}>
-          <FieldLabel htmlFor="iniciaEn">Desde</FieldLabel>
+          <FieldLabel htmlFor="iniciaEn">{t("desde")}</FieldLabel>
           <Input id="iniciaEn" type="datetime-local" {...register("iniciaEn")} />
           <FieldError errors={[errors.iniciaEn]} />
         </Field>
 
         <Field data-invalid={!!errors.terminaEn}>
-          <FieldLabel htmlFor="terminaEn">Hasta</FieldLabel>
+          <FieldLabel htmlFor="terminaEn">{t("hasta")}</FieldLabel>
           <Input id="terminaEn" type="datetime-local" {...register("terminaEn")} />
           <FieldError errors={[errors.terminaEn]} />
         </Field>
@@ -85,7 +87,7 @@ export function BarberosAusenciaForm({
         name="tipo"
         render={({ field }) => (
           <Field data-invalid={!!errors.tipo}>
-            <FieldLabel htmlFor="tipo">Tipo</FieldLabel>
+            <FieldLabel htmlFor="tipo">{t("tipo")}</FieldLabel>
             <Select value={field.value} onValueChange={field.onChange}>
               <SelectTrigger id="tipo" className="w-full">
                 <SelectValue />
@@ -104,8 +106,8 @@ export function BarberosAusenciaForm({
       />
 
       <Field data-invalid={!!errors.motivo}>
-        <FieldLabel htmlFor="motivo">Motivo</FieldLabel>
-        <Input id="motivo" placeholder="Vacaciones de fin de año" {...register("motivo")} />
+        <FieldLabel htmlFor="motivo">{t("motivo")}</FieldLabel>
+        <Input id="motivo" placeholder={t("motivoEjemplo")} {...register("motivo")} />
         <FieldError errors={[errors.motivo]} />
       </Field>
 

@@ -3,6 +3,7 @@ import { Check, ChevronRight } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
 import type { PasoInicial } from "@features/primeros-pasos/types/primeros-pasos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PrimerosPasosCardProps {
   paso: PasoInicial
@@ -17,6 +18,7 @@ interface PrimerosPasosCardProps {
  * que resuelven estos pasos son del mismo panel.
  */
 export function PrimerosPasosCard({ paso, hecho }: PrimerosPasosCardProps) {
+  const t = useTextos("primerosPasos")
   const Icono = hecho ? Check : paso.icono
 
   return (
@@ -48,7 +50,7 @@ export function PrimerosPasosCard({ paso, hecho }: PrimerosPasosCardProps) {
       </div>
 
       {hecho ? (
-        <span className="sr-only">Hecho</span>
+        <span className="sr-only">{t("hecho")}</span>
       ) : (
         <Button variant="outline" render={<Link href={paso.href} />}>
           {paso.accion}

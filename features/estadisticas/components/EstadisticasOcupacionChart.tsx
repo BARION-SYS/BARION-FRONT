@@ -15,6 +15,7 @@ import { ChartTooltip } from "@shared/components/charts/ChartTooltip"
 import { SinDatos } from "@shared/components/feedback/SinDatos"
 import type { PuntoGrafica } from "@features/dashboard/utils/serie"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface EstadisticasOcupacionChartProps {
   datos: PuntoGrafica[]
@@ -32,6 +33,7 @@ export function EstadisticasOcupacionChart({
   subtitulo,
   disponible,
 }: EstadisticasOcupacionChartProps) {
+  const t = useTextos("estadisticas.ocupacion")
   const { porcentaje } = useFormato()
 
   // Un período sin jornada declarada no tiene ocupación: se omite en vez de
@@ -39,13 +41,9 @@ export function EstadisticasOcupacionChart({
   const puntos = datos.filter((punto) => punto.ocupacion !== null)
 
   return (
-    <SectionCard titulo="Ocupación" subtitulo={subtitulo} className="h-full">
+    <SectionCard titulo={t("titulo")} subtitulo={subtitulo} className="h-full">
       {!disponible || puntos.length === 0 ? (
-        <SinDatos
-          titulo="Todavía no hay ocupación calculada"
-          detalle="Necesita jornadas declaradas y el cálculo nocturno."
-          icono={Gauge}
-        />
+        <SinDatos titulo={t("sinDatos")} detalle={t("sinDatosDetalle")} icono={Gauge} />
       ) : (
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={puntos} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>

@@ -15,6 +15,7 @@ import {
 import { Input } from "@shared/components/ui/input"
 import { esquemaTarjeta, type DatosTarjeta } from "@features/pagos/schemas/pagos.schema"
 import type { AceptacionesPasarela } from "@features/pagos/types/pagos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PagosTarjetaFormProps {
   /** Sin las dos aceptaciones no se monta este formulario: las exige el proveedor. */
@@ -32,6 +33,7 @@ interface PagosTarjetaFormProps {
  * mandar la tarjeta otra vez, no reintentar con lo mismo.
  */
 export function PagosTarjetaForm({ aceptaciones, cargando, onSubmit }: PagosTarjetaFormProps) {
+  const t = useTextos("pagos.tarjeta")
   const {
     register,
     control,
@@ -57,7 +59,7 @@ export function PagosTarjetaForm({ aceptaciones, cargando, onSubmit }: PagosTarj
       noValidate
     >
       <Field data-invalid={!!errors.numero}>
-        <FieldLabel htmlFor="numero">Número de la tarjeta</FieldLabel>
+        <FieldLabel htmlFor="numero">{t("numero")}</FieldLabel>
         <Input
           id="numero"
           inputMode="numeric"
@@ -70,11 +72,11 @@ export function PagosTarjetaForm({ aceptaciones, cargando, onSubmit }: PagosTarj
       </Field>
 
       <Field data-invalid={!!errors.titular}>
-        <FieldLabel htmlFor="titular">Nombre en la tarjeta</FieldLabel>
+        <FieldLabel htmlFor="titular">{t("titular")}</FieldLabel>
         <Input
           id="titular"
           autoComplete="cc-name"
-          placeholder="José Pérez"
+          placeholder={t("titularEjemplo")}
           aria-invalid={!!errors.titular}
           {...register("titular")}
         />
@@ -111,7 +113,7 @@ export function PagosTarjetaForm({ aceptaciones, cargando, onSubmit }: PagosTarj
         </Field>
 
         <Field data-invalid={!!errors.cvc}>
-          <FieldLabel htmlFor="cvc">Código</FieldLabel>
+          <FieldLabel htmlFor="cvc">{t("codigo")}</FieldLabel>
           <Input
             id="cvc"
             inputMode="numeric"

@@ -7,6 +7,7 @@ import QRCodeStyling from "qr-code-styling"
 import { Card } from "@shared/components/ui/card"
 import { Button } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface QrCodigoCardProps {
   nombreBarberia: string
@@ -45,6 +46,7 @@ function colorMarcaEscaneable(): string {
 }
 
 export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodigoCardProps) {
+  const t = useTextos("qr.codigo")
   const contenedorRef = useRef<HTMLDivElement>(null)
   const qrRef = useRef<QRCodeStyling | null>(null)
   const { resolvedTheme } = useTheme()
@@ -76,7 +78,7 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodig
   return (
     <Card className="w-full items-center self-start p-6">
       <div className="text-center">
-        <p className="text-sm font-semibold text-foreground">Código QR de la barbería</p>
+        <p className="text-sm font-semibold text-foreground">{t("titulo")}</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           Muéstralo en tu local o compártelo digitalmente
         </p>
@@ -105,7 +107,7 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodig
           className="h-auto min-h-11 cursor-pointer flex-col gap-1.5 py-3 text-muted-foreground hover:text-foreground motion-reduce:transition-none"
         >
           <Download aria-hidden />
-          <span className="text-xs">Descargar</span>
+          <span className="text-xs">{t("descargar")}</span>
         </Button>
         <Button
           variant="secondary"
@@ -113,7 +115,7 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodig
           className="h-auto min-h-11 cursor-pointer flex-col gap-1.5 py-3 text-muted-foreground hover:text-foreground motion-reduce:transition-none"
         >
           <Share2 aria-hidden />
-          <span className="text-xs">Compartir</span>
+          <span className="text-xs">{t("compartir")}</span>
         </Button>
         <Button
           variant="secondary"
@@ -126,7 +128,7 @@ export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodig
           )}
         >
           {copiado ? <Check aria-hidden /> : <Copy aria-hidden />}
-          <span className="text-xs">{copiado ? "Copiado" : "Copiar"}</span>
+          <span className="text-xs">{copiado ? t("copiado") : t("copiar")}</span>
         </Button>
       </div>
     </Card>

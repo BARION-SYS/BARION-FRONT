@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react"
 import { Input } from "@shared/components/ui/input"
+import { useTextos } from "@shared/textos/useTextos"
 import {
   Select,
   SelectContent,
@@ -33,6 +34,7 @@ export function ServiciosToolbar({
   onCategoria,
   onSoloActivos,
 }: ServiciosToolbarProps) {
+  const t = useTextos("servicios.toolbar")
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <div className="relative flex-1">
@@ -43,8 +45,8 @@ export function ServiciosToolbar({
         <Input
           value={buscar}
           onChange={(e) => onBuscar(e.target.value)}
-          placeholder="Buscar servicio"
-          aria-label="Buscar servicio"
+          placeholder={t("buscar")}
+          aria-label={t("buscar")}
           className="pl-9"
         />
       </div>
@@ -53,11 +55,11 @@ export function ServiciosToolbar({
         value={categoria || TODAS}
         onValueChange={(valor) => onCategoria(!valor || valor === TODAS ? "" : valor)}
       >
-        <SelectTrigger className="w-full sm:w-48" aria-label="Categoría">
-          <SelectValue placeholder="Categoría" />
+        <SelectTrigger className="w-full sm:w-48" aria-label={t("categoria")}>
+          <SelectValue placeholder={t("categoria")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={TODAS}>Todas las categorías</SelectItem>
+          <SelectItem value={TODAS}>{t("todasLasCategorias")}</SelectItem>
           {categorias.map((valor) => (
             <SelectItem key={valor} value={valor}>
               {valor}
@@ -70,12 +72,12 @@ export function ServiciosToolbar({
         value={soloActivos ? ESTADOS.activos : ESTADOS.todos}
         onValueChange={(valor) => onSoloActivos(valor === ESTADOS.activos)}
       >
-        <SelectTrigger className="w-full sm:w-44" aria-label="Estado">
+        <SelectTrigger className="w-full sm:w-44" aria-label={t("estado")}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ESTADOS.todos}>Todo el catálogo</SelectItem>
-          <SelectItem value={ESTADOS.activos}>Solo en carta</SelectItem>
+          <SelectItem value={ESTADOS.todos}>{t("todoElCatalogo")}</SelectItem>
+          <SelectItem value={ESTADOS.activos}>{t("soloEnCarta")}</SelectItem>
         </SelectContent>
       </Select>
     </div>

@@ -4,6 +4,7 @@ import { CalendarClock, Phone } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import { useFormato } from "@shared/hooks/useFormato"
 import type { CitaComprometida } from "@features/barberos/types/barberos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PersonasRetiroDetailProps {
   /** Cómo se llama quien salió de la agenda: es a quien se refieren las citas. */
@@ -36,6 +37,7 @@ export function PersonasRetiroDetail({
   citasPendientes,
   onCerrar,
 }: PersonasRetiroDetailProps) {
+  const t = useTextos("personas.retiro")
   const { fechaHora } = useFormato()
   const hayMas = total > citasPendientes.length
 
@@ -53,12 +55,9 @@ export function PersonasRetiroDetail({
         <>
           <p className="text-sm text-muted-foreground">
             <strong className="font-medium text-foreground">
-              {total === 1
-                ? "Queda 1 cita suya por delante."
-                : `Quedan ${total} citas suyas por delante.`}
+              {t("citasPendientes", { total })}
             </strong>{" "}
-            No se han cancelado: son clientes ya citados a los que hay que avisar uno por uno.
-            Llámales y reasígnalas desde Citas.
+            {t("aviso")}
           </p>
 
           <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto">

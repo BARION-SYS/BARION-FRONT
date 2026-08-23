@@ -6,6 +6,7 @@ import { env } from "@config/env"
 import { LogoGoogle } from "@shared/components/brand/LogoGoogle"
 import { buttonVariants } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
+import { useTextos } from "@shared/textos/useTextos"
 
 /**
  * Lo que se enseña cuando el pase de Google muere con el formulario ya montado.
@@ -25,6 +26,7 @@ import { cn } from "@shared/utils/cn"
  * peor.
  */
 export function RegistroPaseCaducado() {
+  const t = useTextos("registro")
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -41,7 +43,7 @@ export function RegistroPaseCaducado() {
       </span>
 
       <div className="space-y-2">
-        <h2 className="text-lg font-semibold tracking-tight">Tu verificación con Google caducó</h2>
+        <h2 className="text-lg font-semibold tracking-tight">{t("paseCaducado")}</h2>
         <p className="mx-auto max-w-[38ch] text-sm leading-relaxed text-muted-foreground">
           Pasó demasiado tiempo desde que volviste de Google. No se creó ninguna barbería y no se
           cobró nada: entra otra vez con tu cuenta y sigues donde estabas.

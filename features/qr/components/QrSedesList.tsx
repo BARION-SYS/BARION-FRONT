@@ -2,6 +2,7 @@ import { SectionCard } from "@shared/components/cards/SectionCard"
 import { Badge } from "@shared/components/ui/badge"
 import { useFormato } from "@shared/hooks/useFormato"
 import type { SedeQr } from "@features/qr/types/qr.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface QrSedesListProps {
   porSede: SedeQr[]
@@ -19,10 +20,11 @@ interface QrSedesListProps {
  * noticias.
  */
 export function QrSedesList({ porSede, sedeActualId }: QrSedesListProps) {
+  const t = useTextos("qr.porSede")
   const { numero } = useFormato()
 
   return (
-    <SectionCard titulo="Por sede" subtitulo="Citas atribuidas al cartón de cada local">
+    <SectionCard titulo={t("titulo")} subtitulo={t("subtitulo")}>
       <ul className="space-y-1.5">
         {porSede.map((fila) => (
           <li

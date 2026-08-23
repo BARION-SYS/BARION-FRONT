@@ -2,6 +2,7 @@ import { Label } from "@shared/components/ui/label"
 import { Switch } from "@shared/components/ui/switch"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { cn } from "@shared/utils/cn"
+import { useTextos } from "@shared/textos/useTextos"
 import type {
   CanalNotificacion,
   CanalesNotificacion,
@@ -15,11 +16,9 @@ interface Props {
 }
 
 export function Notificaciones({ canales, activos, alAlternar }: Props) {
+  const t = useTextos("configuracion.notificaciones")
   return (
-    <SectionCard
-      titulo="Canales de notificación"
-      subtitulo="Selecciona cómo se notificará a tus clientes sobre sus citas"
-    >
+    <SectionCard titulo={t("titulo")} subtitulo={t("subtitulo")}>
       <ul className="space-y-3">
         {canales.map((canal) => {
           const activo = activos[canal.canal]

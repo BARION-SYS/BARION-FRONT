@@ -9,6 +9,7 @@ import { inicialesDe } from "@shared/utils/iniciales"
 import type { ResumenNomina } from "@features/nomina/types/nomina.types"
 import { comisionEfectiva } from "@features/nomina/utils/periodo"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface NominaBarberoCardProps {
   fila: ResumenNomina
@@ -24,9 +25,10 @@ export function NominaBarberoCard({
   seleccionado,
   onSeleccionar,
 }: NominaBarberoCardProps) {
+  const t = useTextos("nomina")
   const { dinero, numero, porcentaje } = useFormato()
 
-  const nombre = fila.barbero?.nombrePublico ?? "Barbero retirado"
+  const nombre = fila.barbero?.nombrePublico ?? t("retirado")
   const color = tokenDeColor(fila.barbero?.indiceColor ?? 0)
   const comision = comisionEfectiva(fila.produccionCentavos, fila.comisionCentavos)
 

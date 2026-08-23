@@ -8,6 +8,7 @@ import { useFormato } from "@shared/hooks/useFormato"
 import { inicialesDe } from "@shared/utils/iniciales"
 import { etiquetaAccionQr } from "@features/qr/constants/qr"
 import type { ActividadQr } from "@features/qr/types/qr.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 const coloresAvatar = [
   "var(--chart-1)",
@@ -32,11 +33,12 @@ interface QrActividadListProps {
  * pantalla rota.
  */
 export function QrActividadList({ actividad, loading }: QrActividadListProps) {
+  const t = useTextos("qr.actividad")
   const { relativo } = useFormato()
 
   return (
     <SectionCard
-      titulo="Llegaron por el código"
+      titulo={t("titulo")}
       subtitulo={
         actividad.length === 1 ? "1 cliente en el período" : `${actividad.length} en el período`
       }
@@ -48,8 +50,8 @@ export function QrActividadList({ actividad, loading }: QrActividadListProps) {
         isEmpty={actividad.length === 0}
         emptyState={
           <SinDatos
-            titulo="Nadie ha llegado por el código todavía"
-            detalle="Aquí aparecerá quien reserve o se registre después de escanearlo."
+            titulo={t("sinDatos")}
+            detalle={t("sinDatosDetalle")}
             icono={QrCode}
             alto={140}
           />

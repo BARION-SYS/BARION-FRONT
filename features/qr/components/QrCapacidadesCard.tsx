@@ -1,12 +1,14 @@
 import { SectionCard } from "@shared/components/cards/SectionCard"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface QrCapacidadesCardProps {
   capacidades: readonly string[]
 }
 
 export function QrCapacidadesCard({ capacidades }: QrCapacidadesCardProps) {
+  const t = useTextos("qr")
   return (
-    <SectionCard titulo="Al escanear el QR el cliente puede">
+    <SectionCard titulo={t("capacidades")}>
       <ol className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">
         {capacidades.map((capacidad, i) => (
           <li key={capacidad} className="flex items-center gap-2.5 text-xs text-muted-foreground">

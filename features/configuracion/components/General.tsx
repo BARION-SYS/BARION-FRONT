@@ -19,6 +19,7 @@ import {
   type DatosGeneral,
 } from "@features/configuracion/schemas/configuracion.schema"
 import type { Barberia } from "@features/configuracion/types/configuracion.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface GeneralProps {
   barberia: Barberia
@@ -37,6 +38,7 @@ interface GeneralProps {
  * cosas fuera del sistema y no es un campo de formulario.
  */
 export function General({ barberia, soloLectura, cargando, onSubmit }: GeneralProps) {
+  const t = useTextos("configuracion.general")
   const {
     register,
     control,
@@ -52,13 +54,10 @@ export function General({ barberia, soloLectura, cargando, onSubmit }: GeneralPr
   })
 
   return (
-    <SectionCard
-      titulo="Información de la barbería"
-      subtitulo={`Su dirección pública es /b/${barberia.slug}`}
-    >
+    <SectionCard titulo={t("titulo")} subtitulo={`Su dirección pública es /b/${barberia.slug}`}>
       <form className="space-y-4" onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
         <Field data-invalid={!!errors.nombreComercial}>
-          <FieldLabel htmlFor="nombreComercial">Nombre del negocio</FieldLabel>
+          <FieldLabel htmlFor="nombreComercial">{t("nombre")}</FieldLabel>
           <Input
             id="nombreComercial"
             type="text"
@@ -76,14 +75,14 @@ export function General({ barberia, soloLectura, cargando, onSubmit }: GeneralPr
             name="modoImpuesto"
             render={({ field }) => (
               <Field data-invalid={!!errors.modoImpuesto}>
-                <FieldLabel htmlFor="modoImpuesto">Impuesto</FieldLabel>
+                <FieldLabel htmlFor="modoImpuesto">{t("impuesto")}</FieldLabel>
                 <Select value={field.value} onValueChange={field.onChange} disabled={soloLectura}>
                   <SelectTrigger id="modoImpuesto" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="incluido">Incluido en el precio</SelectItem>
-                    <SelectItem value="agregado">Se agrega al cobrar</SelectItem>
+                    <SelectItem value="incluido">{t("incluido")}</SelectItem>
+                    <SelectItem value="agregado">{t("agregado")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
@@ -95,7 +94,7 @@ export function General({ barberia, soloLectura, cargando, onSubmit }: GeneralPr
           />
 
           <Field data-invalid={!!errors.tasaImpuestoBps}>
-            <FieldLabel htmlFor="tasaImpuestoBps">Tasa</FieldLabel>
+            <FieldLabel htmlFor="tasaImpuestoBps">{t("tasa")}</FieldLabel>
             <Input
               id="tasaImpuestoBps"
               type="number"

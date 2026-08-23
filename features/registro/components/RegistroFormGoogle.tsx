@@ -24,6 +24,7 @@ import {
   FieldSet,
 } from "@shared/components/ui/field"
 import { Input } from "@shared/components/ui/input"
+import { useTextos } from "@shared/textos/useTextos"
 import {
   Select,
   SelectContent,
@@ -84,6 +85,7 @@ export function RegistroFormGoogle({
   cargando,
   error,
 }: RegistroFormGoogleProps) {
+  const t = useTextos("registro.form")
   const {
     register,
     handleSubmit,
@@ -132,7 +134,7 @@ export function RegistroFormGoogle({
           <LogoGoogle className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground">Continuarás como</p>
+          <p className="text-xs text-muted-foreground">{t("continuaras")}</p>
           <p className="truncate text-sm font-medium text-foreground">{preregistro.email}</p>
         </div>
         {/* Sin ícono a secas: el estado nunca se comunica solo con color */}
@@ -147,14 +149,14 @@ export function RegistroFormGoogle({
           para las dos cosas hay que elegir: o el título queda pegado a su primer
           campo, o los campos quedan tan sueltos que dejan de leerse como grupo */}
       <FieldSet className="gap-2">
-        <FieldLegend variant="label">Tu barbería</FieldLegend>
+        <FieldLegend variant="label">{t("tuBarberia")}</FieldLegend>
 
         <div className="mt-2 space-y-6">
           <Field data-invalid={!!errors.nombreComercial}>
-            <FieldLabel htmlFor="nombreComercial">Nombre de la barbería</FieldLabel>
+            <FieldLabel htmlFor="nombreComercial">{t("nombreComercial")}</FieldLabel>
             <Input
               id="nombreComercial"
-              placeholder="Barbería El Corte"
+              placeholder={t("nombreEjemplo")}
               autoComplete="organization"
               className="h-11"
               aria-invalid={!!errors.nombreComercial}
@@ -182,7 +184,7 @@ export function RegistroFormGoogle({
           )}
 
           <Field data-invalid={!!errors.codigoPais}>
-            <FieldLabel htmlFor="codigoPais">País donde opera tu barbería</FieldLabel>
+            <FieldLabel htmlFor="codigoPais">{t("pais")}</FieldLabel>
             <Controller
               control={control}
               name="codigoPais"
@@ -221,7 +223,7 @@ export function RegistroFormGoogle({
       <FieldSeparator />
 
       <FieldSet className="gap-2">
-        <FieldLegend variant="label">Tus datos</FieldLegend>
+        <FieldLegend variant="label">{t("tusDatos")}</FieldLegend>
         <FieldDescription>
           Sin contraseña y sin correo que abrir: tu escaparate queda publicado al terminar. Podrás
           añadir una contraseña desde tu panel cuando quieras.
@@ -234,10 +236,10 @@ export function RegistroFormGoogle({
             en cuanto uno de ellos no es un `input` a secas */}
         <div className="mt-2 space-y-6">
           <Field data-invalid={!!errors.propietarioNombre}>
-            <FieldLabel htmlFor="propietarioNombre">Tu nombre</FieldLabel>
+            <FieldLabel htmlFor="propietarioNombre">{t("tuNombre")}</FieldLabel>
             <Input
               id="propietarioNombre"
-              placeholder="Julián Restrepo"
+              placeholder={t("nombrePropietarioEjemplo")}
               autoComplete="name"
               className="h-11"
               aria-invalid={!!errors.propietarioNombre}
@@ -249,7 +251,7 @@ export function RegistroFormGoogle({
           {/* Google no entrega teléfono, y el negocio lo necesita igual: a una
               barbería hay que poder llamarla */}
           <Field data-invalid={!!errors.propietarioTelefonoE164}>
-            <FieldLabel htmlFor="propietarioTelefonoE164">Teléfono</FieldLabel>
+            <FieldLabel htmlFor="propietarioTelefonoE164">{t("telefono")}</FieldLabel>
             {/* El indicativo se elige de una lista y el número se escribe a
                 secas: pedir el E.164 entero llevaba al error «formato
                 E.164 (+573001112233)», que no dice nada a quien acaba de
@@ -269,7 +271,7 @@ export function RegistroFormGoogle({
                 />
               )}
             />
-            <FieldDescription>Para poder llamarte si hace falta.</FieldDescription>
+            <FieldDescription>{t("telefonoAyuda")}</FieldDescription>
             <FieldError errors={[errors.propietarioTelefonoE164]} />
           </Field>
         </div>

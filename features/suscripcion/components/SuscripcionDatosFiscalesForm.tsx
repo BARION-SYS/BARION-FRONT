@@ -12,6 +12,7 @@ import {
 } from "@shared/components/ui/field"
 import { Checkbox } from "@shared/components/ui/checkbox"
 import { Input } from "@shared/components/ui/input"
+import { useTextos } from "@shared/textos/useTextos"
 import {
   Select,
   SelectContent,
@@ -25,7 +26,6 @@ import {
 } from "@features/suscripcion/schemas/suscripcion.schema"
 import {
   ETIQUETA_TIPO_DOCUMENTO,
-  ETIQUETA_TIPO_PERSONA,
   RESPONSABILIDADES_DIAN,
   type ReglasFiscales,
 } from "@features/suscripcion/utils/fiscal"
@@ -64,6 +64,8 @@ export function SuscripcionDatosFiscalesForm({
   reglas,
   onSubmit,
 }: SuscripcionDatosFiscalesFormProps) {
+  const t = useTextos("suscripcion.form")
+  const tPersona = useTextos("suscripcion.tipoPersona")
   const {
     register,
     control,
@@ -109,7 +111,7 @@ export function SuscripcionDatosFiscalesForm({
       className="flex flex-col gap-8"
     >
       <FieldSet>
-        <FieldLegend variant="label">A nombre de quién</FieldLegend>
+        <FieldLegend variant="label">{t("aNombreDe")}</FieldLegend>
         <FieldDescription>
           Si eres una empresa, el nombre legal —no el comercial—: una factura a la marca es una
           factura a alguien que no existe ante la autoridad.
@@ -121,7 +123,7 @@ export function SuscripcionDatosFiscalesForm({
             name="tipoPersona"
             render={({ field }) => (
               <Field data-invalid={!!errors.tipoPersona}>
-                <FieldLabel htmlFor="tipoPersona">Tipo</FieldLabel>
+                <FieldLabel htmlFor="tipoPersona">{t("tipo")}</FieldLabel>
                 <Select
                   value={field.value}
                   onValueChange={(valor) => {
@@ -141,7 +143,7 @@ export function SuscripcionDatosFiscalesForm({
                   <SelectContent>
                     {(["juridica", "natural"] as TipoPersonaFiscal[]).map((tipo) => (
                       <SelectItem key={tipo} value={tipo}>
-                        {ETIQUETA_TIPO_PERSONA[tipo]}
+                        {tPersona(tipo)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -156,7 +158,7 @@ export function SuscripcionDatosFiscalesForm({
             name="tipoDocumento"
             render={({ field }) => (
               <Field data-invalid={!!errors.tipoDocumento}>
-                <FieldLabel htmlFor="tipoDocumento">Documento</FieldLabel>
+                <FieldLabel htmlFor="tipoDocumento">{t("documento")}</FieldLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger id="tipoDocumento" className="w-full">
                     <SelectValue />
@@ -176,7 +178,7 @@ export function SuscripcionDatosFiscalesForm({
         </div>
 
         <Field data-invalid={!!errors.numeroDocumento}>
-          <FieldLabel htmlFor="numeroDocumento">Número</FieldLabel>
+          <FieldLabel htmlFor="numeroDocumento">{t("numero")}</FieldLabel>
           <Input
             id="numeroDocumento"
             placeholder={ejemplo}
@@ -193,11 +195,11 @@ export function SuscripcionDatosFiscalesForm({
 
         <Field data-invalid={!!errors.razonSocial}>
           <FieldLabel htmlFor="razonSocial">
-            {tipoPersona === "juridica" ? "Razón social" : "Nombre completo"}
+            {tipoPersona === "juridica" ? t("razonSocial") : t("nombreCompleto")}
           </FieldLabel>
           <Input
             id="razonSocial"
-            placeholder={esEmpresa ? "Inversiones El Corte S.A.S." : "Carlos Ramírez"}
+            placeholder={esEmpresa ? t("razonSocialEjemplo") : t("nombreEjemplo")}
             aria-invalid={!!errors.razonSocial}
             {...register("razonSocial")}
           />
@@ -212,16 +214,16 @@ export function SuscripcionDatosFiscalesForm({
       */}
       {esEmpresa && (
         <FieldSet>
-          <FieldLegend variant="label">Domicilio fiscal</FieldLegend>
+          <FieldLegend variant="label">{t("domicilio")}</FieldLegend>
           <FieldDescription>
             No tiene que ser el de ninguna sede: una cadena factura desde su oficina.
           </FieldDescription>
 
           <Field data-invalid={!!errors.direccionFiscal?.calle}>
-            <FieldLabel htmlFor="calle">Dirección</FieldLabel>
+            <FieldLabel htmlFor="calle">{t("direccion")}</FieldLabel>
             <Input
               id="calle"
-              placeholder="Calle 10 #43-12, oficina 302"
+              placeholder={t("direccionEjemplo")}
               aria-invalid={!!errors.direccionFiscal?.calle}
               {...register("direccionFiscal.calle")}
             />
@@ -230,7 +232,7 @@ export function SuscripcionDatosFiscalesForm({
 
           <div className="grid gap-5 sm:grid-cols-2">
             <Field data-invalid={!!errors.direccionFiscal?.ciudad}>
-              <FieldLabel htmlFor="ciudad">Ciudad</FieldLabel>
+              <FieldLabel htmlFor="ciudad">{t("ciudad")}</FieldLabel>
               <Input
                 id="ciudad"
                 aria-invalid={!!errors.direccionFiscal?.ciudad}
@@ -240,19 +242,19 @@ export function SuscripcionDatosFiscalesForm({
             </Field>
 
             <Field data-invalid={!!errors.direccionFiscal?.region}>
-              <FieldLabel htmlFor="region">Departamento o estado</FieldLabel>
+              <FieldLabel htmlFor="region">{t("region")}</FieldLabel>
               <Input id="region" {...register("direccionFiscal.region")} />
               <FieldError errors={[errors.direccionFiscal?.region]} />
             </Field>
 
             <Field data-invalid={!!errors.direccionFiscal?.codigoPostal}>
-              <FieldLabel htmlFor="codigoPostal">Código postal</FieldLabel>
+              <FieldLabel htmlFor="codigoPostal">{t("codigoPostal")}</FieldLabel>
               <Input id="codigoPostal" {...register("direccionFiscal.codigoPostal")} />
               <FieldError errors={[errors.direccionFiscal?.codigoPostal]} />
             </Field>
 
             <Field data-invalid={!!errors.direccionFiscal?.pais}>
-              <FieldLabel htmlFor="pais">País</FieldLabel>
+              <FieldLabel htmlFor="pais">{t("pais")}</FieldLabel>
               <Input
                 id="pais"
                 maxLength={2}
@@ -266,7 +268,7 @@ export function SuscripcionDatosFiscalesForm({
 
           {reglas.pideMunicipio && (
             <Field data-invalid={!!errors.codigoMunicipio}>
-              <FieldLabel htmlFor="codigoMunicipio">Código DANE del municipio</FieldLabel>
+              <FieldLabel htmlFor="codigoMunicipio">{t("codigoMunicipio")}</FieldLabel>
               <Input
                 id="codigoMunicipio"
                 inputMode="numeric"
@@ -285,7 +287,7 @@ export function SuscripcionDatosFiscalesForm({
 
       {esEmpresa && reglas.pideResponsabilidades && (
         <FieldSet>
-          <FieldLegend variant="label">Responsabilidades fiscales</FieldLegend>
+          <FieldLegend variant="label">{t("responsabilidades")}</FieldLegend>
           <FieldDescription>
             Las que declaraste ante la DIAN. Si no tienes ninguna especial, marca la última.
           </FieldDescription>
@@ -327,14 +329,14 @@ export function SuscripcionDatosFiscalesForm({
       )}
 
       <FieldSet>
-        <FieldLegend variant="label">A dónde mandamos la factura</FieldLegend>
+        <FieldLegend variant="label">{t("aDondeMandamos")}</FieldLegend>
         <FieldDescription>
           Opcional. Contabilidad y mostrador rara vez son la misma persona.
         </FieldDescription>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <Field data-invalid={!!errors.emailFacturacion}>
-            <FieldLabel htmlFor="emailFacturacion">Correo</FieldLabel>
+            <FieldLabel htmlFor="emailFacturacion">{t("correo")}</FieldLabel>
             <Input
               id="emailFacturacion"
               type="email"
@@ -347,7 +349,7 @@ export function SuscripcionDatosFiscalesForm({
           </Field>
 
           <Field data-invalid={!!errors.telefono}>
-            <FieldLabel htmlFor="telefonoFiscal">Teléfono</FieldLabel>
+            <FieldLabel htmlFor="telefonoFiscal">{t("telefono")}</FieldLabel>
             <Input
               id="telefonoFiscal"
               inputMode="tel"

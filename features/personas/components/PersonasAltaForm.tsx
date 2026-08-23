@@ -29,6 +29,7 @@ import { CampoTelefono } from "@shared/components/forms/CampoTelefono"
 import { useTenant } from "@shared/providers/TenantProvider"
 import type { Rol } from "@features/roles/types/roles.types"
 import type { Sede } from "@features/sedes/types/sedes.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 /**
  * El botón que envía vive en el pie del panel, fuera del `<form>`. Se atan por
@@ -70,6 +71,7 @@ interface PersonasAltaFormProps {
  * api tenga que rechazar con un 422.
  */
 export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: PersonasAltaFormProps) {
+  const t = useTextos("personas.alta")
   const {
     register,
     control,
@@ -99,7 +101,7 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
   // centinela incluido: sin esta lista pinta el valor crudo.
   const opcionesDeSede = useMemo(
     () => [
-      { value: TODAS_LAS_SEDES, label: "Todas las sedes" },
+      { value: TODAS_LAS_SEDES, label: t("todasLasSedes") },
       ...sedes.map((sede) => ({ value: sede.id, label: sede.nombre })),
     ],
     [sedes]
@@ -131,12 +133,12 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
       className="flex flex-col gap-8"
     >
       <FieldSet>
-        <FieldLegend variant="label">Quién es</FieldLegend>
+        <FieldLegend variant="label">{t("quienEs")}</FieldLegend>
         <Field data-invalid={!!errors.nombre}>
-          <FieldLabel htmlFor="nombre">Nombre</FieldLabel>
+          <FieldLabel htmlFor="nombre">{t("nombre")}</FieldLabel>
           <Input
             id="nombre"
-            placeholder="Carlos Ramírez"
+            placeholder={t("nombreEjemplo")}
             aria-invalid={!!errors.nombre}
             {...register("nombre")}
           />
@@ -145,14 +147,14 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
       </FieldSet>
 
       <FieldSet>
-        <FieldLegend variant="label">Su acceso</FieldLegend>
+        <FieldLegend variant="label">{t("suAcceso")}</FieldLegend>
         <FieldDescription>
           Agregar a alguien crea siempre su cuenta en Barion: el correo es su usuario.
         </FieldDescription>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <Field data-invalid={!!errors.email}>
-            <FieldLabel htmlFor="email">Correo</FieldLabel>
+            <FieldLabel htmlFor="email">{t("correo")}</FieldLabel>
             <Input
               id="email"
               type="email"
@@ -161,7 +163,7 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
               aria-invalid={!!errors.email}
               {...register("email")}
             />
-            <FieldDescription>Si entra con Google, tiene que ser esta dirección.</FieldDescription>
+            <FieldDescription>{t("correoAyuda")}</FieldDescription>
             <FieldError errors={[errors.email]} />
           </Field>
 
@@ -177,7 +179,7 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
             name="telefonoE164"
             render={({ field }) => (
               <Field data-invalid={!!errors.telefonoE164}>
-                <FieldLabel htmlFor="telefonoE164">Teléfono (opcional)</FieldLabel>
+                <FieldLabel htmlFor="telefonoE164">{t("telefono")}</FieldLabel>
                 <CampoTelefono
                   id="telefonoE164"
                   value={field.value ?? ""}
@@ -198,12 +200,12 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
         </div>
 
         <Field data-invalid={!!errors.contrasenaInicial}>
-          <FieldLabel htmlFor="contrasenaInicial">Contraseña inicial</FieldLabel>
+          <FieldLabel htmlFor="contrasenaInicial">{t("contrasenaInicial")}</FieldLabel>
           <Input
             id="contrasenaInicial"
             type="text"
             autoComplete="off"
-            placeholder="Déjala vacía y la generamos nosotros"
+            placeholder={t("contrasenaAyuda")}
             aria-invalid={!!errors.contrasenaInicial}
             {...register("contrasenaInicial")}
           />
@@ -217,7 +219,7 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
       </FieldSet>
 
       <FieldSet>
-        <FieldLegend variant="label">Qué hace aquí</FieldLegend>
+        <FieldLegend variant="label">{t("queHaceAqui")}</FieldLegend>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <Controller
@@ -228,7 +230,7 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
                 <FieldLabel htmlFor="rol">Rol</FieldLabel>
                 <Select value={field.value ?? ""} onValueChange={field.onChange}>
                   <SelectTrigger id="rol" className="w-full">
-                    <SelectValue placeholder="Selecciona un rol" />
+                    <SelectValue placeholder={t("eligeUnRol")} />
                   </SelectTrigger>
                   <SelectContent>
                     {roles.map((rol) => (
@@ -248,7 +250,7 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
             name="sedeId"
             render={({ field }) => (
               <Field data-invalid={!!errors.sedeId}>
-                <FieldLabel htmlFor="sedeId">Sede</FieldLabel>
+                <FieldLabel htmlFor="sedeId">{t("sede")}</FieldLabel>
                 {/*
                   «Todas las sedes» necesita su propia opción, con un centinela.
                   Sin ella la ayuda prometía el itinerante y no había forma de
@@ -270,10 +272,10 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
                   }
                 >
                   <SelectTrigger id="sedeId" className="w-full">
-                    <SelectValue placeholder="Todas las sedes" />
+                    <SelectValue placeholder={t("todasLasSedes")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={TODAS_LAS_SEDES}>Todas las sedes</SelectItem>
+                    <SelectItem value={TODAS_LAS_SEDES}>{t("todasLasSedes")}</SelectItem>
                     {sedes.map((sede) => (
                       <SelectItem key={sede.id} value={sede.id}>
                         {sede.nombre}
@@ -306,7 +308,7 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
                       <FieldDescription className="mt-1">
                         {agendaDelRol === "siempre"
                           ? `Lo decide el rol: ${rolElegido?.nombre ?? "este rol"} siempre atiende, y eso no se puede quitar.`
-                          : "Tendrá agenda propia, comisión y saldrá en el escaparate."}
+                          : t("atiendeAyuda")}
                       </FieldDescription>
                     </div>
                   </div>
@@ -315,14 +317,14 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
                     checked={atiende}
                     disabled={agendaDelRol === "siempre"}
                     onCheckedChange={field.onChange}
-                    aria-label="Atiende clientes"
+                    aria-label={t("atiende")}
                   />
                 </div>
 
                 {atiende && (
                   <div className="border-t border-border pt-4">
                     <Field data-invalid={!!errors.comisionBps}>
-                      <FieldLabel htmlFor="comisionBps">Comisión por servicio (%)</FieldLabel>
+                      <FieldLabel htmlFor="comisionBps">{t("comision")}</FieldLabel>
                       <Input
                         id="comisionBps"
                         type="number"
@@ -337,7 +339,7 @@ export function PersonasAltaForm({ roles, sedes, sedeActualId, onSubmit }: Perso
                             valor === "" ? undefined : Number(valor) * BPS_POR_PUNTO,
                         })}
                       />
-                      <FieldDescription>En blanco se lleva el 100 %.</FieldDescription>
+                      <FieldDescription>{t("comisionAyuda")}</FieldDescription>
                       <FieldError errors={[errors.comisionBps]} />
                     </Field>
                   </div>

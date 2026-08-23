@@ -6,6 +6,7 @@ import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { useFormato } from "@shared/hooks/useFormato"
 import type { Ausencia } from "@features/barberos/types/barberos.types"
 import type { OpcionCatalogo } from "@features/catalogos/types/catalogos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface BarberosAusenciasListProps {
   ausencias: Ausencia[]
@@ -26,6 +27,7 @@ export function BarberosAusenciasList({
   onAprobar,
   onCancelar,
 }: BarberosAusenciasListProps) {
+  const t = useTextos("barberos.ausencia")
   // Instantes UTC formateados en la zona de la sede: eso lo resuelve el tenant.
   const { fechaHora } = useFormato()
 
@@ -35,7 +37,7 @@ export function BarberosAusenciasList({
       isEmpty={ausencias.length === 0}
       variant="list"
       emptyState={
-        <p className="py-8 text-center text-sm text-muted-foreground">Sin ausencias registradas.</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">{t("sinAusencias")}</p>
       }
     >
       <ul className="flex flex-col gap-2">
@@ -51,7 +53,7 @@ export function BarberosAusenciasList({
                 <p className="text-sm">{etiquetaTipo(ausencia.tipo, tiposAusencia)}</p>
                 <StatusBadge
                   tono={ausencia.aprobadaEn ? "exito" : "advertencia"}
-                  etiqueta={ausencia.aprobadaEn ? "Aprobada" : "Pendiente"}
+                  etiqueta={ausencia.aprobadaEn ? t("aprobada") : t("pendiente")}
                   compacta
                 />
               </div>
@@ -70,7 +72,7 @@ export function BarberosAusenciasList({
                 className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-(--exito)"
               >
                 <Check className="size-4" aria-hidden />
-                <span className="sr-only">Aprobar la ausencia</span>
+                <span className="sr-only">{t("aprobar")}</span>
               </button>
             )}
 
@@ -81,7 +83,7 @@ export function BarberosAusenciasList({
                 className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
               >
                 <Trash2 className="size-4" aria-hidden />
-                <span className="sr-only">Cancelar la ausencia</span>
+                <span className="sr-only">{t("cancelar")}</span>
               </button>
             )}
           </li>

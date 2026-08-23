@@ -10,6 +10,7 @@ import {
 import { Loadable } from "@shared/components/feedback/Loadable"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
 import type { Sede } from "@features/sedes/types/sedes.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface SedesListProps {
   sedes: Sede[]
@@ -29,6 +30,7 @@ export function SedesList({
   onCalendario,
   onAlternarActiva,
 }: SedesListProps) {
+  const t = useTextos("sedes")
   return (
     <Loadable
       loading={loading}
@@ -49,7 +51,7 @@ export function SedesList({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="truncate text-sm font-medium">{sede.nombre}</p>
-                {!sede.activa && <StatusBadge tono="neutro" etiqueta="Desactivada" compacta />}
+                {!sede.activa && <StatusBadge tono="neutro" etiqueta={t("desactivada")} compacta />}
               </div>
               <p className="truncate text-xs text-muted-foreground">
                 {sede.zonaHoraria}
@@ -74,12 +76,12 @@ export function SedesList({
                   <span className="sr-only">Acciones de {sede.nombre}</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onEditar(sede)}>Editar</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEditar(sede)}>{t("editar")}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onCalendario(sede)}>
                     Horario y cierres
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onAlternarActiva(sede)}>
-                    {sede.activa ? "Desactivar" : "Reactivar"}
+                    {sede.activa ? t("desactivar") : t("reactivar")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

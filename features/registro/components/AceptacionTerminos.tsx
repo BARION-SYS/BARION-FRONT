@@ -4,6 +4,7 @@ import type { FieldError as ErrorDeCampo } from "react-hook-form"
 import { rutasWeb } from "@routes/rutasPublicas"
 import { Checkbox } from "@shared/components/ui/checkbox"
 import { Field, FieldError } from "@shared/components/ui/field"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface AceptacionTerminosProps {
   checked: boolean
@@ -34,6 +35,7 @@ export function AceptacionTerminos({
   error,
   disabled,
 }: AceptacionTerminosProps) {
+  const t = useTextos("registro.terminos")
   return (
     <Field data-invalid={!!error}>
       <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-secondary/40 p-3">
@@ -42,29 +44,28 @@ export function AceptacionTerminos({
           onCheckedChange={(marcado) => onCheckedChange(marcado === true)}
           disabled={disabled}
           aria-invalid={!!error}
-          aria-label="Acepto los términos y la política de privacidad"
+          aria-label={t("aria")}
         />
         <span className="text-xs leading-relaxed text-muted-foreground">
-          He leído y acepto los{" "}
+          {t("heLeido")}{" "}
           <a
             href={rutasWeb.terminos}
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium text-foreground underline underline-offset-2"
           >
-            términos y condiciones
+            {t("terminos")}
           </a>{" "}
-          y la{" "}
+          {t("yLa")}{" "}
           <a
             href={rutasWeb.privacidad}
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium text-foreground underline underline-offset-2"
           >
-            política de privacidad
+            {t("privacidad")}
           </a>
-          . Incluyen el tratamiento de los datos de tus clientes, donde tu barbería es la
-          responsable y Barion el encargado.
+          {t("encargo")}
         </span>
       </label>
       <FieldError errors={[error]} />

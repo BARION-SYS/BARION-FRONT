@@ -2,6 +2,7 @@ import { PrimerosPasosCard } from "@features/primeros-pasos/components/PrimerosP
 import { pasosHechos } from "@features/primeros-pasos/utils/pasos"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { Progress } from "@shared/components/ui/progress"
+import { useTextos } from "@shared/textos/useTextos"
 import type {
   PasoInicial,
   ProgresoInicial,
@@ -21,13 +22,14 @@ interface PrimerosPasosListProps {
  * quien sabe si queda algo pendiente.
  */
 export function PrimerosPasosList({ pasos, progreso }: PrimerosPasosListProps) {
+  const t = useTextos("primerosPasos")
   const hechos = pasosHechos(pasos, progreso)
   const porcentaje = Math.round((hechos / pasos.length) * 100)
 
   return (
     <SectionCard
-      titulo="Primeros pasos"
-      subtitulo="Lo que le falta a tu barbería para empezar a recibir reservas"
+      titulo={t("titulo")}
+      subtitulo={t("subtitulo")}
       accion={
         <span className="text-xs font-semibold text-muted-foreground tabular-nums">
           {hechos} de {pasos.length}

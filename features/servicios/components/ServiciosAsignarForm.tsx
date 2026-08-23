@@ -13,6 +13,7 @@ import { useFormato } from "@shared/hooks/useFormato"
 import type { Barbero } from "@features/barberos/types/barberos.types"
 import type { DatosAsignacionServicio } from "@features/servicios/schemas/servicios.schema"
 import type { LineaOferta, Servicio } from "@features/servicios/types/servicios.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface ServiciosAsignarFormProps {
   servicio: Servicio
@@ -62,6 +63,7 @@ export function ServiciosAsignarForm({
   cargando,
   onSubmit,
 }: ServiciosAsignarFormProps) {
+  const t = useTextos("servicios.asignar")
   const { dinero, deCentavos, aCentavos } = useFormato()
 
   const inicial = useMemo(() => {
@@ -170,7 +172,7 @@ export function ServiciosAsignarForm({
                     {barbero.nombrePublico}
                   </p>
                   {!barbero.activo && (
-                    <p className="text-xs text-muted-foreground">Retirado de la agenda</p>
+                    <p className="text-xs text-muted-foreground">{t("retiradoDeLaAgenda")}</p>
                   )}
                 </div>
                 <Switch
@@ -189,7 +191,7 @@ export function ServiciosAsignarForm({
                     <Input
                       inputMode="decimal"
                       className="h-11 text-base sm:h-9 sm:text-sm"
-                      placeholder="Hereda"
+                      placeholder={t("hereda")}
                       value={fila.precio}
                       onChange={(evento) => actualizar(barbero.id, { precio: evento.target.value })}
                     />
@@ -199,7 +201,7 @@ export function ServiciosAsignarForm({
                     <Input
                       inputMode="numeric"
                       className="h-11 text-base sm:h-9 sm:text-sm"
-                      placeholder="Hereda"
+                      placeholder={t("hereda")}
                       value={fila.duracion}
                       onChange={(evento) =>
                         actualizar(barbero.id, { duracion: evento.target.value })
@@ -214,9 +216,7 @@ export function ServiciosAsignarForm({
       </ul>
 
       <p aria-live="polite" className="text-xs text-muted-foreground">
-        {incluidos === 0
-          ? "Nadie lo ofrece: no aparecerá al reservar."
-          : `Lo ofrecen ${incluidos} de ${barberos.length}.`}
+        {incluidos === 0 ? t("nadieLoOfrece") : `Lo ofrecen ${incluidos} de ${barberos.length}.`}
       </p>
 
       {/* El botón vive aquí y también en el pie del panel: el pie lo ata por id

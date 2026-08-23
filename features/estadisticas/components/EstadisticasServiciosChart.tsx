@@ -8,6 +8,7 @@ import { SinDatos } from "@shared/components/feedback/SinDatos"
 import { tokenDeColor } from "@shared/utils/color"
 import type { ServicioTop } from "@features/dashboard/types/dashboard.types"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface EstadisticasServiciosChartProps {
   servicios: ServicioTop[]
@@ -22,6 +23,7 @@ export function EstadisticasServiciosChart({
   servicios,
   subtitulo,
 }: EstadisticasServiciosChartProps) {
+  const t = useTextos("estadisticas.servicios")
   const { dinero, porcentaje } = useFormato()
 
   const total = servicios.reduce((suma, servicio) => suma + servicio.veces, 0)
@@ -32,9 +34,9 @@ export function EstadisticasServiciosChart({
   }))
 
   return (
-    <SectionCard titulo="Distribución de servicios" subtitulo={subtitulo} className="h-full">
+    <SectionCard titulo={t("titulo")} subtitulo={subtitulo} className="h-full">
       {servicios.length === 0 ? (
-        <SinDatos titulo="Nada vendido en el período" alto={160} />
+        <SinDatos titulo={t("sinDatos")} alto={160} />
       ) : (
         <>
           <div className="flex justify-center">

@@ -8,6 +8,7 @@ import { Button } from "@shared/components/ui/button"
 import { useFormato } from "@shared/hooks/useFormato"
 import type { TonoEstado } from "@shared/types/ui.types"
 import type { EnlacePago, EstadoCobro } from "@features/pagos/types/pagos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PagosEnlacesListProps {
   enlaces: EnlacePago[]
@@ -20,13 +21,17 @@ interface PagosEnlacesListProps {
   onCopiar: (enlace: EnlacePago) => void
 }
 
-const presentacion: Record<EstadoCobro, { etiqueta: string; tono: TonoEstado }> = {
-  pendiente: { etiqueta: "Sin pagar", tono: "advertencia" },
-  procesando: { etiqueta: "En curso", tono: "info" },
-  aprobado: { etiqueta: "Pagado", tono: "exito" },
-  rechazado: { etiqueta: "Rechazado", tono: "peligro" },
-  error: { etiqueta: "Sin confirmar", tono: "peligro" },
-  anulado: { etiqueta: "Anulado", tono: "neutro" },
+/**
+ * Con qué tono se pinta cada estado del cobro. Solo el tono: el nombre sale del
+ * catálogo dentro del componente, porque aquí no alcanza ningún hook.
+ */
+const TONO_POR_ESTADO: Record<EstadoCobro, TonoEstado> = {
+  pendiente: "advertencia",
+  procesando: "info",
+  aprobado: "exito",
+  rechazado: "peligro",
+  error: "peligro",
+  anulado: "neutro",
 }
 
 /**
@@ -45,12 +50,13 @@ export function PagosEnlacesList({
   onGenerar,
   onCopiar,
 }: PagosEnlacesListProps) {
+  const t = useTextos("pagos.enlaces")
   const { dineroEn, fechaHora } = useFormato()
 
   return (
     <SectionCard
-      titulo="Enlaces de pago"
-      subtitulo="Genera una dirección y mándasela a quien vaya a pagar. Caduca en 24 horas."
+      titulo={t("titulo")}
+      subtitulo={t("subtitulo")}
       accion={
         !soloLectura && (
           <Button size="sm" className="min-h-11" disabled={cargandoAction} onClick={onGenerar}>
@@ -77,8 +83,8 @@ export function PagosEnlacesList({
             // Caducado se pinta como su propio estado y no como «sin pagar»: la
             // diferencia es que uno todavía se puede pagar y el otro no.
             const estado = enlace.vencido
-              ? { etiqueta: "Caducado", tono: "neutro" as TonoEstado }
-              : presentacion[enlace.estado]
+              ? { etiqueta: t("caducado"), tono: "neutro" as TonoEstado }
+              : { etiqueta: t(`estados.${enlace.estado}`), tono: TONO_POR_ESTADO[enlace.estado] }
             const copiado = copiadoId === enlace.id
 
             return (
@@ -113,7 +119,7 @@ export function PagosEnlacesList({
                   <div className="flex shrink-0 items-center gap-2">
                     <Button variant="outline" className="min-h-11" onClick={() => onCopiar(enlace)}>
                       {copiado ? <Check aria-hidden /> : <Copy aria-hidden />}
-                      {copiado ? "Copiado" : "Copiar"}
+                      {copiado ? t("copiado") : t("copiar")}
                     </Button>
                     {/*
                       Copiar sirve para MANDARLO; abrir, para pagarlo uno mismo —y

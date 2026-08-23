@@ -15,6 +15,7 @@ import {
 import { useFormato } from "@shared/hooks/useFormato"
 import { ESTADO_FACTURA } from "@features/suscripcion/utils/facturas"
 import type { Factura } from "@features/suscripcion/types/suscripcion.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface SuscripcionFacturasListProps {
   facturas: Factura[]
@@ -28,30 +29,25 @@ export function SuscripcionFacturasList({
   cargando,
   onVer,
 }: SuscripcionFacturasListProps) {
+  const t = useTextos("suscripcion.facturas")
   const { dineroEn, fecha } = useFormato()
 
   return (
-    <SectionCard titulo="Facturas" subtitulo="Los cobros de tu suscripción a Barion">
+    <SectionCard titulo={t("titulo")} subtitulo={t("subtitulo")}>
       <Loadable
         loading={cargando}
         variant="table"
         isEmpty={facturas.length === 0}
-        emptyState={
-          <SinDatos
-            titulo="Todavía no hay facturas"
-            detalle="Aparecerán aquí en cuanto se emita el primer cobro de tu plan."
-            alto={140}
-          />
-        }
+        emptyState={<SinDatos titulo={t("sinDatos")} detalle={t("sinDatosDetalle")} alto={140} />}
       >
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Número</TableHead>
-                <TableHead>Emitida</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead>{t("numero")}</TableHead>
+                <TableHead>{t("emitida")}</TableHead>
+                <TableHead>{t("estado")}</TableHead>
+                <TableHead className="text-right">{t("total")}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>

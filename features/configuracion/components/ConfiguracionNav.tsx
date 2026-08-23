@@ -7,6 +7,7 @@ import { Button } from "@shared/components/ui/button"
 import { rutaDeSeccion, seccionDesdePathname } from "@features/configuracion/utils/secciones"
 import { cn } from "@shared/utils/cn"
 import type { SeccionConfiguracion } from "@features/configuracion/types/configuracion.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface Props {
   secciones: SeccionConfiguracion[]
@@ -22,11 +23,12 @@ interface Props {
  * de acuerdo. Sigue siendo presentacional — no pide datos ni muta nada.
  */
 export function ConfiguracionNav({ secciones }: Props) {
+  const t = useTextos("configuracion")
   const pathname = usePathname()
   const activa = seccionDesdePathname(pathname)
 
   return (
-    <nav aria-label="Secciones de configuración" className="w-full shrink-0 md:w-56">
+    <nav aria-label={t("secciones")} className="w-full shrink-0 md:w-56">
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         {secciones.map((seccion) => {
           const esActiva = seccion.id === activa

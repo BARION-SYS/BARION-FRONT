@@ -8,6 +8,7 @@ import { Label } from "@shared/components/ui/label"
 import { Switch } from "@shared/components/ui/switch"
 import { MAX_TRAMOS_POR_DIA, NOMBRE_DIA, diasOrdenados } from "@features/sedes/constants/dias"
 import type { HorarioSemanal, Sede } from "@features/sedes/types/sedes.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface TramoEditable {
   abre: string
@@ -41,6 +42,7 @@ export function SedesHorarioForm({
   soloLectura,
   onSubmit,
 }: SedesHorarioFormProps) {
+  const t = useTextos("sedes")
   const [semana, setSemana] = useState<Map<number, TramoEditable[]>>(() => aSemana(horario))
 
   const dias = diasOrdenados(sede.inicioSemana)
@@ -109,7 +111,7 @@ export function SedesHorarioForm({
                 disabled={soloLectura}
               />
 
-              {!abierto && <span className="text-xs text-muted-foreground">Cerrado</span>}
+              {!abierto && <span className="text-xs text-muted-foreground">{t("cerrado")}</span>}
 
               {abierto && (
                 <div className="ml-auto flex flex-col gap-1.5">

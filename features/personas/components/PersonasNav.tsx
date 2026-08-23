@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { Tabs, TabsList, TabsTrigger } from "@shared/components/ui/tabs"
 import { puede } from "@features/auth/utils/permisos"
 import { useAuthStore } from "@store/auth.store"
+import { useTextos } from "@shared/textos/useTextos"
 
 /**
  * Dos vistas, y solo dos: las personas, y el reparto de capacidades.
@@ -21,12 +22,19 @@ import { useAuthStore } from "@store/auth.store"
  * Cada pestaña es una ruta y no un estado local: así el enlace se puede
  * compartir, el botón de atrás funciona y cada pantalla conserva su propio padre.
  */
+/**
+ * Las dos pestañas, con la CLAVE de su nombre en vez del nombre.
+ *
+ * La lista y su orden son estructura; el texto sale del catálogo dentro del
+ * componente. A nivel de módulo no alcanza ningún hook.
+ */
 const PESTANAS = [
-  { href: "/dashboard/personas", etiqueta: "Personas", permiso: "equipo.ver" },
-  { href: "/dashboard/personas/roles", etiqueta: "Roles", permiso: "roles.ver" },
-]
+  { href: "/dashboard/personas", clave: "personas", permiso: "equipo.ver" },
+  { href: "/dashboard/personas/roles", clave: "roles", permiso: "roles.ver" },
+] as const
 
 export function PersonasNav() {
+  const t = useTextos("personas.nav")
   const pathname = usePathname()
   const sesion = useAuthStore((estado) => estado.sesion)
 
@@ -49,7 +57,7 @@ export function PersonasNav() {
             value={pestana.href}
             render={<Link href={pestana.href} />}
           >
-            {pestana.etiqueta}
+            {t(pestana.clave)}
           </TabsTrigger>
         ))}
       </TabsList>

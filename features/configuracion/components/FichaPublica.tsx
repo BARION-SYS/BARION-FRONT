@@ -15,6 +15,7 @@ import {
   type DatosTextoFicha,
 } from "@features/configuracion/schemas/configuracion.schema"
 import type { Barberia } from "@features/configuracion/types/configuracion.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface FichaPublicaProps {
   barberia: Barberia
@@ -40,6 +41,7 @@ const MAX_LARGO_VENTAJA = 80
  * sitio.
  */
 export function FichaPublica({ barberia, soloLectura, cargando, onSubmit }: FichaPublicaProps) {
+  const t = useTextos("configuracion.ficha")
   const {
     register,
     handleSubmit,
@@ -63,7 +65,7 @@ export function FichaPublica({ barberia, soloLectura, cargando, onSubmit }: Fich
   const largas = ventajas.some((v) => v.length > MAX_LARGO_VENTAJA)
 
   return (
-    <SectionCard titulo="Cara pública" subtitulo="Lo que ve quien entra a reservar desde el portal">
+    <SectionCard titulo={t("titulo")} subtitulo={t("subtitulo")}>
       <form
         className="space-y-4"
         noValidate
@@ -76,11 +78,11 @@ export function FichaPublica({ barberia, soloLectura, cargando, onSubmit }: Fich
         }
       >
         <Field data-invalid={!!errors.eslogan}>
-          <FieldLabel htmlFor="eslogan">Eslogan</FieldLabel>
+          <FieldLabel htmlFor="eslogan">{t("eslogan")}</FieldLabel>
           <Input
             id="eslogan"
             type="text"
-            placeholder="Cortes clásicos, sin filas"
+            placeholder={t("esloganEjemplo")}
             disabled={soloLectura}
             aria-invalid={!!errors.eslogan}
             {...register("eslogan")}
@@ -92,7 +94,7 @@ export function FichaPublica({ barberia, soloLectura, cargando, onSubmit }: Fich
         </Field>
 
         <Field data-invalid={!!errors.descripcion}>
-          <FieldLabel htmlFor="descripcion">Descripción</FieldLabel>
+          <FieldLabel htmlFor="descripcion">{t("descripcion")}</FieldLabel>
           <Textarea
             id="descripcion"
             rows={4}
@@ -106,7 +108,7 @@ export function FichaPublica({ barberia, soloLectura, cargando, onSubmit }: Fich
 
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between">
-            <FieldLabel htmlFor="ventaja-0">Ventajas</FieldLabel>
+            <FieldLabel htmlFor="ventaja-0">{t("ventajas")}</FieldLabel>
             <span className="text-xs text-muted-foreground">
               {ventajas.length} de {MAX_VENTAJAS}
             </span>
@@ -125,7 +127,7 @@ export function FichaPublica({ barberia, soloLectura, cargando, onSubmit }: Fich
                 type="text"
                 value={ventaja}
                 maxLength={MAX_LARGO_VENTAJA}
-                placeholder="Reserva en 30 segundos"
+                placeholder={t("ventajaEjemplo")}
                 disabled={soloLectura}
                 aria-label={`Ventaja ${indice + 1}`}
                 onChange={(e) => editar(indice, e.target.value)}

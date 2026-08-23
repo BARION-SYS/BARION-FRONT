@@ -8,6 +8,7 @@ import { Label } from "@shared/components/ui/label"
 import { Switch } from "@shared/components/ui/switch"
 import { MAX_TRAMOS_POR_DIA, NOMBRE_DIA, diasOrdenados } from "@features/barberos/constants/dias"
 import type { JornadaSemanal } from "@features/barberos/types/barberos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface TramoEditable {
   inicio: string
@@ -40,6 +41,7 @@ export function BarberosJornadaForm({
   soloLectura,
   onSubmit,
 }: BarberosJornadaFormProps) {
+  const t = useTextos("barberos")
   const [semana, setSemana] = useState<Map<number, TramoEditable[]>>(() => aSemana(jornada))
 
   const dias = diasOrdenados()
@@ -99,7 +101,7 @@ export function BarberosJornadaForm({
                 onCheckedChange={(valor) => alternarTrabaja(dia, valor)}
               />
 
-              {!trabaja && <span className="text-xs text-muted-foreground">Descansa</span>}
+              {!trabaja && <span className="text-xs text-muted-foreground">{t("descansa")}</span>}
 
               {trabaja && (
                 <div className="ml-auto flex flex-col gap-1.5">

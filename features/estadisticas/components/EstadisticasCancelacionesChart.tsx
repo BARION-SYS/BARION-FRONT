@@ -6,6 +6,7 @@ import { SectionCard } from "@shared/components/cards/SectionCard"
 import { ChartTooltip } from "@shared/components/charts/ChartTooltip"
 import { SinDatos } from "@shared/components/feedback/SinDatos"
 import type { PuntoGrafica } from "@features/dashboard/utils/serie"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface EstadisticasCancelacionesChartProps {
   datos: PuntoGrafica[]
@@ -22,10 +23,11 @@ export function EstadisticasCancelacionesChart({
   subtitulo,
   disponible,
 }: EstadisticasCancelacionesChartProps) {
+  const t = useTextos("estadisticas.cancelaciones")
   return (
-    <SectionCard titulo="Completadas vs perdidas" subtitulo={subtitulo} className="h-full">
+    <SectionCard titulo={t("titulo")} subtitulo={subtitulo} className="h-full">
       {!disponible ? (
-        <SinDatos titulo="Todavía no hay historia" icono={CalendarX} />
+        <SinDatos titulo={t("sinDatos")} icono={CalendarX} />
       ) : (
         <>
           <ResponsiveContainer width="100%" height={180}>
@@ -51,7 +53,7 @@ export function EstadisticasCancelacionesChart({
                 content={
                   <ChartTooltip
                     formatear={(entrada) =>
-                      `${entrada.name === "completadas" ? "Completadas" : "Perdidas"}: ${entrada.value}`
+                      `${entrada.name === "completadas" ? t("completadas") : t("perdidas")}: ${entrada.value}`
                     }
                   />
                 }
@@ -73,11 +75,11 @@ export function EstadisticasCancelacionesChart({
           <div className="mt-3 flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <span className="inline-block h-2.5 w-2.5 rounded-sm bg-(--chart-2)" aria-hidden />
-              <span className="text-xs text-muted-foreground">Completadas</span>
+              <span className="text-xs text-muted-foreground">{t("completadas")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="inline-block h-2.5 w-2.5 rounded-sm bg-(--chart-5)" aria-hidden />
-              <span className="text-xs text-muted-foreground">Perdidas</span>
+              <span className="text-xs text-muted-foreground">{t("perdidas")}</span>
             </div>
           </div>
         </>

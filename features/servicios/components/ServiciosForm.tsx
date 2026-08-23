@@ -20,6 +20,7 @@ import { useFormato } from "@shared/hooks/useFormato"
 import { esquemaServicio, type DatosServicio } from "@features/servicios/schemas/servicios.schema"
 import type { Servicio } from "@features/servicios/types/servicios.types"
 import type { Sede } from "@features/sedes/types/sedes.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface ServiciosFormProps {
   /** Sin servicio = alta. Con servicio = edición. */
@@ -52,6 +53,7 @@ export function ServiciosForm({
   cargando,
   onSubmit,
 }: ServiciosFormProps) {
+  const t = useTextos("servicios")
   const editando = Boolean(servicio)
   const { aCentavos, deCentavos, moneda: monedaSede } = useFormato()
 
@@ -88,10 +90,10 @@ export function ServiciosForm({
   return (
     <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="flex flex-col gap-5">
       <Field data-invalid={!!errors.nombre}>
-        <FieldLabel htmlFor="nombre">Nombre</FieldLabel>
+        <FieldLabel htmlFor="nombre">{t("nombre")}</FieldLabel>
         <Input
           id="nombre"
-          placeholder="Corte clásico"
+          placeholder={t("nombreEjemplo")}
           aria-invalid={!!errors.nombre}
           {...register("nombre")}
         />
@@ -100,9 +102,9 @@ export function ServiciosForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field data-invalid={!!errors.categoria}>
-          <FieldLabel htmlFor="categoria">Categoría</FieldLabel>
-          <Input id="categoria" placeholder="Cortes" {...register("categoria")} />
-          <p className="text-xs text-muted-foreground">Agrupa la carta. Se escribe libre.</p>
+          <FieldLabel htmlFor="categoria">{t("categoria")}</FieldLabel>
+          <Input id="categoria" placeholder={t("categoriaEjemplo")} {...register("categoria")} />
+          <p className="text-xs text-muted-foreground">{t("categoriaAyuda")}</p>
           <FieldError errors={[errors.categoria]} />
         </Field>
 
@@ -111,7 +113,7 @@ export function ServiciosForm({
           name="sedeId"
           render={({ field }) => (
             <Field>
-              <FieldLabel htmlFor="sedeId">Sede</FieldLabel>
+              <FieldLabel htmlFor="sedeId">{t("sede")}</FieldLabel>
               <Select
                 value={field.value ?? TODAS_LAS_SEDES}
                 onValueChange={(valor) =>
@@ -122,7 +124,7 @@ export function ServiciosForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={TODAS_LAS_SEDES}>Todas las sedes</SelectItem>
+                  <SelectItem value={TODAS_LAS_SEDES}>{t("todasLasSedes")}</SelectItem>
                   {sedes.map((sede) => (
                     <SelectItem key={sede.id} value={sede.id}>
                       {sede.nombre}
@@ -142,7 +144,7 @@ export function ServiciosForm({
           name="moneda"
           render={({ field }) => (
             <Field>
-              <FieldLabel htmlFor="moneda">Moneda</FieldLabel>
+              <FieldLabel htmlFor="moneda">{t("moneda")}</FieldLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger id="moneda" className="w-full">
                   <SelectValue />
@@ -161,7 +163,7 @@ export function ServiciosForm({
         />
 
         <Field data-invalid={!!errors.duracionBaseMin}>
-          <FieldLabel htmlFor="duracionBaseMin">Duración (min)</FieldLabel>
+          <FieldLabel htmlFor="duracionBaseMin">{t("duracion")}</FieldLabel>
           <Input
             id="duracionBaseMin"
             type="number"
@@ -174,7 +176,7 @@ export function ServiciosForm({
         </Field>
 
         <Field data-invalid={!!errors.bufferMin}>
-          <FieldLabel htmlFor="bufferMin">Limpieza (min)</FieldLabel>
+          <FieldLabel htmlFor="bufferMin">{t("limpieza")}</FieldLabel>
           <Input
             id="bufferMin"
             type="number"
@@ -196,7 +198,7 @@ export function ServiciosForm({
           name="precioBaseCentavos"
           render={({ field }) => (
             <Field data-invalid={!!errors.precioBaseCentavos}>
-              <FieldLabel htmlFor="precioBaseCentavos">Precio de referencia</FieldLabel>
+              <FieldLabel htmlFor="precioBaseCentavos">{t("precioReferencia")}</FieldLabel>
               <Input
                 id="precioBaseCentavos"
                 type="number"
@@ -218,7 +220,7 @@ export function ServiciosForm({
           name="precioMinCentavos"
           render={({ field }) => (
             <Field data-invalid={!!errors.precioMinCentavos}>
-              <FieldLabel htmlFor="precioMinCentavos">Precio mínimo</FieldLabel>
+              <FieldLabel htmlFor="precioMinCentavos">{t("precioMinimo")}</FieldLabel>
               <Input
                 id="precioMinCentavos"
                 type="number"
@@ -237,7 +239,7 @@ export function ServiciosForm({
           name="precioMaxCentavos"
           render={({ field }) => (
             <Field data-invalid={!!errors.precioMaxCentavos}>
-              <FieldLabel htmlFor="precioMaxCentavos">Precio máximo</FieldLabel>
+              <FieldLabel htmlFor="precioMaxCentavos">{t("precioMaximo")}</FieldLabel>
               <Input
                 id="precioMaxCentavos"
                 type="number"
@@ -256,7 +258,7 @@ export function ServiciosForm({
       </div>
 
       <Field data-invalid={!!errors.descripcion}>
-        <FieldLabel htmlFor="descripcion">Descripción</FieldLabel>
+        <FieldLabel htmlFor="descripcion">{t("descripcion")}</FieldLabel>
         <Textarea id="descripcion" rows={3} className="resize-none" {...register("descripcion")} />
         <FieldError errors={[errors.descripcion]} />
       </Field>
@@ -280,7 +282,7 @@ export function ServiciosForm({
                 id="destacado"
                 checked={field.value ?? false}
                 onCheckedChange={field.onChange}
-                aria-label="Destacar en el escaparate"
+                aria-label={t("destacar")}
               />
             </div>
           )}
@@ -296,7 +298,7 @@ export function ServiciosForm({
 
       <Button type="submit" disabled={enviando} className="h-10">
         {enviando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-        {editando ? "Guardar servicio" : gestiona ? "Crear servicio" : "Proponer servicio"}
+        {editando ? t("guardar") : gestiona ? t("crear") : t("proponer")}
       </Button>
     </form>
   )

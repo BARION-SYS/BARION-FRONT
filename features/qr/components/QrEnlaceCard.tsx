@@ -3,6 +3,7 @@ import { Button } from "@shared/components/ui/button"
 import { Input } from "@shared/components/ui/input"
 import { SectionCard } from "@shared/components/cards/SectionCard"
 import { cn } from "@shared/utils/cn"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface QrEnlaceCardProps {
   url: string
@@ -36,9 +37,10 @@ export function QrEnlaceCard({
   gestiona,
   onRotar,
 }: QrEnlaceCardProps) {
+  const t = useTextos("qr.enlace")
   return (
     <SectionCard
-      titulo="Enlace de reserva"
+      titulo={t("titulo")}
       subtitulo={`Cartón de ${nombreSede}`}
       accion={
         gestiona ? (
@@ -61,7 +63,7 @@ export function QrEnlaceCard({
             className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
             aria-hidden
           />
-          <Input readOnly value={url} aria-label="Enlace de reserva" className="h-9 pl-8 text-xs" />
+          <Input readOnly value={url} aria-label={t("titulo")} className="h-9 pl-8 text-xs" />
         </div>
         <Button
           variant="secondary"
@@ -73,7 +75,7 @@ export function QrEnlaceCard({
           )}
         >
           {copiado ? <Check aria-hidden /> : <Copy aria-hidden />}
-          {copiado ? "Copiado" : "Copiar"}
+          {copiado ? t("copiado") : t("copiar")}
         </Button>
       </div>
 

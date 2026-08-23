@@ -10,6 +10,7 @@ import { Input } from "@shared/components/ui/input"
 import { Switch } from "@shared/components/ui/switch"
 import { esquemaExcepcion, type DatosExcepcion } from "@features/barberos/schemas/barberos.schema"
 import type { ExcepcionJornada } from "@features/barberos/types/barberos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface BarberosExcepcionFormProps {
   /** Sin excepción = alta. Con excepción = edición del mismo día. */
@@ -28,6 +29,7 @@ export function BarberosExcepcionForm({
   cargando,
   onSubmit,
 }: BarberosExcepcionFormProps) {
+  const t = useTextos("barberos.excepcion")
   const [cerrado, setCerrado] = useState(excepcion?.cerrado ?? true)
 
   const {
@@ -51,7 +53,7 @@ export function BarberosExcepcionForm({
       onSubmit={(e) => void handleSubmit((datos) => onSubmit({ ...datos, cerrado }))(e)}
     >
       <Field data-invalid={!!errors.fecha}>
-        <FieldLabel htmlFor="fecha">Fecha</FieldLabel>
+        <FieldLabel htmlFor="fecha">{t("fecha")}</FieldLabel>
         <Input id="fecha" type="date" disabled={!!excepcion} {...register("fecha")} />
         <FieldError errors={[errors.fecha]} />
       </Field>
@@ -66,13 +68,13 @@ export function BarberosExcepcionForm({
       {!cerrado && (
         <div className="grid gap-4 sm:grid-cols-2">
           <Field data-invalid={!!errors.inicio}>
-            <FieldLabel htmlFor="inicio">Entrada</FieldLabel>
+            <FieldLabel htmlFor="inicio">{t("entrada")}</FieldLabel>
             <Input id="inicio" type="time" {...register("inicio")} />
             <FieldError errors={[errors.inicio]} />
           </Field>
 
           <Field data-invalid={!!errors.fin}>
-            <FieldLabel htmlFor="fin">Salida</FieldLabel>
+            <FieldLabel htmlFor="fin">{t("salida")}</FieldLabel>
             <Input id="fin" type="time" {...register("fin")} />
             <FieldError errors={[errors.fin]} />
           </Field>
@@ -80,14 +82,14 @@ export function BarberosExcepcionForm({
       )}
 
       <Field data-invalid={!!errors.motivo}>
-        <FieldLabel htmlFor="motivo">Motivo</FieldLabel>
-        <Input id="motivo" placeholder="Cita médica" {...register("motivo")} />
+        <FieldLabel htmlFor="motivo">{t("motivo")}</FieldLabel>
+        <Input id="motivo" placeholder={t("motivoEjemplo")} {...register("motivo")} />
         <FieldError errors={[errors.motivo]} />
       </Field>
 
       <Button type="submit" disabled={cargando} className="h-10">
         {cargando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-        {excepcion ? "Guardar día especial" : "Programar día especial"}
+        {excepcion ? t("guardar") : t("programar")}
       </Button>
     </form>
   )

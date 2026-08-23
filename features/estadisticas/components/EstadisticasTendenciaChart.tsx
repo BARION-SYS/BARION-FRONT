@@ -15,6 +15,7 @@ import { ChartTooltip } from "@shared/components/charts/ChartTooltip"
 import { SinDatos } from "@shared/components/feedback/SinDatos"
 import type { PuntoGrafica } from "@features/dashboard/utils/serie"
 import { useFormato } from "@shared/hooks/useFormato"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface EstadisticasTendenciaChartProps {
   datos: PuntoGrafica[]
@@ -27,14 +28,15 @@ export function EstadisticasTendenciaChart({
   subtitulo,
   disponible,
 }: EstadisticasTendenciaChartProps) {
+  const t = useTextos("estadisticas.tendencia")
   const { dinero, compacto } = useFormato()
 
   return (
-    <SectionCard titulo="Evolución de ingresos" subtitulo={subtitulo} className="h-full">
+    <SectionCard titulo={t("titulo")} subtitulo={subtitulo} className="h-full">
       {!disponible ? (
         <SinDatos
-          titulo="Todavía no hay historia"
-          detalle="La tendencia se calcula cada noche a partir de las citas cerradas."
+          titulo={t("sinDatos")}
+          detalle={t("sinDatosDetalle")}
           icono={TrendingUp}
           alto={200}
         />
@@ -82,7 +84,7 @@ export function EstadisticasTendenciaChart({
           </ResponsiveContainer>
           <div className="mt-3 flex items-center gap-1.5">
             <span className="inline-block h-2.5 w-2.5 rounded-sm bg-(--chart-1)" aria-hidden />
-            <span className="text-xs text-muted-foreground">Ingresos del período</span>
+            <span className="text-xs text-muted-foreground">{t("ingresosDelPeriodo")}</span>
           </div>
         </>
       )}

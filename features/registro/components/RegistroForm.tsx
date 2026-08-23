@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from "@shared/components/ui/select"
 import { cn } from "@shared/utils/cn"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface RegistroFormProps {
   onSubmit: (datos: DatosFormularioRegistro) => Promise<void>
@@ -78,6 +79,7 @@ export function RegistroForm({
   cargando,
   error,
 }: RegistroFormProps) {
+  const t = useTextos("registro.form")
   const [verContrasena, setVerContrasena] = useState(false)
   const {
     register,
@@ -137,13 +139,13 @@ export function RegistroForm({
       </div>
 
       <FieldSet className="gap-5">
-        <FieldLegend variant="label">Tu barbería</FieldLegend>
+        <FieldLegend variant="label">{t("tuBarberia")}</FieldLegend>
 
         <Field data-invalid={!!errors.nombreComercial}>
-          <FieldLabel htmlFor="nombreComercial">Nombre de la barbería</FieldLabel>
+          <FieldLabel htmlFor="nombreComercial">{t("nombreComercial")}</FieldLabel>
           <Input
             id="nombreComercial"
-            placeholder="Barbería El Corte"
+            placeholder={t("nombreEjemplo")}
             autoComplete="organization"
             className="h-11"
             aria-invalid={!!errors.nombreComercial}
@@ -181,7 +183,7 @@ export function RegistroForm({
             otro es un problema real, y la única defensa honesta es decir con
             claridad qué se está decidiendo. */}
         <Field data-invalid={!!errors.codigoPais}>
-          <FieldLabel htmlFor="codigoPais">País donde opera tu barbería</FieldLabel>
+          <FieldLabel htmlFor="codigoPais">{t("pais")}</FieldLabel>
           <Controller
             control={control}
             name="codigoPais"
@@ -214,7 +216,7 @@ export function RegistroForm({
       </FieldSet>
 
       <FieldSet className="gap-5">
-        <FieldLegend variant="label">Tu cuenta de propietario</FieldLegend>
+        <FieldLegend variant="label">{t("tuCuenta")}</FieldLegend>
         <FieldDescription className="-mt-3">
           Con este correo entras al panel. La contraseña la eliges tú: no viaja ninguna clave
           temporal por correo.
@@ -226,10 +228,10 @@ export function RegistroForm({
             de ellos no es un `input` a secas */}
         <div className="space-y-5">
           <Field data-invalid={!!errors.propietarioNombre}>
-            <FieldLabel htmlFor="propietarioNombre">Tu nombre</FieldLabel>
+            <FieldLabel htmlFor="propietarioNombre">{t("tuNombre")}</FieldLabel>
             <Input
               id="propietarioNombre"
-              placeholder="Julián Restrepo"
+              placeholder={t("nombrePropietarioEjemplo")}
               autoComplete="name"
               className="h-11"
               aria-invalid={!!errors.propietarioNombre}
@@ -239,7 +241,7 @@ export function RegistroForm({
           </Field>
 
           <Field data-invalid={!!errors.propietarioTelefonoE164}>
-            <FieldLabel htmlFor="propietarioTelefonoE164">Teléfono</FieldLabel>
+            <FieldLabel htmlFor="propietarioTelefonoE164">{t("telefono")}</FieldLabel>
             {/* El indicativo se elige de una lista y el número se escribe a
                 secas: pedir el E.164 entero llevaba al error «formato
                 E.164 (+573001112233)», que no dice nada a quien acaba de
@@ -264,7 +266,7 @@ export function RegistroForm({
         </div>
 
         <Field data-invalid={!!errors.propietarioEmail}>
-          <FieldLabel htmlFor="propietarioEmail">Tu correo</FieldLabel>
+          <FieldLabel htmlFor="propietarioEmail">{t("correo")}</FieldLabel>
           <Input
             id="propietarioEmail"
             type="email"
@@ -275,12 +277,12 @@ export function RegistroForm({
             aria-invalid={!!errors.propietarioEmail}
             {...register("propietarioEmail")}
           />
-          <FieldDescription>Ahí llega el enlace que publica tu escaparate.</FieldDescription>
+          <FieldDescription>{t("correoAyuda")}</FieldDescription>
           <FieldError errors={[errors.propietarioEmail]} />
         </Field>
 
         <Field data-invalid={!!errors.contrasena}>
-          <FieldLabel htmlFor="contrasena">Contraseña</FieldLabel>
+          <FieldLabel htmlFor="contrasena">{t("contrasena")}</FieldLabel>
           <div className="relative">
             <Input
               id="contrasena"
@@ -295,7 +297,7 @@ export function RegistroForm({
               variant="ghost"
               size="icon"
               className="absolute top-1/2 right-1 -translate-y-1/2"
-              aria-label={verContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-label={verContrasena ? t("ocultarContrasena") : t("mostrarContrasena")}
               onClick={() => setVerContrasena((visible) => !visible)}
             >
               {verContrasena ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
@@ -303,7 +305,7 @@ export function RegistroForm({
           </div>
           {/* Persistente y no en el placeholder: el requisito tiene que seguir a
               la vista mientras se escribe, que es justo cuando desaparece */}
-          <FieldDescription>Mínimo 12 caracteres.</FieldDescription>
+          <FieldDescription>{t("contrasenaAyuda")}</FieldDescription>
           <FieldError errors={[errors.contrasena]} />
         </Field>
       </FieldSet>

@@ -9,6 +9,7 @@ import { Input } from "@shared/components/ui/input"
 import { Textarea } from "@shared/components/ui/textarea"
 import { esquemaBarbero, type DatosBarbero } from "@features/barberos/schemas/barberos.schema"
 import type { Barbero } from "@features/barberos/types/barberos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface BarberosFormProps {
   /** Siempre hay ficha: el alta la hace el formulario único de Personas. */
@@ -39,6 +40,7 @@ const BPS_POR_PUNTO = 100
  * qué colores están cogidos.
  */
 export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps) {
+  const t = useTextos("barberos")
   const {
     register,
     handleSubmit,
@@ -59,10 +61,10 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
   return (
     <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="flex flex-col gap-5">
       <Field data-invalid={!!errors.nombrePublico}>
-        <FieldLabel htmlFor="nombrePublico">Nombre público</FieldLabel>
+        <FieldLabel htmlFor="nombrePublico">{t("nombrePublico")}</FieldLabel>
         <Input
           id="nombrePublico"
-          placeholder="Carlos Ramírez"
+          placeholder={t("nombreEjemplo")}
           aria-invalid={!!errors.nombrePublico}
           {...register("nombrePublico")}
         />
@@ -73,8 +75,8 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
       </Field>
 
       <Field data-invalid={!!errors.titulo}>
-        <FieldLabel htmlFor="titulo">Título</FieldLabel>
-        <Input id="titulo" placeholder="Barbero Senior" {...register("titulo")} />
+        <FieldLabel htmlFor="titulo">{t("titulo")}</FieldLabel>
+        <Input id="titulo" placeholder={t("tituloEjemplo")} {...register("titulo")} />
         <p className="text-xs text-muted-foreground">
           De vitrina: lo lee el cliente al reservar. No decide qué puede hacer en el sistema.
         </p>
@@ -83,13 +85,13 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field data-invalid={!!errors.telefonoE164}>
-          <FieldLabel htmlFor="telefonoE164">Teléfono</FieldLabel>
+          <FieldLabel htmlFor="telefonoE164">{t("telefono")}</FieldLabel>
           <Input id="telefonoE164" placeholder="+573001112233" {...register("telefonoE164")} />
           <FieldError errors={[errors.telefonoE164]} />
         </Field>
 
         <Field data-invalid={!!errors.email}>
-          <FieldLabel htmlFor="email">Correo</FieldLabel>
+          <FieldLabel htmlFor="email">{t("correo")}</FieldLabel>
           <Input id="email" type="email" placeholder="carlos@elcorte.co" {...register("email")} />
           <p className="text-xs text-muted-foreground">
             Contacto que guarda la barbería, no una credencial.
@@ -100,7 +102,7 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field data-invalid={!!errors.comisionBps}>
-          <FieldLabel htmlFor="comisionBps">Comisión (%)</FieldLabel>
+          <FieldLabel htmlFor="comisionBps">{t("comision")}</FieldLabel>
           <Input
             id="comisionBps"
             type="number"
@@ -121,14 +123,14 @@ export function BarberosForm({ barbero, cargando, onSubmit }: BarberosFormProps)
         </Field>
 
         <Field data-invalid={!!errors.fechaContratacion}>
-          <FieldLabel htmlFor="fechaContratacion">Fecha de contratación</FieldLabel>
+          <FieldLabel htmlFor="fechaContratacion">{t("fechaContratacion")}</FieldLabel>
           <Input id="fechaContratacion" type="date" {...register("fechaContratacion")} />
           <FieldError errors={[errors.fechaContratacion]} />
         </Field>
       </div>
 
       <Field data-invalid={!!errors.bio}>
-        <FieldLabel htmlFor="bio">Presentación</FieldLabel>
+        <FieldLabel htmlFor="bio">{t("presentacion")}</FieldLabel>
         <Textarea id="bio" rows={3} className="resize-none" {...register("bio")} />
         <p className="text-xs text-muted-foreground">
           Lo que se lee de él en el escaparate, bajo su nombre.

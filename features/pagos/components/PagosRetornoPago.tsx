@@ -3,6 +3,7 @@
 import { CheckCircle2, RefreshCw, X, XCircle } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import type { EstadoCobro } from "@features/pagos/types/pagos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface PagosRetornoPagoProps {
   /** La referencia con la que se acaba de pagar, para poder cotejarla. */
@@ -47,6 +48,7 @@ export function PagosRetornoPago({
   onActualizar,
   onCerrar,
 }: PagosRetornoPagoProps) {
+  const t = useTextos("pagos.retorno")
   const vista = presentacion(estado)
 
   return (
@@ -64,8 +66,8 @@ export function PagosRetornoPago({
       </span>
 
       <div className="min-w-0 flex-1 space-y-1">
-        <h3 className="text-base font-semibold text-foreground">{vista.titulo}</h3>
-        <p className="text-sm text-muted-foreground">{vista.detalle}</p>
+        <h3 className="text-base font-semibold text-foreground">{t(`${vista.clave}Titulo`)}</h3>
+        <p className="text-sm text-muted-foreground">{t(`${vista.clave}Detalle`)}</p>
         <p className="truncate font-mono text-xs text-muted-foreground">{referencia}</p>
       </div>
 
@@ -81,7 +83,7 @@ export function PagosRetornoPago({
         )}
         <Button variant="ghost" size="icon" className="min-h-11 min-w-11" onClick={onCerrar}>
           <X aria-hidden />
-          <span className="sr-only">Cerrar el aviso del pago</span>
+          <span className="sr-only">{t("cerrar")}</span>
         </Button>
       </div>
     </section>
@@ -89,46 +91,28 @@ export function PagosRetornoPago({
 }
 
 interface VistaRetorno {
-  titulo: string
-  detalle: string
+  clave: "confirmado" | "fallo" | "volviste"
   icono: typeof RefreshCw
   /** Token de color, no un color: el tema decide el valor. */
   tono: "--info" | "--exito" | "--advertencia"
   esperando: boolean
 }
 
+/**
+ * Cómo se PINTA la vuelta del pago: ícono, tono y si todavía hay algo que
+ * esperar. El texto sale del catálogo con la clave que devuelve `clave`, porque
+ * esta función vive fuera del componente y ahí no alcanza ningún hook.
+ *
+ * Rechazado, anulado y error caen en el mismo sitio: para quien mira significan
+ * lo mismo —ese intento no prosperó— y distinguirlos solo serviría para
+ * explicarle el vocabulario interno de una pasarela.
+ */
 function presentacion(estado?: EstadoCobro): VistaRetorno {
   if (estado === "aprobado") {
-    return {
-      titulo: "Pago confirmado",
-      detalle:
-        "Tu plan quedó al día y la factura ya está en tu historial. No hace falta que hagas nada más.",
-      icono: CheckCircle2,
-      tono: "--exito",
-      esperando: false,
-    }
+    return { clave: "confirmado", icono: CheckCircle2, tono: "--exito", esperando: false }
   }
-
-  // Rechazado, anulado o error: los tres significan lo mismo para quien mira
-  // —ese intento no prosperó— y distinguirlos aquí solo serviría para explicarle
-  // el vocabulario interno de una pasarela.
   if (estado === "rechazado" || estado === "anulado" || estado === "error") {
-    return {
-      titulo: "El pago no se completó",
-      detalle:
-        "Ese intento no prosperó y no se te cobró nada. Puedes generar otro enlace o guardar una tarjeta para que el cobro salga solo.",
-      icono: XCircle,
-      tono: "--advertencia",
-      esperando: false,
-    }
+    return { clave: "fallo", icono: XCircle, tono: "--advertencia", esperando: false }
   }
-
-  return {
-    titulo: "Volviste del pago",
-    detalle:
-      "Estamos esperando la confirmación de la pasarela. Puede tardar unos minutos y no hace falta pagar otra vez: cuando llegue, tu plan y tus facturas se actualizan solos.",
-    icono: RefreshCw,
-    tono: "--info",
-    esperando: true,
-  }
+  return { clave: "volviste", icono: RefreshCw, tono: "--info", esperando: true }
 }

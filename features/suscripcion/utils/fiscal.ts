@@ -49,11 +49,17 @@ export function reglasFiscalesDe(codigoPais: string | null): ReglasFiscales | nu
   return codigoPais ? (REGLAS[codigoPais] ?? null) : null
 }
 
-export const ETIQUETA_TIPO_PERSONA: Record<TipoPersonaFiscal, string> = {
-  natural: "Persona natural",
-  juridica: "Empresa",
-}
-
+/**
+ * **Esto NO se traduce, y es una decisión y no un olvido.**
+ *
+ * Son los nombres oficiales de documentos de identidad de cada país: la «cédula
+ * de ciudadanía» es un documento colombiano concreto, igual que el NIF español o
+ * el EIN estadounidense. Traducirlos inventaría un documento que no existe, y
+ * quien lo busca en su cartera necesita leer el nombre que lleva impreso.
+ *
+ * Es la misma regla que ya rige para lo que llega de la api: traducir un dato es
+ * inventárselo. Aquí el dato no viene de la api, viene de una autoridad fiscal.
+ */
 export const ETIQUETA_TIPO_DOCUMENTO: Record<TipoDocumentoFiscal, string> = {
   nit: "NIT",
   cc: "Cédula de ciudadanía",
@@ -68,6 +74,10 @@ export const ETIQUETA_TIPO_DOCUMENTO: Record<TipoDocumentoFiscal, string> = {
  * Las responsabilidades fiscales de la DIAN que usa una barbería. Son códigos
  * opacos —Barion los transporta y no los interpreta—, así que se eligen de una
  * lista con su nombre al lado en vez de teclearse: `O-15` no se adivina.
+ *
+ * **Tampoco se traducen**, por lo mismo que los documentos de arriba: son los
+ * nombres oficiales que publica la DIAN, y «Autorretenedor» traducido no lo
+ * reconocería ni el contador que tiene que confirmarlo.
  */
 export const RESPONSABILIDADES_DIAN: { codigo: string; nombre: string }[] = [
   { codigo: "O-13", nombre: "Gran contribuyente" },

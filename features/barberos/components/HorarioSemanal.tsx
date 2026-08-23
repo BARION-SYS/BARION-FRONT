@@ -1,6 +1,7 @@
 import { cn } from "@shared/utils/cn"
 import { NOMBRE_DIA_CORTO, diasOrdenados } from "@features/barberos/constants/dias"
 import type { TramoJornada } from "@features/barberos/types/barberos.types"
+import { useTextos } from "@shared/textos/useTextos"
 
 interface HorarioSemanalProps {
   tramos: TramoJornada[]
@@ -14,6 +15,7 @@ interface HorarioSemanalProps {
  * responde "¿trabaja el jueves?".
  */
 export function HorarioSemanal({ tramos }: HorarioSemanalProps) {
+  const t = useTextos("barberos")
   const porDia = new Map<number, TramoJornada[]>()
   for (const tramo of tramos) {
     porDia.set(tramo.diaSemana, [...(porDia.get(tramo.diaSemana) ?? []), tramo])
@@ -48,7 +50,7 @@ export function HorarioSemanal({ tramos }: HorarioSemanalProps) {
             ) : (
               <p className="text-xs text-muted-foreground">
                 <span aria-hidden>—</span>
-                <span className="sr-only">Descansa</span>
+                <span className="sr-only">{t("descansa")}</span>
               </p>
             )}
           </div>

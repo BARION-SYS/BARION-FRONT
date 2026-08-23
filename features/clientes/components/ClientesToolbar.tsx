@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useTextos } from "@shared/textos/useTextos"
 import { Search } from "lucide-react"
 import { Input } from "@shared/components/ui/input"
@@ -17,6 +18,8 @@ interface ClientesToolbarProps {
   segmentoId: string
   /** Las etiquetas que existen hoy, no una lista fija: las define la barbería. */
   segmentos: Segmento[]
+  /** Con `clientes.gestionar`: se le ofrece administrarlas. */
+  gestionaEtiquetas?: boolean
   total: number
   onBuscar: (valor: string) => void
   onSegmento: (valor: string) => void
@@ -28,10 +31,12 @@ export function ClientesToolbar({
   buscar,
   segmentoId,
   segmentos,
+  gestionaEtiquetas,
   total,
   onBuscar,
   onSegmento,
 }: ClientesToolbarProps) {
+  const tSegmentos = useTextos("segmentos")
   const t = useTextos("clientes")
   // Las dinámicas las rehace el job nocturno desde las citas; las estáticas las
   // mantiene alguien a mano. Se distingue porque una etiqueta que nadie sabe de
@@ -92,6 +97,19 @@ export function ClientesToolbar({
             {hayManuales && t("etiquetasManualesAyuda")}
           </p>
 
+          {/*
+            El enlace solo para quien puede usarlo. La api responde 403 igual,
+            pero ofrecer una puerta que se cierra en la cara es peor que no
+            ofrecerla: quien la ve asume que le falta un dato, no un permiso.
+          */}
+          {gestionaEtiquetas && (
+            <Link
+              href="/dashboard/clientes/segmentos"
+              className="px-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
+            >
+              {tSegmentos("administrar")}
+            </Link>
+          )}
         </>
       )}
 

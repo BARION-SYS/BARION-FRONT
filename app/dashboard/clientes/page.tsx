@@ -205,6 +205,7 @@ export default function ClientesPage() {
           buscar={buscar}
           segmentoId={segmentoId}
           segmentos={segmentos.filter((segmento) => segmento.esEtiqueta)}
+          gestionaEtiquetas={gestiona}
           total={clientes.length}
           onBuscar={setBuscar}
           onSegmento={setSegmentoId}

@@ -73,6 +73,13 @@ const csp = Object.entries(cspDirectivas)
   .join("; ")
 
 const nextConfig = {
+  /**
+   * Salida autocontenida: `.next/standalone` trae el servidor y SOLO las
+   * dependencias que el trazado encuentra usadas. Es lo que copia la etapa
+   * `runner` del `Dockerfile` — sin esto, esa copia no existe y la imagen de
+   * producción no se construye.
+   */
+  output: "standalone",
   typescript: {
     ignoreBuildErrors: true,
   },

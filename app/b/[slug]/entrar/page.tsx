@@ -56,8 +56,15 @@ function ContenedorEntrar({ slug }: { slug: string }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative flex min-h-dvh items-center justify-center overflow-hidden p-6 sm:p-8">
-        <div className="absolute top-4 right-4 z-10">
+      {/*
+        Misma estructura que la puerta global: la ventana no crece, desplaza la
+        columna del formulario. Centrar con `m-auto` y no con `items-center` es
+        lo que permite alcanzar la tarjeta entera cuando la ventana es más baja
+        que ella — con el centrado del flex, lo que sobresale por arriba se
+        recorta y no hay scroll que lo devuelva.
+      */}
+      <div className="scroll-fino relative flex h-dvh flex-col overflow-y-auto">
+        <div className="absolute top-4 right-4 z-20">
           <ThemeToggle />
         </div>
 
@@ -68,17 +75,19 @@ function ContenedorEntrar({ slug }: { slug: string }) {
           aria-hidden
         />
 
-        <AnimatePresence onExitComplete={() => router.push("/dashboard")}>
-          {!saliendo && (
-            <Login
-              key="login"
-              onSubmit={onSubmitLogin}
-              cargando={loadingLogin}
-              error={error ?? errorOauth}
-              slug={slug}
-            />
-          )}
-        </AnimatePresence>
+        <div className="relative z-10 m-auto w-full max-w-md px-4 py-6 sm:px-6">
+          <AnimatePresence onExitComplete={() => router.push("/dashboard")}>
+            {!saliendo && (
+              <Login
+                key="login"
+                onSubmit={onSubmitLogin}
+                cargando={loadingLogin}
+                error={error ?? errorOauth}
+                slug={slug}
+              />
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </MotionConfig>
   )

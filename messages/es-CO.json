@@ -165,7 +165,7 @@
       "enLinea": "En línea",
       "tituloBarberia": "Entra a tu barbería",
       "tituloGlobal": "Panel administrativo",
-      "descripcionBarberia": "Con tu correo y tu contraseña. El mismo correo puede trabajar en más de una barbería: la puerta decide a cuál entras.",
+      "descripcionBarberia": "Con tu correo y tu contraseña. El mismo correo sirve en varias barberías.",
       "descripcionGlobal": "Bienvenido de vuelta. Tu barbería te espera.",
       "correo": "Correo electrónico",
       "correoPlaceholder": "tu@barberia.co",
@@ -245,11 +245,8 @@
           "descripcion": "Clientes sin fricción"
         }
       },
-      "cifras": {
-        "barberias": "Barberías activas",
-        "citas": "Citas/semana",
-        "uptime": "Uptime"
-      }
+      "pieTexto": "¿Todavía no usas Barion?",
+      "pieEnlace": "Mira lo que hace"
     }
   },
   "notificaciones": {

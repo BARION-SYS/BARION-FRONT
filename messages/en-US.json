@@ -165,7 +165,7 @@
       "enLinea": "Online",
       "tituloBarberia": "Sign in to your shop",
       "tituloGlobal": "Admin panel",
-      "descripcionBarberia": "With your email and password. The same email can work at more than one shop: the door decides which one you walk into.",
+      "descripcionBarberia": "With your email and password. The same email works at more than one shop.",
       "descripcionGlobal": "Welcome back. Your shop is waiting.",
       "correo": "Email",
       "correoPlaceholder": "you@yourshop.com",
@@ -245,11 +245,8 @@
           "descripcion": "Clients with no friction"
         }
       },
-      "cifras": {
-        "barberias": "Active shops",
-        "citas": "Appointments/week",
-        "uptime": "Uptime"
-      }
+      "pieTexto": "Not using Barion yet?",
+      "pieEnlace": "See what it does"
     }
   },
   "notificaciones": {

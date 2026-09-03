@@ -177,9 +177,25 @@
     animation: cinta-desplazamiento 2.4s linear infinite;
   }
 
+  /*
+    La cinta NO se para nunca, y es una decisión de producto tomada a sabiendas.
+
+    Es el poste de barbero: un poste que no gira no es un poste, es una raya de
+    colores. Se movía antes de que esto se escribiera y quitarlo cambia lo que la
+    marca dice de sí misma en la primera pantalla que se ve.
+
+    Lo que sí hace la preferencia es bajarle el ritmo a un tercio. Sigue habiendo
+    movimiento —que es lo que se quería conservar— pero deja de ser un bucle
+    rápido tirando del rabillo del ojo mientras alguien escribe su contraseña.
+
+    Se sabe lo que cuesta: es contenido en movimiento que arranca solo, dura más
+    de cinco segundos y no tiene control para pausarlo, así que el criterio
+    2.2.2 de WCAG se queda sin cumplir del todo. La forma de cerrarlo sin apagar
+    la cinta sería un control de pausa, no un `animation: none`.
+  */
   @media (prefers-reduced-motion: reduce) {
     .cinta-barberia {
-      animation: none;
+      animation-duration: 7.2s;
     }
   }
 }
@@ -187,5 +203,45 @@
 @keyframes cinta-desplazamiento {
   to {
     background-position: 56.57px 0;
+  }
+}
+
+/*
+  ── Acceso: la ALTURA de la ventana manda ────────────────────────────────────
+
+  Un portátil de 1366×768 deja poco más de 640px de alto útil, y la tarjeta de
+  acceso con su respiración normal se pasaba de largo: el botón de entrar caía
+  fuera y había que desplazar para llegar a él, en la pantalla que menos lo
+  admite — es la primera que se ve y la única que no se puede saltar.
+
+  Se resuelve con variables y no con utilitarios `sm:` a propósito. El aire de
+  la tarjeta depende del ALTO de la ventana, y Tailwind no tiene variante para
+  eso; escribirla como `@custom-variant` la dejaría compitiendo con `sm:` con la
+  misma especificidad, donde gana quien salga después en el CSS generado y eso
+  no lo decide este archivo. Con variables no hay competencia: la última
+  declaración que aplica es la que vale, y aquí el orden está escrito.
+
+  La tarjeta APRIETA, nunca esconde: en una ventana baja se ve exactamente lo
+  mismo, más junto.
+*/
+.acceso-tarjeta {
+  --acceso-borde: 2rem; /* respiración interior de la tarjeta */
+  --acceso-salto: 1.5rem; /* separación entre bloques (encabezado, formulario, alternativas) */
+  --acceso-aire: 1rem; /* separación entre campos del formulario */
+  --acceso-logo: 2.75rem; /* alto del isotipo de la cabecera */
+}
+
+@media (max-width: 40rem) {
+  .acceso-tarjeta {
+    --acceso-borde: 1.5rem;
+  }
+}
+
+@media (max-height: 51.25rem) {
+  .acceso-tarjeta {
+    --acceso-borde: 1.375rem;
+    --acceso-salto: 1.125rem;
+    --acceso-aire: 0.75rem;
+    --acceso-logo: 2.25rem;
   }
 }

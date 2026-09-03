@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Controller, useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { AnimatePresence, motion, type Variants } from "motion/react"
-import { ArrowRight, Eye, EyeOff, Loader2, Store } from "lucide-react"
+import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2, Store } from "lucide-react"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button, buttonVariants } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
@@ -31,35 +31,69 @@ interface LoginProps {
   slug?: string
 }
 
-// La tarjeta entra con resorte desde abajo y sale hacia arriba al autenticar.
+/*
+  La tarjeta entra desde abajo y sale hacia arriba al autenticar.
+
+  La ENTRADA se toma su tiempo —recorrido largo y escalonado visible— porque es
+  la primera impresión del producto y lo que se recuerda de él. La SALIDA no:
+  dura menos de la mitad, y no es por estética sino porque `onExitComplete` es
+  quien navega, así que cada milisegundo que dura es un milisegundo en el que el
+  panel todavía no ha empezado a cargar.
+*/
 const tarjeta: Variants = {
-  oculto: { opacity: 0, y: 56, scale: 0.94 },
+  oculto: { opacity: 0, y: 40, scale: 0.95 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 150,
-      damping: 19,
-      staggerChildren: 0.09,
-      delayChildren: 0.12,
+      stiffness: 170,
+      damping: 21,
+      staggerChildren: 0.07,
+      delayChildren: 0.09,
     },
   },
   salida: {
     opacity: 0,
-    y: -48,
-    scale: 0.96,
-    transition: { duration: 0.35, ease: "easeIn" },
+    y: -28,
+    scale: 0.98,
+    transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] },
   },
 }
 
 const bloque: Variants = {
-  oculto: { opacity: 0, y: 26 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
+  oculto: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 240, damping: 24 } },
 }
 
-// Presentacional: el padre (app/page.tsx) entrega el submit y el estado por props.
+/*
+  Las líneas se DIBUJAN, no aparecen. El separador del «o» y la perforación del
+  ticket entraban dentro de su bloque, como un rectángulo que se funde: una raya
+  que nace en un punto y recorre su ancho es lo que hace que se lea como un
+  corte del papel y no como un borde que estaba ahí. Es `scaleX`, así que no
+  toca el layout ni obliga a repintar a nadie.
+*/
+const linea: Variants = {
+  oculto: { scaleX: 0 },
+  visible: { scaleX: 1, transition: { duration: 0.5, ease: [0.23, 1, 0.32, 1] } },
+}
+
+/*
+  Los dos agujeros del ticket entran con resorte, y desde 0.4 y no desde cero:
+  una escala que arranca en 0 no tiene dimensión de la que crecer y el ojo lo lee
+  como una aparición brusca, no como algo que se abre.
+*/
+const perforacion: Variants = {
+  oculto: { scale: 0.4, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 420, damping: 20 },
+  },
+}
+
+// Presentacional: el contenedor de la ruta entrega el submit y el estado por props.
 export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
   const t = useTextos()
   const [verContrasena, setVerContrasena] = useState(false)
@@ -83,24 +117,29 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
 
   return (
     <motion.div
-      className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card/85 shadow-xl backdrop-blur-xl"
+      className="acceso-tarjeta w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card/85 shadow-xl backdrop-blur-xl"
       variants={tarjeta}
       initial="oculto"
       animate="visible"
       exit="salida"
     >
-      {/* Cinta de barbero — sello de la marca en la cabecera del ticket */}
+      {/* Cinta de barbero — sello de la marca en la cabecera del ticket. Se
+          despliega de izquierda a derecha y con calma: es lo primero que se
+          mueve y lo que fija el carácter de la pantalla */}
       <motion.div
         className="cinta-barberia h-1.5 w-full origin-left"
         initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1, transition: { duration: 0.6, ease: "easeOut", delay: 0.25 } }}
+        animate={{
+          scaleX: 1,
+          transition: { duration: 0.65, ease: [0.23, 1, 0.32, 1], delay: 0.2 },
+        }}
         aria-hidden
       />
 
-      <div className="p-8 sm:p-10">
+      <div className="p-(--acceso-borde)">
         <motion.div variants={bloque}>
-          <div className="flex items-start justify-between">
-            <LogoBarion variante="icono" priority className="h-14" />
+          <div className="flex items-start justify-between gap-3">
+            <LogoBarion variante="icono" priority className="h-(--acceso-logo)" />
             {/*
               La puerta dice de QUIÉN es. Entrar por `/b/{slug}/entrar` y por la
               puerta global se veía exactamente igual, así que quien llega desde
@@ -115,15 +154,21 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
               </span>
             ) : (
               <span className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-xs font-medium tracking-widest text-muted-foreground uppercase">
-                <span className="h-1.5 w-1.5 rounded-full bg-(--exito)" aria-hidden />
+                <span className="size-1.5 rounded-full bg-(--exito)" aria-hidden />
                 {t("auth.login.enLinea")}
               </span>
             )}
           </div>
-          <h2 className="mt-6 text-2xl font-bold text-balance text-foreground sm:text-3xl">
+          {/*
+            Es el título de la página y no un subtítulo del panel de marca: ese
+            panel se esconde por debajo de `lg`, así que en un móvil el `h1` de
+            la pantalla desaparecía y el primer encabezado que encontraba un
+            lector era un `h2` colgando de nada.
+          */}
+          <h1 className="mt-(--acceso-salto) text-2xl font-bold text-balance text-foreground sm:text-3xl">
             {slug ? t("auth.login.tituloBarberia") : t("auth.login.tituloGlobal")}
-          </h2>
-          <p className="mt-1.5 text-base text-pretty text-muted-foreground">
+          </h1>
+          <p className="mt-1.5 text-sm text-pretty text-muted-foreground">
             {slug ? t("auth.login.descripcionBarberia") : t("auth.login.descripcionGlobal")}
           </p>
         </motion.div>
@@ -143,7 +188,12 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
           real en estos tres nodos, que es un precio pequeño frente a un error de
           consola que aparece en cada inicio de sesión y tapa a los de verdad.
         */}
-        <form className="mt-8 space-y-5" onSubmit={enviar} noValidate suppressHydrationWarning>
+        <form
+          className="mt-(--acceso-salto) flex flex-col gap-(--acceso-aire)"
+          onSubmit={enviar}
+          noValidate
+          suppressHydrationWarning
+        >
           <motion.div variants={bloque}>
             <Field data-invalid={!!errors.correo}>
               <FieldLabel htmlFor="correo">{t("auth.login.correo")}</FieldLabel>
@@ -154,7 +204,6 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
                 suppressHydrationWarning
                 placeholder={t("auth.login.correoPlaceholder")}
                 aria-invalid={!!errors.correo}
-                className="h-11"
                 {...register("correo")}
               />
               <FieldError errors={[errors.correo]} />
@@ -171,16 +220,16 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
                   type={verContrasena ? "text" : "password"}
                   autoComplete="current-password"
                   aria-invalid={!!errors.contrasena}
-                  className="h-11 pr-11"
+                  className="pr-11"
                   {...register("contrasena")}
                 />
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon"
+                  size="icon-sm"
                   onClick={() => setVerContrasena(!verContrasena)}
                   aria-label={verContrasena ? t("auth.login.ocultar") : t("auth.login.mostrar")}
-                  className="absolute top-1/2 right-1 -translate-y-1/2"
+                  className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground"
                 >
                   {verContrasena ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
                 </Button>
@@ -189,10 +238,19 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
             </Field>
           </motion.div>
 
-          <motion.div className="flex items-center justify-between text-sm" variants={bloque}>
+          {/*
+            Recordarme y la salida de quien perdió la clave comparten fila: es
+            donde se buscan los dos, y en filas separadas costaban dos renglones
+            de una tarjeta que ya no cabía en un portátil. `flex-wrap` las parte
+            solo si el idioma alarga el texto lo suficiente.
+          */}
+          <motion.div
+            className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
+            variants={bloque}
+          >
             <label
               htmlFor="recordarme"
-              className="flex cursor-pointer items-center gap-2 text-muted-foreground"
+              className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground"
             >
               <Controller
                 control={control}
@@ -207,42 +265,39 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
               />
               {t("auth.login.recordarme")}
             </label>
-            {/* El enlace real de recuperación va debajo, con el slug de la
-                puerta. Aquí había un botón con el mismo texto y sin destino */}
-          </motion.div>
-
-          <AnimatePresence>
-            {error && (
-              <motion.p
-                role="alert"
-                className="text-xs text-destructive"
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {error}
-              </motion.p>
-            )}
-          </AnimatePresence>
-
-          {/* Quien perdió su clave necesita salir de aquí, no volver a probar. */}
-          <motion.div variants={bloque} className="-mt-1 flex justify-end">
             <Link
               href={slug ? `/recuperar?slug=${encodeURIComponent(slug)}` : "/recuperar"}
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-sm text-sm font-medium text-primary underline-offset-4 transition-colors hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
             >
               {t("auth.login.olvidaste")}
             </Link>
           </motion.div>
 
-          <motion.div variants={bloque}>
-            <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.01 }}>
-              <Button
-                type="submit"
-                disabled={deshabilitado}
-                className="mt-2 h-11 w-full text-sm font-semibold"
+          {/*
+            El fallo de credenciales no es de un campo —no se sabe cuál de los
+            dos está mal, y decirlo sería un oráculo—, así que se anuncia junto
+            al botón que acaba de fallar y no bajo un input. Con recuadro y
+            icono: en texto suelto y a 12px se perdía contra el resto.
+          */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                role="alert"
+                className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
               >
+                <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+                <span>{error}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.div variants={bloque}>
+            <motion.div whileTap={{ scale: 0.97 }}>
+              <Button type="submit" disabled={deshabilitado} className="w-full font-semibold">
                 {deshabilitado ? (
                   <Loader2 className="animate-spin" aria-hidden />
                 ) : (
@@ -255,11 +310,22 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
           </motion.div>
         </form>
 
-        <motion.div className="mt-6" variants={bloque}>
+        <motion.div className="mt-(--acceso-salto)" variants={bloque}>
+          {/* Las dos mitades se dibujan HACIA AFUERA desde la palabra: cada una
+              con su origen apuntando al centro, así el corte nace donde está el
+              «o» en vez de barrer la tarjeta de un lado al otro */}
           <div className="flex items-center gap-3">
-            <span className="h-px flex-1 bg-border" aria-hidden />
+            <motion.span
+              className="h-px flex-1 origin-right bg-border"
+              variants={linea}
+              aria-hidden
+            />
             <span className="text-xs text-muted-foreground">{t("auth.login.o")}</span>
-            <span className="h-px flex-1 bg-border" aria-hidden />
+            <motion.span
+              className="h-px flex-1 origin-left bg-border"
+              variants={linea}
+              aria-hidden
+            />
           </div>
 
           {/* Enlace y no botón con fetch: el acceso con Google es una NAVEGACIÓN
@@ -267,10 +333,7 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
               la cookie. Una petición desde el código no puede seguir ese viaje. */}
           <a
             href={`${env.apiUrl}/auth/oauth/google${slug ? `?slug=${encodeURIComponent(slug)}` : ""}`}
-            className={cn(
-              buttonVariants({ variant: "outline" }),
-              "mt-4 h-11 w-full text-sm font-medium"
-            )}
+            className={cn(buttonVariants({ variant: "outline" }), "mt-(--acceso-aire) w-full")}
           >
             <LogoGoogle aria-hidden />
             {t("auth.login.google")}
@@ -280,7 +343,10 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
         {/* El alta abierta es de ESTA aplicación (`/registro`), así que va con
             next/link. Estuvo como botón sin destino: el sitio parecía tener
             registro y la única forma de llegar era teclear la dirección */}
-        <motion.p className="mt-7 text-center text-sm text-muted-foreground" variants={bloque}>
+        <motion.p
+          className="mt-(--acceso-salto) text-center text-sm text-muted-foreground"
+          variants={bloque}
+        >
           {t("auth.login.sinCuenta")}{" "}
           <Link
             href={rutasPublicas.registro}
@@ -293,18 +359,35 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
 
       {/* Borde perforado tipo ticket de turno */}
       <motion.div className="relative" variants={bloque}>
-        <div className="absolute -top-2 -left-2 h-4 w-4 rounded-full border border-border bg-background" />
-        <div className="absolute -top-2 -right-2 h-4 w-4 rounded-full border border-border bg-background" />
-        <div className="border-t border-dashed border-border" />
-        <div className="px-8 pt-5 pb-6 text-center sm:px-10">
-          <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+        <motion.div
+          className="absolute -top-2 -left-2 size-4 rounded-full border border-border bg-background"
+          variants={perforacion}
+          aria-hidden
+        />
+        <motion.div
+          className="absolute -top-2 -right-2 size-4 rounded-full border border-border bg-background"
+          variants={perforacion}
+          aria-hidden
+        />
+        {/* La línea punteada se rasga de izquierda a derecha, como se arranca un
+            resguardo de verdad */}
+        <motion.div
+          className="origin-left border-t border-dashed border-border"
+          variants={linea}
+          aria-hidden
+        />
+        {/* El acceso de demostración cabe en una línea: es un atajo de prueba,
+            no una tercera forma de entrar, y ocupando tres renglones pesaba en
+            la tarjeta más que el propio formulario */}
+        <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 px-(--acceso-borde) py-3.5 text-center">
+          <span className="text-xs tracking-[0.14em] text-muted-foreground uppercase">
             {t("auth.login.demo")}
-          </p>
+          </span>
           <Link
             href="/dashboard"
-            className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+            className="inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-primary transition-colors hover:text-primary/80 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
-            {t("auth.login.demoEntrar")} <ArrowRight className="h-3 w-3" aria-hidden />
+            {t("auth.login.demoEntrar")} <ArrowRight className="size-3.5" aria-hidden />
           </Link>
         </div>
       </motion.div>

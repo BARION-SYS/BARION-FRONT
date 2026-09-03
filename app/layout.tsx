@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
-import { Analitica } from "@shared/components/analitica/Analitica"
 import { TooltipProvider } from "@shared/components/ui/tooltip"
 import { Toaster } from "@shared/components/ui/sonner"
 import { TenantProvider } from "@shared/providers/TenantProvider"
@@ -54,7 +53,6 @@ export default function RootLayout({
         </ThemeProvider>
         {/* Decide ella si se carga: fuera de producción no, y en las rutas
             donde se teclea una tarjeta tampoco. */}
-        <Analitica />
       </body>
     </html>
   )

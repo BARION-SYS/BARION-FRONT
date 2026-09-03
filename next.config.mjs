@@ -39,7 +39,20 @@ const ORIGENES_WOMPI = ["https://sandbox.wompi.co", "https://production.wompi.co
 //   no un descuido: mientras esté, la CSP no frena la inyección de un <script>
 //   en línea, pero sí frena traerse código de otro dominio y sí frena exfiltrar
 //   datos a un tercero, que es lo que protege una pantalla de pago.
-const cspDirectivas = {
+//
+// **No hay ningún dominio de analítica, y no es un olvido.** El proxy de
+// Cloudflare inyecta su beacon en el HTML de toda la zona `buildrion.com`, así
+// que esta política es lo único que decide si llega a ejecutarse aquí — y hoy
+// no. Medir es una decisión que se tomará más adelante y con una herramienta
+// elegida a conciencia, no algo que se herede de la configuración del dominio.
+//
+// El día que se abra un tercero en `script-src`, hay dos rutas que NO pueden
+// recibirlo: `/pago` y `/dashboard/configuracion/plan`. Son las que capturan
+// una tarjeta, y un script ajeno ahí puede leer el número antes de que el
+// formulario lo mande a ningún sitio — es lo que separa el cuestionario PCI
+// SAQ A del A-EP. Se resuelve con una segunda cabecera sobre esas rutas: el
+// navegador aplica las dos y exige que el recurso pase por ambas.
+const cspDirectivas = () => ({
   "default-src": ["'self'"],
   "base-uri": ["'self'"],
   "object-src": ["'none'"],
@@ -66,9 +79,9 @@ const cspDirectivas = {
   // PWA: el service worker y el manifiesto son de este origen.
   "worker-src": ["'self'"],
   "manifest-src": ["'self'"],
-}
+})
 
-const csp = Object.entries(cspDirectivas)
+const csp = Object.entries(cspDirectivas())
   .map(([directiva, valores]) => `${directiva} ${valores.join(" ")}`)
   .join("; ")
 

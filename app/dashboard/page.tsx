@@ -25,7 +25,7 @@ import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { FuncionDelPlan } from "@shared/components/feedback/FuncionDelPlan"
 import { useFormato } from "@shared/hooks/useFormato"
 import { useAuthStore } from "@store/auth.store"
-import { useSedeActual } from "@store/sede.store"
+import { useSedeActual, useSedeStore } from "@store/sede.store"
 import { useTextos } from "@shared/textos/useTextos"
 
 /**
@@ -75,6 +75,7 @@ export default function DashboardPage() {
   const pasos = useMemo(() => pasosDeSesion(sesion), [sesion])
 
   const sedeActual = useSedeActual()
+  const sedes = useSedeStore((estado) => estado.sedes)
   const t = useTextos("dashboard.pagina")
   const { dinero, numero, timezone, fecha, fechaCorta } = useFormato()
 
@@ -114,10 +115,13 @@ export default function DashboardPage() {
   // Espera a que el `Navbar` haya cargado las sedes —toda barbería nace con una,
   // la crea el alta— en lugar de arrancar con `null` y repetirlo todo un tick
   // después: dos rondas de peticiones por cada entrada al panel.
+  //
+  // Depende de la LISTA de sedes y no solo de la seleccionada: cuando Sedes
+  // publica una sede recién completada o creada, esto se vuelve a comprobar.
   useEffect(() => {
-    if (pasos.length === 0 || !sedeActual) return
-    void fetchProgreso({ sede: sedeActual, leeBarberos, leeCatalogo })
-  }, [pasos.length, sedeActual, leeBarberos, leeCatalogo, fetchProgreso])
+    if (pasos.length === 0 || sedes.length === 0) return
+    void fetchProgreso({ sedes, leeBarberos, leeCatalogo })
+  }, [pasos.length, sedes, leeBarberos, leeCatalogo, fetchProgreso])
 
   const puntos = useMemo(
     () => aPuntosGrafica(serie.puntos, (periodo) => fechaCorta(`${periodo}T12:00:00Z`), metas),

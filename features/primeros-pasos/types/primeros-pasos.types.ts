@@ -40,8 +40,12 @@ export interface PasoInicial {
  * dato. El resto sí se consulta desde este feature.
  */
 export interface AlcanceProgreso {
-  /** La sede que mira el panel. `null` mientras no haya ninguna cargada. */
-  sede: Sede | null
+  /**
+   * TODAS las sedes de la barbería, del store. Un paso de sede se da por hecho
+   * si lo está en CUALQUIERA activa: quien abre una segunda sede completa no
+   * tiene por qué seguir viendo pendiente la primera que dejó a medias.
+   */
+  sedes: Sede[]
   /** `barberos.ver` — sin él, `GET /barberos` es un 403. */
   leeBarberos: boolean
   /** `catalogo.ver` — sin él, `GET /servicios` es un 403. */

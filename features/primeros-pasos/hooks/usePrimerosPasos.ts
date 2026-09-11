@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react"
 import { primerosPasosService } from "@features/primeros-pasos/services/primeros-pasos.service"
-import { sedeCompleta } from "@features/primeros-pasos/utils/pasos"
+import { candidatosJornada, sedeCompleta, sedesActivas } from "@features/primeros-pasos/utils/pasos"
 import { getErrorMessage } from "@shared/utils/error"
 import type {
   AlcanceProgreso,
@@ -24,34 +24,39 @@ export function usePrimerosPasos() {
   const [error, setError] = useState<string | null>(null)
 
   /**
-   * Las tres listas van juntas porque no dependen entre sí; la jornada va
-   * después porque hace falta saber a QUIÉN preguntársela.
+   * Un paso está hecho si lo está en ALGUNA parte que cuente, no en la primera
+   * que aparezca: el horario en cualquier sede activa, la oferta y la jornada en
+   * cualquier barbero. Mirar solo la sede seleccionada y el primer barbero de la
+   * lista dejaba pasos pendientes para siempre en barberías que ya los tenían.
    *
-   * Se consulta la del primer barbero activo y no la de todos: con veinte
-   * personas serían veinte viajes en cada entrada al panel, y esto es una lista
-   * de primeros pasos, no una auditoría de la agenda.
+   * Las listas van juntas porque no dependen entre sí; las jornadas van después
+   * porque hace falta saber a QUIÉN preguntárselas, y se acotan a unos pocos
+   * candidatos (`candidatosJornada`) para no pagar un viaje por barbero.
    */
   const fetchProgreso = useCallback(async (alcance: AlcanceProgreso) => {
-    const { sede, leeBarberos, leeCatalogo } = alcance
+    const { sedes, leeBarberos, leeCatalogo } = alcance
+    const activas = sedesActivas(sedes)
     setLoadingProgreso(true)
     setError(null)
     try {
-      const [horario, barberos, servicios] = await Promise.all([
-        sede ? primerosPasosService.obtenerHorario(sede.id) : null,
+      const [horarios, barberos, servicios] = await Promise.all([
+        Promise.all(activas.map((sede) => primerosPasosService.obtenerHorario(sede.id))),
         leeBarberos ? primerosPasosService.obtenerBarberos() : null,
         leeCatalogo ? primerosPasosService.obtenerServicios() : null,
       ])
 
-      const primero = barberos?.data[0] ?? null
-      const jornada = primero ? await primerosPasosService.obtenerJornada(primero.id) : null
+      const equipo = barberos?.data ?? []
+      const jornadas = await Promise.all(
+        candidatosJornada(equipo).map((barbero) => primerosPasosService.obtenerJornada(barbero.id))
+      )
 
       setProgreso({
-        sede: sedeCompleta(sede),
-        horario: (horario?.data.tramos.length ?? 0) > 0,
-        personas: (barberos?.data.length ?? 0) > 0,
+        sede: activas.some(sedeCompleta),
+        horario: horarios.some((horario) => horario.data.tramos.length > 0),
+        personas: equipo.length > 0,
         catalogo: (servicios?.data.length ?? 0) > 0,
-        oferta: (primero?.oferta.length ?? 0) > 0,
-        jornada: (jornada?.data.tramos.length ?? 0) > 0,
+        oferta: equipo.some((barbero) => barbero.oferta.length > 0),
+        jornada: jornadas.some((jornada) => jornada.data.tramos.length > 0),
       })
     } catch (err) {
       setError(getErrorMessage(err))

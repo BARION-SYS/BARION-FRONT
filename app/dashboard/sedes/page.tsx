@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/components/ui/
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import { useAuthStore } from "@store/auth.store"
+import { useSedeStore } from "@store/sede.store"
 import { puede } from "@features/auth/utils/permisos"
 import { useSedes } from "@features/sedes/hooks/useSedes"
 import { SedesCierreForm } from "@features/sedes/components/SedesCierreForm"
@@ -63,6 +64,18 @@ export default function SedesPage() {
   useEffect(() => {
     void fetchSedes()
   }, [fetchSedes])
+
+  // Lo que se crea o se completa aquí tiene que verse en todo el panel sin
+  // recargar: el selector del navbar, la hora con la que se formatea y los
+  // primeros pasos leen el store, no esta lista. Sin esto, completar la
+  // dirección no marcaba el paso como hecho hasta la siguiente recarga.
+  //
+  // Solo con la lista ya cargada: publicar el `[]` inicial vaciaría el store y
+  // el panel se quedaría un instante sin sede.
+  const publicarSedes = useSedeStore((estado) => estado.setSedes)
+  useEffect(() => {
+    if (sedes.length > 0) publicarSedes(sedes)
+  }, [sedes, publicarSedes])
 
   const conAviso = async (accion: () => Promise<string>) => {
     try {

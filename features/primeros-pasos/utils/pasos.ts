@@ -33,6 +33,28 @@ export function sedeCompleta(sede: Sede | null): boolean {
   return Boolean(calle?.trim() || ciudad?.trim())
 }
 
+/**
+ * Las sedes que cuentan para los primeros pasos: las activas. Una desactivada
+ * no recibe clientes, y completarla no deja la barbería lista para nada.
+ */
+export function sedesActivas(sedes: Sede[]): Sede[] {
+  return sedes.filter((sede) => sede.activa)
+}
+
+/**
+ * A quién preguntarle la jornada: primero los que ya tienen oferta —son los que
+ * de verdad atienden—, y como mucho `tope`. Preguntarle a cada barbero es un
+ * viaje por persona en cada entrada al panel; quedarse con el primero a secas
+ * dejaba el paso pendiente cuando el primero de la lista era justo el que no
+ * trabaja.
+ */
+export function candidatosJornada<T extends { id: string; oferta: unknown[] }>(
+  barberos: T[],
+  tope = 5
+): T[] {
+  return [...barberos].sort((a, b) => b.oferta.length - a.oferta.length).slice(0, tope)
+}
+
 export function pasosHechos(pasos: PasoInicial[], progreso: ProgresoInicial): number {
   return pasos.filter((paso) => progreso[paso.clave]).length
 }

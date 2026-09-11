@@ -1,42 +1,39 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { motion, type Variants } from "motion/react"
-import { Eye, EyeOff, KeyRound, Loader2 } from "lucide-react"
-import { LogoBarion } from "@shared/components/brand/LogoBarion"
+import { AnimatePresence, motion } from "motion/react"
+import { AlertCircle, ArrowRight, KeyRound, Loader2, LogOut } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
-import { Field, FieldError, FieldLabel } from "@shared/components/ui/field"
-import { Input } from "@shared/components/ui/input"
 import { useTextos } from "@shared/textos/useTextos"
+import { CampoContrasena } from "@features/auth/components/CampoContrasena"
+import { PuertaAcceso } from "@features/auth/components/PuertaAcceso"
+import { RequisitosContrasena } from "@features/auth/components/RequisitosContrasena"
+import { TarjetaAcceso, bloqueAcceso } from "@features/auth/components/TarjetaAcceso"
 import {
   esquemaCambioContrasena,
   type DatosCambioContrasena,
 } from "@features/auth/schemas/auth.schema"
 import { erroresDe } from "@features/auth/schemas/errores"
 
+/** El mismo mínimo que el schema: si cambia allí, tiene que cambiar aquí. */
+const LARGO_MINIMO = 12
+
 interface CambioObligatorioProps {
   /** Con qué nombre se dirige a la persona. Null en el staff de plataforma. */
   nombre?: string | null
+  /** Con qué cuenta entró: quien tiene dos tiene que saber cuál está cambiando. */
+  email?: string | null
   cargando?: boolean
+  /**
+   * El rechazo de la API —por ejemplo, la contraseña actual no es la buena—.
+   * Se pinta junto al botón y no bajo un campo: la API dice que falló el cambio,
+   * y el lugar donde se mira tras pulsar es el botón que se acaba de pulsar.
+   */
+  error?: string | null
   onSubmit: (datos: DatosCambioContrasena) => Promise<void>
   onSalir: () => void
-}
-
-const tarjeta: Variants = {
-  oculto: { opacity: 0, y: 40, scale: 0.96 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 150, damping: 20, staggerChildren: 0.08 },
-  },
-}
-
-const bloque: Variants = {
-  oculto: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
 }
 
 /**
@@ -46,128 +43,160 @@ const bloque: Variants = {
  * No es un aviso que se pueda cerrar, y esa es toda su razón de ser: la API
  * responde 403 a cualquier otra ruta, así que dejar el panel debajo solo serviría
  * para llenar la pantalla de errores sin explicar por qué. Aquí se explica una
- * vez y se ofrece la única salida.
+ * vez y se ofrece la única salida — con el mismo marco que el login, porque es
+ * la continuación directa de haber entrado.
  *
  * Presentacional: el submit y el estado los entrega el padre por props.
  */
-export function CambioObligatorio({ nombre, cargando, onSubmit, onSalir }: CambioObligatorioProps) {
-  const t = useTextos()
-  const [verContrasena, setVerContrasena] = useState(false)
-  const esquema = useMemo(() => esquemaCambioContrasena(erroresDe(t)), [t])
+export function CambioObligatorio({
+  nombre,
+  email,
+  cargando,
+  error,
+  onSubmit,
+  onSalir,
+}: CambioObligatorioProps) {
+  const t = useTextos("auth.cambioObligatorio")
+  const tRaiz = useTextos()
+  const [visible, setVisible] = useState(false)
+  const esquema = useMemo(() => esquemaCambioContrasena(erroresDe(tRaiz)), [tRaiz])
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<DatosCambioContrasena>({
     resolver: standardSchemaResolver(esquema),
     defaultValues: { contrasenaActual: "", contrasenaNueva: "", confirmacion: "" },
   })
+  const [actual, nueva, confirmacion] = useWatch({
+    control,
+    name: ["contrasenaActual", "contrasenaNueva", "confirmacion"],
+  })
 
   const enviando = cargando || isSubmitting
-  const tipo = verContrasena ? "text" : "password"
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
-      <motion.div
-        variants={tarjeta}
-        initial="oculto"
-        animate="visible"
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-lg sm:p-8"
+    <PuertaAcceso>
+      <TarjetaAcceso
+        insignia={t("insignia")}
+        icono={KeyRound}
+        tono="advertencia"
+        titulo={nombre ? t("saludo", { nombre }) : t("tituloSinNombre")}
+        descripcion={t("descripcion")}
+        pie={
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onSalir}
+            className="min-h-11 gap-1.5 text-sm text-muted-foreground md:min-h-9"
+          >
+            <LogOut className="size-4" aria-hidden />
+            {tRaiz("comun.cerrarSesion")}
+          </Button>
+        }
       >
-        <motion.div variants={bloque} className="flex flex-col items-center gap-4 text-center">
-          <LogoBarion variante="icono" priority />
-          <span className="flex size-11 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--advertencia)_14%,transparent)]">
-            <KeyRound className="size-5 text-(--advertencia)" aria-hidden />
-          </span>
-          <div className="flex flex-col gap-1.5">
-            <h1 className="text-lg font-semibold">
-              {nombre
-                ? t("auth.cambioObligatorio.saludo", { nombre: nombre })
-                : t("auth.cambioObligatorio.tituloSinNombre")}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {t("auth.cambioObligatorio.descripcion")}
-            </p>
-          </div>
-        </motion.div>
+        {email && (
+          <motion.p
+            variants={bloqueAcceso}
+            className="mt-(--acceso-salto) truncate rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-muted-foreground"
+          >
+            {t("cuenta", { email })}
+          </motion.p>
+        )}
 
         <motion.form
-          variants={bloque}
+          variants={bloqueAcceso}
           onSubmit={(e) => void handleSubmit(onSubmit)(e)}
-          className="mt-6 flex flex-col gap-4"
+          noValidate
+          suppressHydrationWarning
+          className="mt-(--acceso-salto) flex flex-col gap-(--acceso-aire)"
         >
-          <Field>
-            <FieldLabel htmlFor="contrasenaActual">{t("auth.cambioObligatorio.actual")}</FieldLabel>
-            <Input
-              id="contrasenaActual"
-              type="password"
-              autoComplete="current-password"
-              placeholder={t("auth.cambioObligatorio.actualPlaceholder")}
-              aria-invalid={Boolean(errors.contrasenaActual)}
-              {...register("contrasenaActual")}
-            />
-            {errors.contrasenaActual && <FieldError>{errors.contrasenaActual.message}</FieldError>}
-          </Field>
+          <CampoContrasena
+            id="contrasenaActual"
+            etiqueta={t("actual")}
+            placeholder={t("actualPlaceholder")}
+            registro={register("contrasenaActual")}
+            error={errors.contrasenaActual?.message}
+            autoComplete="current-password"
+          />
 
-          <Field>
-            <FieldLabel htmlFor="contrasenaNueva">
-              {t("auth.cambioObligatorio.contrasenaNueva")}
-            </FieldLabel>
-            <div className="relative">
-              <Input
-                id="contrasenaNueva"
-                type={tipo}
-                autoComplete="new-password"
-                className="pr-10"
-                aria-invalid={Boolean(errors.contrasenaNueva)}
-                {...register("contrasenaNueva")}
-              />
-              <button
-                type="button"
-                onClick={() => setVerContrasena((v) => !v)}
-                aria-label={
-                  verContrasena
-                    ? t("auth.cambioObligatorio.ocultar")
-                    : t("auth.cambioObligatorio.mostrar")
-                }
-                className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {verContrasena ? (
-                  <EyeOff className="size-4" aria-hidden />
-                ) : (
-                  <Eye className="size-4" aria-hidden />
-                )}
-              </button>
-            </div>
-            <p className="text-xs text-muted-foreground">{t("auth.cambioObligatorio.minimo")}</p>
-            {errors.contrasenaNueva && <FieldError>{errors.contrasenaNueva.message}</FieldError>}
-          </Field>
-
-          <Field>
-            <FieldLabel htmlFor="confirmacion">{t("auth.cambioObligatorio.repite")}</FieldLabel>
-            <Input
-              id="confirmacion"
-              type={tipo}
+          {/* La actual y la nueva, separadas: son dos preguntas distintas —la
+              que te dieron y la que eliges— y juntas se leían como un solo
+              formulario de tres casillas iguales. */}
+          <div className="flex flex-col gap-(--acceso-aire) border-t border-dashed border-border pt-(--acceso-aire)">
+            <CampoContrasena
+              id="contrasenaNueva"
+              etiqueta={t("contrasenaNueva")}
+              registro={register("contrasenaNueva")}
+              error={errors.contrasenaNueva?.message}
               autoComplete="new-password"
-              aria-invalid={Boolean(errors.confirmacion)}
-              {...register("confirmacion")}
+              visible={visible}
+              alternar={{
+                onClick: () => setVisible((v) => !v),
+                mostrar: t("mostrar"),
+                ocultar: t("ocultar"),
+              }}
             />
-            {errors.confirmacion && <FieldError>{errors.confirmacion.message}</FieldError>}
-          </Field>
+            <CampoContrasena
+              id="confirmacion"
+              etiqueta={t("repite")}
+              registro={register("confirmacion")}
+              error={errors.confirmacion?.message}
+              autoComplete="new-password"
+              visible={visible}
+            />
 
-          <Button type="submit" disabled={enviando} className="h-10 w-full">
-            {enviando && <Loader2 className="size-4 animate-spin" aria-hidden />}
-            {t("auth.cambioObligatorio.guardar")}
-          </Button>
+            <RequisitosContrasena
+              requisitos={[
+                {
+                  clave: "largo",
+                  texto: tRaiz("auth.requisitos.largo"),
+                  cumple: nueva.length >= LARGO_MINIMO,
+                },
+                {
+                  clave: "coinciden",
+                  texto: tRaiz("auth.requisitos.coinciden"),
+                  cumple: nueva.length > 0 && nueva === confirmacion,
+                },
+                {
+                  clave: "distinta",
+                  texto: tRaiz("auth.requisitos.distinta"),
+                  cumple: nueva.length > 0 && nueva !== actual,
+                },
+              ]}
+            />
+          </div>
+
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                role="alert"
+                className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+              >
+                <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+                <span>{error}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <Button type="submit" disabled={enviando} className="w-full font-semibold">
+              {enviando ? (
+                <Loader2 className="animate-spin" aria-hidden />
+              ) : (
+                <>
+                  {t("guardar")} <ArrowRight aria-hidden />
+                </>
+              )}
+            </Button>
+          </motion.div>
         </motion.form>
-
-        {/* La única otra salida: nadie debe quedar encerrado en una pantalla. */}
-        <motion.div variants={bloque} className="mt-4 text-center">
-          <Button variant="ghost" onClick={onSalir} className="h-9 text-sm">
-            {t("comun.cerrarSesion")}
-          </Button>
-        </motion.div>
-      </motion.div>
-    </div>
+      </TarjetaAcceso>
+    </PuertaAcceso>
   )
 }

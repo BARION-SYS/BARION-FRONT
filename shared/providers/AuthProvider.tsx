@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { CambioObligatorio } from "@features/auth/components/CambioObligatorio"
 import { useAuth } from "@features/auth/hooks/useAuth"
@@ -8,6 +8,7 @@ import { appDeSesion } from "@features/auth/utils/permisos"
 import { obtenerRutaActiva, rutasDe, rutasVisibles } from "@routes/rutasDashboard"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { notify } from "@shared/services/notify"
+import { getErrorMessage } from "@shared/utils/error"
 import { useAuthStore } from "@store/auth.store"
 
 /** A qué área pertenece el árbol que este provider protege. */
@@ -57,6 +58,9 @@ export function AuthProvider({
     useAuth()
   const sesion = useAuthStore((s) => s.sesion)
   const hidratada = useAuthStore((s) => s.hidratada)
+  // UI state de la pantalla de cambio obligatorio: vive en el padre, que es
+  // quien hace la mutación, y el formulario solo lo pinta.
+  const [errorCambio, setErrorCambio] = useState<string | null>(null)
 
   const areaDeLaSesion = appDeSesion(sesion)
   const enSuArea = areaDeLaSesion === area
@@ -103,10 +107,21 @@ export function AuthProvider({
     return (
       <CambioObligatorio
         nombre={sesion.usuario.nombre}
+        email={sesion.usuario.email}
         cargando={loadingContrasena}
+        error={errorCambio}
         onSubmit={async (datos) => {
-          const mensaje = await handleCambiarContrasenaAuth(datos)
-          notify.success(mensaje)
+          // El rechazo se CAPTURA aquí: sin esto la promesa rechazada acababa
+          // dentro del `void handleSubmit(...)` del formulario, y una contraseña
+          // actual equivocada no dejaba nada en pantalla — el botón volvía a
+          // estar listo como si no hubiera pasado nada.
+          setErrorCambio(null)
+          try {
+            const mensaje = await handleCambiarContrasenaAuth(datos)
+            notify.success(mensaje)
+          } catch (err) {
+            setErrorCambio(getErrorMessage(err))
+          }
         }}
         onSalir={() => {
           void handleLogoutAuth().then(() => router.replace("/entrar"))

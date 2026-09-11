@@ -196,22 +196,27 @@
       "titulo": "Get back in",
       "descripcion": "Type the email you sign in with and we'll send a link to pick a new password.",
       "enviadoTitulo": "Check your email",
-      "enviadoDescripcion": "If that address has a Barion account, a link to pick a new password is on its way. It expires in two hours and works once.",
       "correo": "Email",
       "enviar": "Send the link",
-      "volver": "Back to sign in"
+      "volver": "Back to sign in",
+      "insignia": "Account recovery",
+      "enviadoA": "If {correo} has a Barion account, a link to pick a new password is on its way. It expires in two hours and works once.",
+      "consejoSpam": "Nothing after a few minutes? Check your spam or promotions folder.",
+      "consejoEquipo": "If you work at a barbershop, whoever runs it can also give you a new password from Team.",
+      "otroCorreo": "Try another email"
     },
     "nuevaContrasena": {
       "titulo": "Pick your password",
       "descripcion": "The old one stops working the moment you save this.",
       "contrasenaNueva": "New password",
       "repite": "Type it again",
-      "minimo": "At least 12 characters.",
       "guardar": "Save the password",
       "mostrar": "Show the password",
       "ocultar": "Hide the password",
       "enlaceIncompleto": "This link is incomplete. Ask for a new one and open it from the email.",
-      "pedirOtro": "Ask for a new link"
+      "pedirOtro": "Ask for a new link",
+      "insignia": "New password",
+      "enlaceIncompletoTitulo": "This link doesn't work"
     },
     "cambioObligatorio": {
       "saludo": "Hi, {nombre}",
@@ -221,10 +226,11 @@
       "actualPlaceholder": "The one you were given",
       "contrasenaNueva": "New password",
       "repite": "Type the new one again",
-      "minimo": "At least 12 characters.",
       "mostrar": "Show the password",
       "ocultar": "Hide the password",
-      "guardar": "Save and go in"
+      "guardar": "Save and go in",
+      "insignia": "First sign-in",
+      "cuenta": "You're signing in as {email}"
     },
     "panelMarca": {
       "insignia": "Barbershop OS",
@@ -252,6 +258,11 @@
       },
       "pieTexto": "Not using Barion yet?",
       "pieEnlace": "See what it does"
+    },
+    "requisitos": {
+      "largo": "12 characters or more",
+      "coinciden": "Both match",
+      "distinta": "Different from the one you were given"
     }
   },
   "notificaciones": {

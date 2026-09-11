@@ -2,10 +2,9 @@
 
 import { Suspense, useCallback, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { MotionConfig } from "motion/react"
 import { NuevaContrasena } from "@features/auth/components/NuevaContrasena"
+import { PuertaAcceso } from "@features/auth/components/PuertaAcceso"
 import { useAuth } from "@features/auth/hooks/useAuth"
-import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import type { DatosNuevaContrasena } from "@features/auth/schemas/auth.schema"
@@ -53,18 +52,13 @@ function ContenedorConfirmar() {
   )
 
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="relative">
-        <div className="absolute top-4 right-4 z-10">
-          <ThemeToggle />
-        </div>
-        <NuevaContrasena
-          tokenPresente={token.length > 0}
-          cargando={loadingContrasena}
-          error={error}
-          onSubmit={guardar}
-        />
-      </div>
-    </MotionConfig>
+    <PuertaAcceso>
+      <NuevaContrasena
+        tokenPresente={token.length > 0}
+        cargando={loadingContrasena}
+        error={error}
+        onSubmit={guardar}
+      />
+    </PuertaAcceso>
   )
 }

@@ -196,22 +196,27 @@
       "titulo": "Recupera tu acceso",
       "descripcion": "Escribe el correo con el que entras y te mandamos un enlace para elegir otra contraseña.",
       "enviadoTitulo": "Revisa tu correo",
-      "enviadoDescripcion": "Si esa dirección tiene cuenta en Barion, le llegará un enlace para elegir una contraseña nueva. Caduca en dos horas y sirve una sola vez.",
       "correo": "Correo",
       "enviar": "Enviar el enlace",
-      "volver": "Volver a iniciar sesión"
+      "volver": "Volver a iniciar sesión",
+      "insignia": "Recuperar acceso",
+      "enviadoA": "Si {correo} tiene cuenta en Barion, le llegará un enlace para elegir una contraseña nueva. Caduca en dos horas y sirve una sola vez.",
+      "consejoSpam": "¿No aparece en unos minutos? Revisa la carpeta de spam o de promociones.",
+      "consejoEquipo": "Si trabajas en una barbería, quien la administra también puede darte una contraseña nueva desde Equipo.",
+      "otroCorreo": "Probar con otro correo"
     },
     "nuevaContrasena": {
       "titulo": "Elige tu contraseña",
       "descripcion": "La anterior deja de servir en cuanto guardes esta.",
       "contrasenaNueva": "Contraseña nueva",
       "repite": "Repítela",
-      "minimo": "Mínimo 12 caracteres.",
       "guardar": "Guardar la contraseña",
       "mostrar": "Mostrar la contraseña",
       "ocultar": "Ocultar la contraseña",
       "enlaceIncompleto": "Este enlace está incompleto. Pide uno nuevo y ábrelo desde el correo.",
-      "pedirOtro": "Pedir un enlace nuevo"
+      "pedirOtro": "Pedir un enlace nuevo",
+      "insignia": "Contraseña nueva",
+      "enlaceIncompletoTitulo": "Este enlace no sirve"
     },
     "cambioObligatorio": {
       "saludo": "Hola, {nombre}",
@@ -221,10 +226,11 @@
       "actualPlaceholder": "La que te dieron",
       "contrasenaNueva": "Contraseña nueva",
       "repite": "Repite la nueva",
-      "minimo": "Mínimo 12 caracteres.",
       "mostrar": "Mostrar la contraseña",
       "ocultar": "Ocultar la contraseña",
-      "guardar": "Guardar y entrar"
+      "guardar": "Guardar y entrar",
+      "insignia": "Primer ingreso",
+      "cuenta": "Estás entrando como {email}"
     },
     "panelMarca": {
       "insignia": "Barbershop OS",
@@ -252,6 +258,11 @@
       },
       "pieTexto": "¿Todavía no usas Barion?",
       "pieEnlace": "Mira lo que hace"
+    },
+    "requisitos": {
+      "largo": "12 caracteres o más",
+      "coinciden": "Las dos coinciden",
+      "distinta": "Distinta de la que te dieron"
     }
   },
   "notificaciones": {

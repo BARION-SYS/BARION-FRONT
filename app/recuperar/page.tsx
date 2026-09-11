@@ -2,10 +2,10 @@
 
 import { Suspense, useCallback, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { MotionConfig } from "motion/react"
+import { AnimatePresence } from "motion/react"
+import { PuertaAcceso } from "@features/auth/components/PuertaAcceso"
 import { RecuperarAcceso } from "@features/auth/components/RecuperarAcceso"
 import { useAuth } from "@features/auth/hooks/useAuth"
-import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage } from "@shared/utils/error"
 import type { DatosSolicitudRecuperacion } from "@features/auth/schemas/auth.schema"
@@ -33,16 +33,19 @@ function ContenedorRecuperar() {
   const parametros = useSearchParams()
   const slug = parametros.get("slug")
   const { loadingContrasena, handleSolicitarRecuperacionAuth } = useAuth()
-  const [enviado, setEnviado] = useState(false)
+  // A qué correo se pidió. Se guarda para decírselo en la confirmación: «revisa
+  // tu correo» sin decir cuál no le sirve a quien tiene dos.
+  const [correoEnviado, setCorreoEnviado] = useState<string | null>(null)
 
   const volverA = slug ? `/b/${slug}/entrar` : "/entrar"
 
   const solicitar = useCallback(
     async (datos: DatosSolicitudRecuperacion) => {
       try {
-        const mensaje = await handleSolicitarRecuperacionAuth(datos)
-        setEnviado(true)
-        notify.success(mensaje)
+        await handleSolicitarRecuperacionAuth(datos)
+        // Sin aviso flotante: la tarjeta entera pasa a la confirmación, y un
+        // segundo mensaje diciendo lo mismo es ruido.
+        setCorreoEnviado(datos.email.trim())
       } catch (err) {
         notify.error(getErrorMessage(err))
       }
@@ -51,18 +54,17 @@ function ContenedorRecuperar() {
   )
 
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="relative">
-        <div className="absolute top-4 right-4 z-10">
-          <ThemeToggle />
-        </div>
+    <PuertaAcceso>
+      <AnimatePresence mode="wait">
         <RecuperarAcceso
+          key={correoEnviado ? "enviado" : "pedir"}
           cargando={loadingContrasena}
-          enviado={enviado}
+          correoEnviado={correoEnviado}
           volverA={volverA}
           onSubmit={solicitar}
+          onOtroCorreo={() => setCorreoEnviado(null)}
         />
-      </div>
-    </MotionConfig>
+      </AnimatePresence>
+    </PuertaAcceso>
   )
 }

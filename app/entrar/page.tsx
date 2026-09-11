@@ -2,13 +2,12 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { AnimatePresence, MotionConfig, motion } from "motion/react"
+import { AnimatePresence } from "motion/react"
 import { Login } from "@features/auth/components/Login"
-import { PanelMarca } from "@features/auth/components/PanelMarca"
+import { PuertaAcceso } from "@features/auth/components/PuertaAcceso"
 import { SelectorBarberia } from "@features/auth/components/SelectorBarberia"
 import { useAuth } from "@features/auth/hooks/useAuth"
 import { appDeSesion } from "@features/auth/utils/permisos"
-import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { mensajeDeErrorOauth } from "@features/auth/utils/errores-oauth"
 import type { DatosLogin } from "@features/auth/schemas/auth.schema"
 
@@ -119,70 +118,29 @@ function ContenedorLogin() {
 
   const eligiendo = barberiasParaElegir.length > 0
 
+  // El marco —panel de marca, textura, columna que desplaza— es el mismo de las
+  // demás pantallas de acceso y vive en `PuertaAcceso`.
   return (
-    <MotionConfig reducedMotion="user">
-      {/*
-        La pantalla ocupa la ventana exacta y quien desplaza, si hace falta, es
-        la columna del formulario — no la página. Antes crecía con `min-h-dvh` y
-        la tarjeta empujaba el documento entero: en un portátil de 768px el
-        botón de entrar quedaba por debajo del borde y la mitad de marca se iba
-        con él. Y el `overflow-hidden` que envolvía el formulario no salvaba
-        nada: recortaba lo que sobresalía en vez de dejar llegar hasta ello.
-
-        `m-auto` en el envoltorio de la tarjeta centra mientras sobra sitio y
-        deja de centrar cuando no — con `items-center` el desbordamiento se
-        recorta por arriba y esa parte no se puede alcanzar con el scroll.
-      */}
-      <div className="relative flex h-dvh overflow-hidden bg-background">
-        <div className="absolute top-4 right-4 z-20">
-          <ThemeToggle />
-        </div>
-        <PanelMarca />
-
-        <main className="scroll-fino relative flex flex-1 flex-col overflow-y-auto">
-          {/* Empapelado diagonal sutil, eco del panel de marca */}
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(135deg, var(--foreground) 0 2px, transparent 2px 26px)",
-            }}
-            aria-hidden
-          />
-
-          {/* Resplandor dorado con flotación lenta */}
-          <motion.div
-            className="pointer-events-none absolute -top-24 right-0 h-80 w-80 rounded-full bg-primary/10 blur-3xl"
-            animate={{ y: [0, 28, 0] }}
-            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-            aria-hidden
-          />
-
-          <div className="relative z-10 m-auto w-full max-w-md px-4 py-6 sm:px-6">
-            <AnimatePresence onExitComplete={() => router.push(destino)}>
-              {!saliendo &&
-                (eligiendo ? (
-                  <SelectorBarberia
-                    key="selector"
-                    barberias={barberiasParaElegir}
-                    cargando={loadingLogin}
-                    onElegir={onElegirBarberia}
-                  />
-                ) : (
-                  <Login
-                    key="login"
-                    onSubmit={onSubmitLogin}
-                    cargando={loadingLogin || loadingDemo}
-                    error={error ?? errorOauth}
-                    demo={
-                      demoDisponible ? { onEntrar: entrarDemo, cargando: loadingDemo } : undefined
-                    }
-                  />
-                ))}
-            </AnimatePresence>
-          </div>
-        </main>
-      </div>
-    </MotionConfig>
+    <PuertaAcceso>
+      <AnimatePresence onExitComplete={() => router.push(destino)}>
+        {!saliendo &&
+          (eligiendo ? (
+            <SelectorBarberia
+              key="selector"
+              barberias={barberiasParaElegir}
+              cargando={loadingLogin}
+              onElegir={onElegirBarberia}
+            />
+          ) : (
+            <Login
+              key="login"
+              onSubmit={onSubmitLogin}
+              cargando={loadingLogin || loadingDemo}
+              error={error ?? errorOauth}
+              demo={demoDisponible ? { onEntrar: entrarDemo, cargando: loadingDemo } : undefined}
+            />
+          ))}
+      </AnimatePresence>
+    </PuertaAcceso>
   )
 }

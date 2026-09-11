@@ -1,11 +1,13 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import Link from "next/link"
 import { useForm, useWatch } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { AnimatePresence, motion } from "motion/react"
-import { AlertCircle, ArrowRight, KeyRound, Loader2, LogOut } from "lucide-react"
+import { AlertCircle, ArrowRight, KeyRound, LifeBuoy, Loader2, LogOut } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
+import { rutasPublicas } from "@routes/rutasPublicas"
 import { useTextos } from "@shared/textos/useTextos"
 import { CampoContrasena } from "@features/auth/components/CampoContrasena"
 import { PuertaAcceso } from "@features/auth/components/PuertaAcceso"
@@ -184,6 +186,29 @@ export function CambioObligatorio({
             )}
           </AnimatePresence>
 
+          {/*
+            ── La salida, y por qué está SIEMPRE a la vista ────────────────────
+            Esta pantalla pide una contraseña que la persona no eligió: se la
+            dieron. Cuando no la tiene —se la dictaron mal, la perdió, cambió de
+            equipo— el único camino era escribir algo, recibir «la contraseña
+            actual no es correcta» y volver a intentarlo, contra una pantalla que
+            además no deja ir a ninguna otra parte. Eso es quedarse encerrado
+            fuera de la propia cuenta.
+
+            Las dos salidas van juntas y en este orden a propósito: la primera es
+            inmediata y no depende de ningún correo —quien administra la barbería
+            reemplaza la contraseña desde Equipo—, y la segunda es la lenta, para
+            quien no tiene a nadie a quien pedírselo.
+
+            No se enseña solo tras fallar. Quien llega sin la clave ya lo sabe al
+            llegar, y hacerle fallar primero para enseñarle la puerta es cobrarle
+            un intento por información que se le podía haber dado antes.
+
+            Va DEBAJO del botón, y eso no es un detalle de maquetación: puesta
+            encima empujaba «Guardar y entrar» fuera de la ventana en un portátil,
+            y la pantalla acababa escondiendo su acción principal para enseñar la
+            de rescate.
+          */}
           <motion.div whileTap={{ scale: 0.97 }}>
             <Button type="submit" disabled={enviando} className="w-full font-semibold">
               {enviando ? (
@@ -195,6 +220,23 @@ export function CambioObligatorio({
               )}
             </Button>
           </motion.div>
+
+          <div className="rounded-xl border border-border bg-secondary/40 px-3.5 py-3">
+            <p className="flex items-start gap-2.5 text-sm font-medium text-foreground">
+              <LifeBuoy className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+              {t("salidaTitulo")}
+            </p>
+            <p className="mt-1.5 pl-6.5 text-sm text-pretty text-muted-foreground">
+              {t("salidaEquipo")}
+            </p>
+            <Link
+              href={rutasPublicas.recuperar}
+              className="mt-2 ml-6.5 inline-flex min-h-11 items-center gap-1 rounded-sm text-sm font-medium text-primary underline-offset-4 transition-colors hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none md:min-h-9"
+            >
+              {t("salidaEnlace")}
+              <ArrowRight className="size-3.5" aria-hidden />
+            </Link>
+          </div>
         </motion.form>
       </TarjetaAcceso>
     </PuertaAcceso>

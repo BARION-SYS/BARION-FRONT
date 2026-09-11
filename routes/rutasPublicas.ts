@@ -8,6 +8,8 @@ import { env } from "@config/env"
 export const rutasPublicas = {
   entrar: "/entrar",
   registro: "/registro",
+  /** Pedir el enlace para volver a entrar. La salida de quien no tiene la clave. */
+  recuperar: "/recuperar",
 } as const
 
 /**

@@ -7,6 +7,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { AnimatePresence, motion } from "motion/react"
 import { AlertCircle, ArrowRight, Link2Off, Loader2, LockKeyhole } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
+import { rutasPublicas } from "@routes/rutasPublicas"
 import { useTextos } from "@shared/textos/useTextos"
 import { CampoContrasena } from "@features/auth/components/CampoContrasena"
 import { RequisitosContrasena } from "@features/auth/components/RequisitosContrasena"
@@ -61,7 +62,7 @@ export function NuevaContrasena({
 
   const pie = (
     <Link
-      href="/recuperar"
+      href={rutasPublicas.recuperar}
       className="inline-flex min-h-11 items-center rounded-sm text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none md:min-h-9"
     >
       {t("pedirOtro")}

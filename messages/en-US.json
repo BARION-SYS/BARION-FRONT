@@ -200,9 +200,13 @@
       "enviar": "Send the link",
       "volver": "Back to sign in",
       "insignia": "Account recovery",
-      "enviadoA": "If {correo} has a Barion account, a link to pick a new password is on its way. It expires in two hours and works once.",
-      "consejoSpam": "Nothing after a few minutes? Check your spam or promotions folder.",
-      "consejoEquipo": "If you work at a barbershop, whoever runs it can also give you a new password from Team.",
+      "enviadoA": "If {correo} has a Barion account, a link to pick a new password is on its way. It usually lands in under a minute, expires in two hours and works once.",
+      "porQueAsi": "We won't confirm whether that address has an account. If we did, anyone could use this form to find out who's on Barion.",
+      "siNoLlega": "Nothing yet? It's one of these four",
+      "consejoSpam": "It went to spam or promotions. The first email from a new sender usually does — search for “Barion”.",
+      "consejoOtro": "That's not the address. It has to be the exact one you sign in with; if you have two, try the other.",
+      "consejoEquipo": "You work at a barbershop. Whoever runs it can give you a new password from Team right away, with no email involved.",
+      "consejoStaff": "You're on the Barion team. This link never reaches you — your account doesn't belong to a barbershop. Ask a teammate to reset it for you.",
       "otroCorreo": "Try another email"
     },
     "nuevaContrasena": {
@@ -230,7 +234,10 @@
       "ocultar": "Hide the password",
       "guardar": "Save and go in",
       "insignia": "First sign-in",
-      "cuenta": "You're signing in as {email}"
+      "cuenta": "You're signing in as {email}",
+      "salidaTitulo": "Don't have the password you were given?",
+      "salidaEquipo": "Ask whoever runs your barbershop to set you another one from Team. It's immediate and no email is involved.",
+      "salidaEnlace": "Or get a link by email"
     },
     "panelMarca": {
       "insignia": "Barbershop OS",

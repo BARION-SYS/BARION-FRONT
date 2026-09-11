@@ -200,9 +200,13 @@
       "enviar": "Enviar el enlace",
       "volver": "Volver a iniciar sesión",
       "insignia": "Recuperar acceso",
-      "enviadoA": "Si {correo} tiene cuenta en Barion, le llegará un enlace para elegir una contraseña nueva. Caduca en dos horas y sirve una sola vez.",
-      "consejoSpam": "¿No aparece en unos minutos? Revisa la carpeta de spam o de promociones.",
-      "consejoEquipo": "Si trabajas en una barbería, quien la administra también puede darte una contraseña nueva desde Equipo.",
+      "enviadoA": "Si {correo} tiene cuenta en Barion, el enlace ya va en camino. Suele llegar en menos de un minuto, caduca en dos horas y sirve una sola vez.",
+      "porQueAsi": "No te confirmamos si esa dirección tiene cuenta. Si lo hiciéramos, cualquiera podría usar este formulario para averiguar quién está en Barion.",
+      "siNoLlega": "Si no llega, es por una de estas cuatro",
+      "consejoSpam": "Está en spam o en promociones. El primer correo de un remitente nuevo cae ahí muy a menudo: búscalo por «Barion».",
+      "consejoOtro": "La dirección no es esa. Tiene que ser exactamente la que usas para entrar; si tienes dos correos, prueba con el otro.",
+      "consejoEquipo": "Trabajas en una barbería. Quien la administra te pone una contraseña nueva desde Equipo en el momento, sin esperar ningún correo.",
+      "consejoStaff": "Eres del equipo de Barion. A ti este enlace no te llega nunca —tu cuenta no cuelga de ninguna barbería—: pídele el restablecimiento a otra persona del equipo.",
       "otroCorreo": "Probar con otro correo"
     },
     "nuevaContrasena": {
@@ -230,7 +234,10 @@
       "ocultar": "Ocultar la contraseña",
       "guardar": "Guardar y entrar",
       "insignia": "Primer ingreso",
-      "cuenta": "Estás entrando como {email}"
+      "cuenta": "Estás entrando como {email}",
+      "salidaTitulo": "¿No tienes la contraseña que te dieron?",
+      "salidaEquipo": "Pídele a quien administra tu barbería que te ponga otra desde Equipo. Es inmediato y no pasa por ningún correo.",
+      "salidaEnlace": "O pide un enlace a tu correo"
     },
     "panelMarca": {
       "insignia": "Barbershop OS",

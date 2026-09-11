@@ -51,9 +51,16 @@ export function PanelMarca() {
 
       {/* Poste de barbero — cinta vertical animada en el borde del panel. Cae
           de arriba abajo al entrar, en eco de la que corona la tarjeta de
-          acceso: son la misma marca a los dos lados de la pantalla */}
+          acceso: son la misma marca a los dos lados de la pantalla.
+
+          Se difumina en los dos extremos y es más fina que la de la tarjeta, y
+          eso es lo que la convierte de barrera en borde: a toda altura, opaca y
+          de punta a punta, una raya de color vivo partía la pantalla en dos
+          mitades y era lo primero que miraba el ojo — por delante del formulario
+          que es la razón de la página. Un acento vive en el borde; no lo
+          defiende. */}
       <motion.div
-        className="cinta-barberia absolute top-0 right-0 h-full w-1.5 origin-top"
+        className="cinta-barberia absolute top-0 right-0 h-full w-1 origin-top [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)] opacity-70"
         initial={{ scaleY: 0 }}
         animate={{
           scaleY: 1,

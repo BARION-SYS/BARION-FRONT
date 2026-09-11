@@ -72,7 +72,7 @@ interface TarjetaAccesoProps {
 
 /**
  * La tarjeta de las pantallas de acceso que no son el login: el mismo ticket de
- * turno —cinta de barbero arriba, talón perforado abajo— con la cabecera ya
+ * turno —cinta de barbero arriba, talón cortado abajo— con la cabecera ya
  * resuelta.
  *
  * El `h1` es el título del paso y no un subtítulo: por debajo de `lg` el panel
@@ -109,16 +109,32 @@ export function TarjetaAcceso({
         aria-hidden
       />
 
-      <div className="p-(--acceso-borde)">
+      <div
+        className={cn(
+          "px-(--acceso-borde) pt-(--acceso-borde)",
+          // Con talón, el aire de abajo lo pone la separación entre bloques y no
+          // el borde de la tarjeta: sumar los dos dejaba un hueco muerto entre
+          // el último botón y la línea de corte, y el talón se leía suelto.
+          pie ? "pb-(--acceso-salto)" : "pb-(--acceso-borde)"
+        )}
+      >
         <motion.div variants={bloqueAcceso}>
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center justify-between gap-3">
             <LogoBarion variante="icono" priority className="h-(--acceso-logo)" />
             <span className="rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-xs font-medium tracking-widest text-muted-foreground uppercase">
               {insignia}
             </span>
           </div>
 
-          <div className="mt-(--acceso-salto) flex items-start gap-3.5">
+          {/*
+            El icono acompaña al TÍTULO y la descripción va debajo a ancho
+            completo. Con los tres en la misma columna sangrada, la descripción
+            se partía en tres líneas cortas contra un borde derecho vacío,
+            justo encima de un campo que sí ocupa toda la tarjeta: la línea de
+            texto y la del formulario no empezaban ni acababan en el mismo
+            sitio, y eso es lo que hacía que la tarjeta se viera descuadrada.
+          */}
+          <div className="mt-(--acceso-salto) flex items-center gap-3.5">
             <motion.span
               variants={perforacion}
               className={cn(
@@ -129,30 +145,26 @@ export function TarjetaAcceso({
             >
               <Icono className="size-5" />
             </motion.span>
-            <div className="min-w-0">
-              <h1 className="text-2xl font-bold text-balance text-foreground sm:text-[1.75rem] sm:leading-tight">
-                {titulo}
-              </h1>
-              <p className="mt-1.5 text-sm text-pretty text-muted-foreground">{descripcion}</p>
-            </div>
+            <h1 className="min-w-0 text-2xl font-bold text-balance text-foreground sm:text-[1.75rem] sm:leading-tight">
+              {titulo}
+            </h1>
           </div>
+          <p className="mt-3 text-sm text-pretty text-muted-foreground">{descripcion}</p>
         </motion.div>
 
         {children}
       </div>
 
+      {/*
+        El talón del ticket. Antes llevaba dos círculos absolutos en los bordes
+        para fingir la perforación, y la tarjeta recorta lo que sobresale
+        (`overflow-hidden`): lo que se veía no eran dos agujeros sino dos medias
+        lunas pegadas al borde, que se leen como un fallo de render y no como un
+        ticket. La línea de corte sola —punteada, a sangre— dice lo mismo sin
+        depender de que nada se salga del papel.
+      */}
       {pie && (
-        <motion.div className="relative" variants={bloqueAcceso}>
-          <motion.div
-            className="absolute -top-2 -left-2 size-4 rounded-full border border-border bg-background"
-            variants={perforacion}
-            aria-hidden
-          />
-          <motion.div
-            className="absolute -top-2 -right-2 size-4 rounded-full border border-border bg-background"
-            variants={perforacion}
-            aria-hidden
-          />
+        <motion.div variants={bloqueAcceso} className="bg-secondary/25">
           <motion.div
             className="origin-left border-t border-dashed border-border"
             variants={linea}

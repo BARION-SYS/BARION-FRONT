@@ -218,12 +218,28 @@
     border-width: 2px;
   }
 
+  /*
+    El poste de barbero.
+
+    La pista de debajo NO es decorativa, y es lo único que separa un poste de una
+    cinta de obra: sin ella los huecos del degradado son el fondo de la página
+    —negro en el tema oscuro— y lo que queda son bandas de amarillo y rojo puros
+    flotando sobre nada, que es literalmente el lenguaje de «precaución, no
+    pasar». Con una pista propia las bandas se leen sobre un cuerpo, que es lo
+    que hace que parezcan girar alrededor de un cilindro.
+
+    El rojo va mezclado con la superficie por lo mismo: a plena saturación es el
+    color con el que este producto avisa de un error, y coronar con él la
+    pantalla donde alguien escribe su contraseña dice algo que no se quería
+    decir.
+  */
   .cinta-barberia {
+    background-color: color-mix(in srgb, var(--foreground) 10%, var(--card));
     background-image: repeating-linear-gradient(
       135deg,
       var(--primary) 0 10px,
       transparent 10px 20px,
-      var(--destructive) 20px 30px,
+      color-mix(in srgb, var(--destructive) 55%, var(--card)) 20px 30px,
       transparent 30px 40px
     );
     animation: cinta-desplazamiento 2.4s linear infinite;

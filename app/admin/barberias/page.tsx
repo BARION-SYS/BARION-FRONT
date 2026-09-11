@@ -9,7 +9,10 @@ import { getErrorMessage } from "@shared/utils/error"
 import { puede } from "@features/auth/utils/permisos"
 import { useAuthStore } from "@store/auth.store"
 import { usePlataforma } from "@features/plataforma/hooks/usePlataforma"
-import { PlataformaDetail } from "@features/plataforma/components/PlataformaDetail"
+import {
+  ConfirmacionEstado,
+  type CambioEstadoPendiente,
+} from "@features/plataforma/components/ConfirmacionEstado"
 import { PlataformaEntrega } from "@features/plataforma/components/PlataformaEntrega"
 import { PlataformaForm } from "@features/plataforma/components/PlataformaForm"
 import { PlataformaList } from "@features/plataforma/components/PlataformaList"
@@ -26,27 +29,24 @@ import type {
  * El flujo completo del negocio cabe en esta pantalla: se da de alta la
  * barbería, se copia el enlace de entrada y se le pasa al cliente. A partir de
  * ahí él crea sus barberos, su catálogo y su código QR, y Barion solo vuelve
- * para consultar su ficha, cobrar o suspender.
+ * para consultar su ficha —una página propia, `/admin/barberias/[id]`—, cobrar
+ * o suspender.
  */
 export default function AdminBarberiasPage() {
   const {
     barberias,
     paginacion,
     total,
-    ficha,
     planes,
     recienCreada,
     loadingLista,
-    loadingFicha,
     loadingAction,
     error,
     fetchBarberias,
-    fetchBarberia,
     fetchPlanes,
     handleCreateBarberia,
     handleChangeEstadoBarberia,
     limpiarRecienCreada,
-    limpiarFicha,
   } = usePlataforma()
 
   /**
@@ -61,7 +61,7 @@ export default function AdminBarberiasPage() {
   const [estado, setEstado] = useState<EstadoBarberia | "todas">("todas")
   const [pagina, setPagina] = useState(1)
   const [creando, setCreando] = useState(false)
-  const [abierta, setAbierta] = useState(false)
+  const [cambio, setCambio] = useState<(CambioEstadoPendiente & { id: string }) | null>(null)
   // Se conserva para mostrarlo en la entrega: la API no lo devuelve, y con razón
   // —es dato del propietario, no de la barbería— pero quien acaba de darla de
   // alta necesita tenerlo a mano para copiarlo junto al enlace.
@@ -103,22 +103,6 @@ export default function AdminBarberiasPage() {
     setPagina(1)
   }, [])
 
-  const onAbrir = useCallback(
-    (barberia: BarberiaInventario) => {
-      setAbierta(true)
-      void fetchBarberia(barberia.id)
-    },
-    [fetchBarberia]
-  )
-
-  const onCerrarFicha = useCallback(
-    (abierto: boolean) => {
-      setAbierta(abierto)
-      if (!abierto) limpiarFicha()
-    },
-    [limpiarFicha]
-  )
-
   const onCrear = useCallback(
     async (datos: DatosAltaBarberia) => {
       try {
@@ -134,18 +118,26 @@ export default function AdminBarberiasPage() {
     [handleCreateBarberia, cargar]
   )
 
-  const onCambiarEstado = useCallback(
-    async (id: string, destino: EstadoBarberia) => {
-      try {
-        const mensaje = await handleChangeEstadoBarberia(id, { estado: destino })
-        notify.success(mensaje)
-        cargar()
-      } catch (err) {
-        notify.error(getErrorMessage(err))
-      }
-    },
-    [handleChangeEstadoBarberia, cargar]
-  )
+  const onPedirCambio = useCallback((barberia: BarberiaInventario, destino: EstadoBarberia) => {
+    setCambio({
+      id: barberia.id,
+      nombre: barberia.nombreComercial,
+      actual: barberia.estado,
+      destino,
+    })
+  }, [])
+
+  const onConfirmarCambio = useCallback(async () => {
+    if (!cambio) return
+    try {
+      const mensaje = await handleChangeEstadoBarberia(cambio.id, { estado: cambio.destino })
+      notify.success(mensaje)
+      setCambio(null)
+      cargar()
+    } catch (err) {
+      notify.error(getErrorMessage(err))
+    }
+  }, [cambio, handleChangeEstadoBarberia, cargar])
 
   return (
     <main className="scroll-fino flex-1 overflow-y-auto p-4 sm:p-6">
@@ -169,9 +161,8 @@ export default function AdminBarberiasPage() {
             loading={loadingLista}
             gestiona={gestiona}
             paginacion={paginacion}
-            onAbrir={onAbrir}
             onPagina={setPagina}
-            onCambiarEstado={(barberia, destino) => void onCambiarEstado(barberia.id, destino)}
+            onCambiarEstado={onPedirCambio}
           />
         </div>
       </SectionCard>
@@ -186,21 +177,12 @@ export default function AdminBarberiasPage() {
         <PlataformaForm planes={planes} cargando={loadingAction} onSubmit={onCrear} />
       </Modal>
 
-      <Modal
-        open={abierta}
-        onOpenChange={onCerrarFicha}
-        titulo="Ficha de la barbería"
-        descripcion="Cómo está montada y en qué estado opera."
-        size="lg"
-      >
-        <PlataformaDetail
-          ficha={ficha}
-          loading={loadingFicha}
-          gestiona={gestiona}
-          cargandoAccion={loadingAction}
-          onCambiarEstado={(destino) => ficha && void onCambiarEstado(ficha.id, destino)}
-        />
-      </Modal>
+      <ConfirmacionEstado
+        cambio={cambio}
+        cargando={loadingAction}
+        onConfirmar={() => void onConfirmarCambio()}
+        onCerrar={() => setCambio(null)}
+      />
 
       <Modal
         open={recienCreada !== null}

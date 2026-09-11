@@ -4,11 +4,12 @@ import { monedas, type CodigoMoneda } from "@config/regiones"
 import { useTenant } from "@shared/providers/TenantProvider"
 import { useIdioma } from "@shared/textos/useTextos"
 import { useSedeActual } from "@store/sede.store"
-import { formatMoney, toMajorUnits, toMinorUnits } from "@shared/utils/currency"
+import { formatMoney, formatMoneyCompact, toMajorUnits, toMinorUnits } from "@shared/utils/currency"
 import {
   fechaClave,
   formatDate,
   formatDateTime,
+  formatMonthYear,
   formatRelative,
   formatShortDate,
   formatTime,
@@ -48,6 +49,9 @@ export function useFormato() {
      */
     dineroEn: (centavos: number, codigoMoneda: string) =>
       formatMoney(centavos, codigoMoneda, locale),
+    /** `dineroEn` abreviado («$ 2,5 M»): ejes de gráficas y cifras de un vistazo. */
+    dineroCompactoEn: (centavos: number, codigoMoneda: string) =>
+      formatMoneyCompact(centavos, codigoMoneda, locale),
     /** Lo que se escribe en un formulario → lo que la API acepta. */
     aCentavos: (monto: number) => String(toMinorUnits(monto, moneda)),
     /** Centavos de la API → el número que se precarga en el formulario. */
@@ -60,6 +64,13 @@ export function useFormato() {
     diaSemana: (valor: string | Date) => formatWeekday(valor, timezone, locale),
     diaSemanaCorto: (valor: string | Date) => formatWeekdayShort(valor, timezone, locale),
     relativo: (valor: string | Date) => formatRelative(valor, locale),
+    /**
+     * Etiquetas de las series cortadas en UTC (las de la plataforma). NO usan la
+     * zona de la sede: cada punto es el instante UTC en que empieza su tramo, y
+     * en hora de Bogotá el mes o la semana saldrían rotulados con el anterior.
+     */
+    mesUTC: (valor: string | Date) => formatMonthYear(valor, locale),
+    diaUTC: (valor: string | Date) => formatShortDate(valor, "UTC", locale),
     /** `YYYY-MM-DD` en hora de la sede: la clave con la que se agrupa la agenda. */
     fechaClave: (valor: string | Date) => fechaClave(valor, timezone),
     /** Minutos desde medianoche local: lo que posiciona una cita en la grilla. */

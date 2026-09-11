@@ -1,16 +1,8 @@
 import type { LucideIcon } from "lucide-react"
 import { Badge } from "@shared/components/ui/badge"
 import { cn } from "@shared/utils/cn"
+import { colorDeTono } from "@shared/utils/tono"
 import type { TonoEstado } from "@shared/types/ui.types"
-
-const tokenPorTono: Record<TonoEstado, string> = {
-  exito: "var(--exito)",
-  info: "var(--info)",
-  advertencia: "var(--advertencia)",
-  peligro: "var(--destructive)",
-  primario: "var(--primary)",
-  neutro: "var(--muted-foreground)",
-}
 
 interface StatusBadgeProps {
   etiqueta: string
@@ -27,7 +19,7 @@ export function StatusBadge({ etiqueta, tono, icono: Icono, compacta }: StatusBa
     <Badge
       variant="secondary"
       className="gap-1 rounded-full bg-[color-mix(in_srgb,var(--tono)_12%,transparent)] text-(--tono)"
-      style={{ "--tono": tokenPorTono[tono] } as React.CSSProperties}
+      style={{ "--tono": colorDeTono[tono] } as React.CSSProperties}
     >
       {Icono && <Icono aria-hidden />}
       <span className={cn("text-[10px] font-medium", compacta && "sr-only sm:not-sr-only")}>

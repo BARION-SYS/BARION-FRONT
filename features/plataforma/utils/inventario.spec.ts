@@ -17,7 +17,12 @@ import type { BarberiaInventario } from "@features/plataforma/types/plataforma.t
  * equivocada, que es la peor forma de fallar en un panel del que se toman
  * decisiones de negocio.
  */
-function barberia(parcial: Partial<BarberiaInventario> = {}): BarberiaInventario {
+// `uso` se acepta a medias: cada caso escribe solo las cifras de las que habla.
+type BarberiaParcial = Partial<Omit<BarberiaInventario, "uso">> & {
+  uso?: Partial<BarberiaInventario["uso"]>
+}
+
+function barberia(parcial: BarberiaParcial = {}): BarberiaInventario {
   return {
     id: parcial.id ?? "1",
     slug: parcial.slug ?? "el-corte",
@@ -33,6 +38,7 @@ function barberia(parcial: Partial<BarberiaInventario> = {}): BarberiaInventario
       clientesNuevos30d: 0,
       citasTotal: 0,
       citas30d: 0,
+      citas30dPrevios: 0,
       ultimaCitaCreadaEn: null,
       ...parcial.uso,
     },

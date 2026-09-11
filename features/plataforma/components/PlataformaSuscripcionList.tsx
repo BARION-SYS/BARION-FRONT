@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { ChevronLeft, ChevronRight, CreditCard, Pencil } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
 import {
@@ -48,7 +49,7 @@ export function PlataformaSuscripcionList({
   onCorregir,
   onPagina,
 }: PlataformaSuscripcionListProps) {
-  const { fechaCorta, numero } = useFormato()
+  const { diaUTC, numero } = useFormato()
 
   return (
     <Loadable
@@ -84,20 +85,25 @@ export function PlataformaSuscripcionList({
               const estado = configEstadoSuscripcion(suscripcion.estado)
               return (
                 <TableRow key={suscripcion.id} className="transition-colors hover:bg-secondary/40">
-                  <TableCell>
-                    <span className="flex min-w-0 items-center gap-3">
+                  <TableCell className="max-w-[16rem]">
+                    {/* Lleva a la ficha: corregir lo que se cobra sin ver cómo
+                        usa el producto es corregir a ciegas */}
+                    <Link
+                      href={`/admin/barberias/${suscripcion.barberia.id}`}
+                      className="flex min-w-0 items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
                       <InitialsAvatar
                         iniciales={inicialesDe(suscripcion.barberia.nombreComercial)}
                       />
                       <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium">
+                        <span className="block truncate text-sm font-medium hover:underline">
                           {suscripcion.barberia.nombreComercial}
                         </span>
                         <span className="block truncate text-xs text-muted-foreground">
                           /{suscripcion.barberia.slug}
                         </span>
                       </span>
-                    </span>
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <StatusBadge tono={estado.tono} etiqueta={estado.etiqueta} />
@@ -111,8 +117,10 @@ export function PlataformaSuscripcionList({
                     </span>
                   </TableCell>
                   <TableCell className="hidden text-right text-sm tabular-nums sm:table-cell">
-                    {/* Un guion, nunca una fecha inventada: una cancelada no vence. */}
-                    {suscripcion.vigenteHasta ? fechaCorta(suscripcion.vigenteHasta) : "—"}
+                    {/* Un guion, nunca una fecha inventada: una cancelada no vence.
+                        En UTC: los límites de período son medianoche UTC, y en la
+                        hora de Bogotá saldría el día anterior */}
+                    {suscripcion.vigenteHasta ? diaUTC(suscripcion.vigenteHasta) : "—"}
                   </TableCell>
                   <TableCell className="hidden text-right text-sm tabular-nums lg:table-cell">
                     {numero(suscripcion.graciaDias)} d

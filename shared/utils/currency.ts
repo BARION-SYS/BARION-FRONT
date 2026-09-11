@@ -107,3 +107,21 @@ export function formatMoney(
     maximumFractionDigits: decimales,
   }).format(toMajorUnits(amountMinor, currency))
 }
+
+/**
+ * «$ 2,5 M»: el importe abreviado, para los ejes de una gráfica y las cifras
+ * que se leen de un vistazo. La cifra exacta sigue siendo `formatMoney`, que es
+ * la que va en el tooltip.
+ */
+export function formatMoneyCompact(
+  amountMinor: number,
+  currency: string,
+  locale = DEFAULT_LOCALE
+): string {
+  return getNumberFormat(locale, {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(toMajorUnits(amountMinor, currency))
+}

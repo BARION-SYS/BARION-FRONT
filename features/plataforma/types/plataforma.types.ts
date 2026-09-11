@@ -26,6 +26,11 @@ export interface UsoBarberia {
   citasTotal: number
   citas30d: number
   /**
+   * Citas creadas en la ventana ANTERIOR (de 60 a 30 días atrás). Contra
+   * `citas30d` dice si la barbería se está apagando.
+   */
+  citas30dPrevios: number
+  /**
    * Cuándo se CREÓ la última cita, no cuándo ocurre. Es la señal de si alguien
    * sigue abriendo el panel. `null` si nunca hubo ninguna.
    */
@@ -70,13 +75,152 @@ export interface BarberiaInventario {
   propietario: PropietarioResumen | null
 }
 
+/**
+ * La suscripción como la ve la ficha: lo del listado más lo que decide si hay
+ * que llamar a alguien. Sin precio, igual que en `/plataforma/suscripciones`.
+ */
+export interface SuscripcionFicha extends SuscripcionResumen {
+  planNombre: string | null
+  periodo: string | null
+  periodoActualHasta: string | null
+  /** `null` = no hay impago pendiente. */
+  graciaHasta: string | null
+  cancelaAlFinPeriodo: boolean
+}
+
 /** La ficha añade lo que no cabe en una fila de tabla. */
 export interface BarberiaFicha extends BarberiaInventario {
   monedaPorDefecto: string
   zonaHoraria: string
+  localePorDefecto: string
+  logoUrl: string | null
   membresiasActivas: number
   pruebaTerminaEn: string | null
+  /** `null` = registro abierto sin verificar: su portal público no se sirve. */
+  verificadaEn: string | null
+  /** Nulas en el alta asistida: nadie acepta términos en nombre de otro. */
+  terminosVersion: string | null
+  terminosAceptadosEn: string | null
+  suscripcion: SuscripcionFicha | null
   propietario: PropietarioFicha | null
+}
+
+// ── Actividad de una barbería (`/plataforma/barberias/:id/actividad`) ──────
+// Conteos agrupados: ninguna fila de clientes ni de citas.
+
+/** Una semana ISO (lunes). `semana` es el instante UTC en que empieza. */
+export interface SemanaActividad {
+  semana: string
+  citasCreadas: number
+  citasAtendidas: number
+  clientesNuevos: number
+}
+
+export interface CitasPorEstado {
+  estado: string
+  total: number
+}
+
+export interface SedePlataforma {
+  id: string
+  nombre: string
+  ciudad: string | null
+  zonaHoraria: string
+  activa: boolean
+  creadoEn: string
+  barberosActivos: number
+  citas30d: number
+}
+
+export interface EquipoBarberia {
+  propietarios: number
+  administradores: number
+  barberosConAcceso: number
+  /** Atienden y liquidan, pero no entran al panel. */
+  barberosSinCuenta: number
+  barberosInactivos: number
+  accesosRevocados: number
+}
+
+export interface ActividadBarberia {
+  ventanaDias: number
+  serieSemanal: SemanaActividad[]
+  /** Citas con arranque en la ventana que YA debieron ocurrir. */
+  citasPorEstado: CitasPorEstado[]
+  sedes: SedePlataforma[]
+  equipo: EquipoBarberia
+}
+
+// ── Facturación de Barion (importes en unidad menor, como CADENA) ──────────
+
+export interface ResumenFacturacionMoneda {
+  moneda: string
+  facturas: number
+  emitidoCentavos: string
+  cobradoCentavos: string
+  pendienteCentavos: string
+  vencidas: number
+}
+
+/** Una factura que Barion le emitió a la barbería. */
+export interface FacturaPlataforma {
+  id: string
+  numero: string
+  estado: string
+  totalCentavos: string
+  moneda: string
+  emitidaEn: string
+  venceEn: string | null
+  pagadaEn: string | null
+  pdfUrl: string | null
+}
+
+export interface FacturacionBarberia {
+  resumen: ResumenFacturacionMoneda[]
+  ultimas: FacturaPlataforma[]
+}
+
+// ── Historia de la plataforma (`/plataforma/metricas`) ─────────────────────
+
+/** Un mes. `mes` es el instante UTC del día 1: su etiqueta se formatea en UTC. */
+export interface MesPlataforma {
+  mes: string
+  altas: number
+  citasCreadas: number
+  clientesNuevos: number
+  barberiasConActividad: number
+  cancelaciones: number
+}
+
+/** Solo llegan los meses con movimiento EN ESA moneda. */
+export interface MesFacturacion {
+  mes: string
+  moneda: string
+  facturas: number
+  emitidoCentavos: string
+  cobradoCentavos: string
+}
+
+export interface CarteraMoneda {
+  moneda: string
+  facturas: number
+  pendienteCentavos: string
+  vencidas: number
+  vencidoCentavos: string
+}
+
+export interface FacturacionPlataforma {
+  serie: MesFacturacion[]
+  cartera: CarteraMoneda[]
+}
+
+export interface FiltrosActividad {
+  semanas?: number
+  dias?: number
+}
+
+export interface FiltrosSerieMensual {
+  meses?: number
 }
 
 /**
@@ -273,6 +417,8 @@ export interface ResumenPlataforma {
   clientesNuevos30d: number
   citasTotal: number
   citas30d: number
+  /** Citas creadas de 60 a 30 días atrás, sumadas: el denominador de la tendencia. */
+  citas30dPrevios: number
   /**
    * Las que no crearon **ninguna** cita en 30 días, incluidas las que nunca
    * crearon una. Es el número que dice quién se está yendo antes de que lo diga

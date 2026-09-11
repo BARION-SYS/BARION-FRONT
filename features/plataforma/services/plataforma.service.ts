@@ -15,9 +15,15 @@ import {
   type DatosPlanNuevo,
 } from "@features/plataforma/schemas/plataforma.schema"
 import type {
+  ActividadBarberia,
   BarberiaFicha,
   BarberiaInventario,
+  FacturacionBarberia,
+  FacturacionPlataforma,
+  FiltrosActividad,
   FiltrosInventario,
+  FiltrosSerieMensual,
+  MesPlataforma,
   FiltrosPlanes,
   FiltrosSuscripciones,
   PlanAdmin,
@@ -42,6 +48,35 @@ export const plataformaService = {
 
   async obtenerBarberia(id: string): Promise<ApiResult<BarberiaFicha>> {
     return api.get<BarberiaFicha>(`/plataforma/barberias/${id}`)
+  },
+
+  /** Serie semanal, citas por estado, sedes y equipo. Solo conteos. */
+  async obtenerActividad(
+    id: string,
+    filtros: FiltrosActividad = {}
+  ): Promise<ApiResult<ActividadBarberia>> {
+    return api.get<ActividadBarberia>(`/plataforma/barberias/${id}/actividad`, {
+      params: omitEmpty({ ...filtros }),
+    })
+  },
+
+  /** Lo que Barion le facturó. Pide `plataforma.suscripciones.gestionar`. */
+  async obtenerFacturacionBarberia(id: string): Promise<ApiResult<FacturacionBarberia>> {
+    return api.get<FacturacionBarberia>(`/plataforma/barberias/${id}/facturacion`)
+  },
+
+  /** La historia de la plataforma, mes a mes en UTC. */
+  async obtenerMetricas(filtros: FiltrosSerieMensual = {}): Promise<ApiResult<MesPlataforma[]>> {
+    return api.get<MesPlataforma[]>("/plataforma/metricas", { params: omitEmpty({ ...filtros }) })
+  },
+
+  /** Facturación mensual de Barion y cartera pendiente, por moneda. */
+  async obtenerFacturacion(
+    filtros: FiltrosSerieMensual = {}
+  ): Promise<ApiResult<FacturacionPlataforma>> {
+    return api.get<FacturacionPlataforma>("/plataforma/metricas/facturacion", {
+      params: omitEmpty({ ...filtros }),
+    })
   },
 
   /**

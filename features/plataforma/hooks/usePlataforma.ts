@@ -12,9 +12,15 @@ import type {
   DatosPlanNuevo,
 } from "@features/plataforma/schemas/plataforma.schema"
 import type {
+  ActividadBarberia,
   BarberiaFicha,
   BarberiaInventario,
+  FacturacionBarberia,
+  FacturacionPlataforma,
+  FiltrosActividad,
   FiltrosInventario,
+  FiltrosSerieMensual,
+  MesPlataforma,
   FiltrosPlanes,
   FiltrosSuscripciones,
   PlanAdmin,
@@ -215,11 +221,81 @@ export function usePlataforma() {
     []
   )
 
+  // ── Detalle e historia ────────────────────────────────────────────────────
+  // Cada lectura con su propio `loading`: la ficha pinta lo que ya llegó sin
+  // esperar a la más lenta, y cada bloque enseña su skeleton donde irá.
+  const [actividad, setActividad] = useState<ActividadBarberia | null>(null)
+  const [facturacionBarberia, setFacturacionBarberia] = useState<FacturacionBarberia | null>(null)
+  const [metricas, setMetricas] = useState<MesPlataforma[]>([])
+  const [facturacion, setFacturacion] = useState<FacturacionPlataforma | null>(null)
+  const [loadingActividad, setLoadingActividad] = useState(false)
+  const [loadingFacturacion, setLoadingFacturacion] = useState(false)
+  const [loadingMetricas, setLoadingMetricas] = useState(false)
+  /**
+   * Error propio de la historia. No va a `error`, que es el de la lectura
+   * principal: si la serie falla, el inventario sigue siendo cierto y la
+   * pantalla no tiene por qué ponerse en rojo entera.
+   */
+  const [errorMetricas, setErrorMetricas] = useState<string | null>(null)
+
+  const fetchActividad = useCallback(async (id: string, filtros: FiltrosActividad = {}) => {
+    setLoadingActividad(true)
+    try {
+      const res = await plataformaService.obtenerActividad(id, filtros)
+      setActividad(res.data)
+    } catch (err) {
+      setErrorMetricas(getErrorMessage(err))
+    } finally {
+      setLoadingActividad(false)
+    }
+  }, [])
+
+  const fetchFacturacionBarberia = useCallback(async (id: string) => {
+    setLoadingFacturacion(true)
+    try {
+      const res = await plataformaService.obtenerFacturacionBarberia(id)
+      setFacturacionBarberia(res.data)
+    } catch (err) {
+      setErrorMetricas(getErrorMessage(err))
+    } finally {
+      setLoadingFacturacion(false)
+    }
+  }, [])
+
+  const fetchMetricas = useCallback(async (filtros: FiltrosSerieMensual = {}) => {
+    setLoadingMetricas(true)
+    setErrorMetricas(null)
+    try {
+      const res = await plataformaService.obtenerMetricas(filtros)
+      setMetricas(res.data)
+    } catch (err) {
+      setErrorMetricas(getErrorMessage(err))
+    } finally {
+      setLoadingMetricas(false)
+    }
+  }, [])
+
+  const fetchFacturacion = useCallback(async (filtros: FiltrosSerieMensual = {}) => {
+    setLoadingFacturacion(true)
+    try {
+      const res = await plataformaService.obtenerFacturacion(filtros)
+      setFacturacion(res.data)
+    } catch (err) {
+      setErrorMetricas(getErrorMessage(err))
+    } finally {
+      setLoadingFacturacion(false)
+    }
+  }, [])
+
   /** Cierra la entrega: la barbería ya se comunicó y vuelve al inventario. */
   const limpiarRecienCreada = useCallback(() => setRecienCreada(null), [])
 
   /** Cierra la ficha. Se limpia para que la siguiente no enseñe la anterior. */
-  const limpiarFicha = useCallback(() => setFicha(null), [])
+  const limpiarFicha = useCallback(() => {
+    setFicha(null)
+    setActividad(null)
+    setFacturacionBarberia(null)
+  }, [])
 
   // ── El equipo de Barion ───────────────────────────────────────────────────
   const [staff, setStaff] = useState<StaffPlataforma[]>([])
@@ -354,6 +430,18 @@ export function usePlataforma() {
     handleCorregirSuscripcion,
     limpiarRecienCreada,
     limpiarFicha,
+    actividad,
+    facturacionBarberia,
+    metricas,
+    facturacion,
+    loadingActividad,
+    loadingFacturacion,
+    loadingMetricas,
+    errorMetricas,
+    fetchActividad,
+    fetchFacturacionBarberia,
+    fetchMetricas,
+    fetchFacturacion,
     staff,
     staffCreado,
     loadingStaff,

@@ -11,6 +11,9 @@ interface StatCardProps {
   icono: LucideIcon
   acento?: boolean
   subtitulo?: string
+  /** Mini-gráfica al pie (una tendencia). Va sin ejes: el número de arriba manda. */
+  grafica?: React.ReactNode
+  className?: string
 }
 
 export function StatCard({
@@ -21,12 +24,15 @@ export function StatCard({
   icono: Icono,
   acento,
   subtitulo,
+  grafica,
+  className,
 }: StatCardProps) {
   return (
     <Card
       className={cn(
         "relative gap-3 overflow-hidden p-5 transition-colors hover:border-border/80",
-        acento && "border-primary/30 bg-primary/10"
+        acento && "border-primary/30 bg-primary/10",
+        className
       )}
     >
       <div className="flex items-start justify-between">
@@ -71,6 +77,8 @@ export function StatCard({
           <span>{cambio}</span>
         </div>
       )}
+
+      {grafica && <div className="-mx-1 mt-auto h-10">{grafica}</div>}
 
       {acento && (
         <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>

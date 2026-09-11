@@ -1,6 +1,7 @@
 "use client"
 
-import { Store } from "lucide-react"
+import Link from "next/link"
+import { Hourglass, Store } from "lucide-react"
 import { InitialsAvatar } from "@shared/components/avatar/InitialsAvatar"
 import { Loadable } from "@shared/components/feedback/Loadable"
 import { StatusBadge } from "@shared/components/status/StatusBadge"
@@ -12,16 +13,17 @@ import type { BarberiaInventario } from "@features/plataforma/types/plataforma.t
 interface PlataformaAltasListProps {
   barberias: BarberiaInventario[]
   loading: boolean
-  onAbrir: (barberia: BarberiaInventario) => void
 }
 
 /**
  * Las últimas barberías que entraron.
  *
  * Es lo primero que se mira al abrir el área: si una venta de ayer quedó a
- * medias, aquí se ve antes de que el cliente llame.
+ * medias, aquí se ve antes de que el cliente llame. Por eso la que todavía no
+ * ha creado ni una cita lo dice — «sin arrancar» — en vez de esconderse detrás
+ * de su estado, que para una recién dada de alta siempre es «activa».
  */
-export function PlataformaAltasList({ barberias, loading, onAbrir }: PlataformaAltasListProps) {
+export function PlataformaAltasList({ barberias, loading }: PlataformaAltasListProps) {
   const { relativo } = useFormato()
 
   return (
@@ -40,15 +42,15 @@ export function PlataformaAltasList({ barberias, loading, onAbrir }: PlataformaA
         </div>
       }
     >
-      <ul className="flex flex-col gap-2">
+      <ul className="-mx-2 flex flex-col">
         {barberias.map((barberia) => {
           const estado = ESTADO_BARBERIA[barberia.estado]
+          const sinArrancar = barberia.uso.citasTotal === 0
           return (
             <li key={barberia.id}>
-              <button
-                type="button"
-                onClick={() => onAbrir(barberia)}
-                className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-secondary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              <Link
+                href={`/admin/barberias/${barberia.id}`}
+                className="flex min-h-11 items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-secondary/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 <InitialsAvatar iniciales={inicialesDe(barberia.nombreComercial)} />
                 <span className="min-w-0 flex-1">
@@ -59,8 +61,12 @@ export function PlataformaAltasList({ barberias, loading, onAbrir }: PlataformaA
                     {nombreDePais(barberia.codigoPais)} · {relativo(barberia.creadoEn)}
                   </span>
                 </span>
-                <StatusBadge tono={estado.tono} etiqueta={estado.etiqueta} compacta />
-              </button>
+                {sinArrancar && barberia.estado === "activa" ? (
+                  <StatusBadge tono="advertencia" etiqueta="Sin arrancar" icono={Hourglass} />
+                ) : (
+                  <StatusBadge tono={estado.tono} etiqueta={estado.etiqueta} />
+                )}
+              </Link>
             </li>
           )
         })}

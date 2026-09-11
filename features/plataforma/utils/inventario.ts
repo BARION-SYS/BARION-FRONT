@@ -33,13 +33,6 @@ export const MOTIVO_TRANSICION: Record<EstadoBarberia, string> = {
   suspendida: "Pierde el acceso hasta que se cobre",
 }
 
-/** El color con el que cada estado entra en las gráficas. */
-export const COLOR_ESTADO: Record<EstadoBarberia, string> = {
-  activa: "var(--chart-2)",
-  solo_lectura: "var(--chart-4)",
-  suspendida: "var(--chart-5)",
-}
-
 const ORDEN_ESTADOS: EstadoBarberia[] = ["activa", "solo_lectura", "suspendida"]
 
 /** «Colombia» en vez de «CO» cuando el país es uno de los que Barion opera. */
@@ -73,6 +66,7 @@ export function resumirInventario(barberias: BarberiaInventario[]): ResumenPlata
   let clientesNuevos30d = 0
   let citasTotal = 0
   let citas30d = 0
+  let citas30dPrevios = 0
   let inactivas30d = 0
 
   for (const barberia of barberias) {
@@ -86,6 +80,7 @@ export function resumirInventario(barberias: BarberiaInventario[]): ResumenPlata
     clientesNuevos30d += barberia.uso.clientesNuevos30d
     citasTotal += barberia.uso.citasTotal
     citas30d += barberia.uso.citas30d
+    citas30dPrevios += barberia.uso.citas30dPrevios
     // Cero citas en 30 días y «nunca tuvo ninguna» cuentan igual: las dos son
     // una barbería que no está usando lo que contrató.
     if (barberia.uso.citas30d === 0) inactivas30d += 1
@@ -102,6 +97,7 @@ export function resumirInventario(barberias: BarberiaInventario[]): ResumenPlata
     clientesNuevos30d,
     citasTotal,
     citas30d,
+    citas30dPrevios,
     inactivas30d,
   }
 }

@@ -50,6 +50,20 @@ export function formatShortDate(
   )
 }
 
+/**
+ * «sept 26»: la etiqueta de un tramo mensual de una serie.
+ *
+ * **Siempre en UTC**, y es la excepción deliberada a «la zona de la sede»: las
+ * series de la plataforma se cortan en UTC y cada punto es el instante en que
+ * empieza su mes. Leído en Bogotá, el 1 de septiembre a medianoche UTC es el 31
+ * de agosto, y la barra de septiembre saldría rotulada «ago».
+ */
+export function formatMonthYear(value: string | Date, locale = DEFAULT_LOCALE): string {
+  return getDateTimeFormat(locale, { month: "short", year: "2-digit", timeZone: "UTC" }).format(
+    typeof value === "string" ? new Date(value) : value
+  )
+}
+
 export function formatDateTime(
   value: string | Date,
   timeZone: string,

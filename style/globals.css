@@ -91,6 +91,13 @@
   --sidebar-accent-foreground: #18181b;
   --sidebar-border: #e4e4e7;
   --sidebar-ring: #8f6b21;
+  /*
+    Scrollbar: derivado del texto atenuado y no un gris propio, para que siga
+    al fondo que elija cada persona en el BrandStudio —la escala de superficies
+    se re-tiñe y un gris fijo quedaría ajeno—.
+  */
+  --scrollbar-thumb: color-mix(in srgb, var(--muted-foreground) 35%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--muted-foreground) 60%, transparent);
 }
 
 .dark {
@@ -130,14 +137,59 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #2e2e36;
   --sidebar-ring: #d4a843;
+  /* En oscuro un poco menos opaco: sobre negro, el mismo gris salta a la vista */
+  --scrollbar-thumb: color-mix(in srgb, var(--muted-foreground) 28%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--muted-foreground) 50%, transparent);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    /*
+      El documento no rebota ni se desliza de lado. El panel es una aplicación
+      —cada área scrollea en su propio contenedor— y el rebote elástico del
+      documento, o el gesto lateral del trackpad, movían la pantalla entera en
+      todas las direcciones. `clip` y no `hidden`: corta el desborde lateral
+      sin crear un contenedor de scroll, así que los `sticky` siguen pegados.
+
+      `scrollbar-color` se hereda: definido aquí, lo reciben todos los
+      contenedores con scroll de la aplicación sin que ninguno lo repita.
+    */
+    overscroll-behavior: none;
+    overflow-x: clip;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior: none;
+    overflow-x: clip;
+  }
+  /*
+    Safari todavía no aplica `scrollbar-color`: para él, el mismo diseño con
+    los pseudo-elementos de WebKit. Chrome y Firefox se quedan con lo de arriba
+    (con `scrollbar-color` presente, Chrome ignora estos).
+  */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    background-clip: padding-box;
+    /* El borde transparente es el aire alrededor del pulgar: se ve fino sin
+       dejar de ser fácil de agarrar */
+    border: 3px solid transparent;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
   }
 }
 
@@ -147,23 +199,23 @@
   del patrón (40px / sin 45° ≈ 56.57px) para que el bucle sea continuo.
 */
 @layer utilities {
-  /* Scrollbar fino y tematizado para áreas con scroll interno (calendario, paneles) */
+  /*
+    Áreas con scroll interno (calendario, paneles). El color ya lo hereda de
+    `html`; lo que añade es el pulgar más estrecho y que el área no rebote ni
+    encadene: al llegar al fondo NO sigue scrolleando el padre, y tampoco se
+    estira como si fuera de goma — `none` y no `contain`, que conservaba el
+    rebote dentro del área.
+  */
   .scroll-fino {
     scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-    /* Sin encadenamiento: al llegar al fondo del área NO sigue scrolleando el padre */
-    overscroll-behavior: contain;
+    overscroll-behavior: none;
   }
   .scroll-fino::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
   .scroll-fino::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 9999px;
-  }
-  .scroll-fino::-webkit-scrollbar-track {
-    background: transparent;
+    border-width: 2px;
   }
 
   .cinta-barberia {

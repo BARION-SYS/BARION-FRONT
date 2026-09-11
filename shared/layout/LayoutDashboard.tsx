@@ -24,7 +24,15 @@ export function LayoutDashboard({ children }: { children: React.ReactNode }) {
           abiertaEnMovil={abiertaEnMovil}
           alCerrarMovil={() => setAbiertaEnMovil(false)}
         />
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        {/*
+          El `<main>` de cada pantalla scrollea en vertical y NUNCA de lado:
+          con `overflow-y: auto` el eje x calcula `auto` también, y cualquier
+          pieza que sobresalga un píxel —una gráfica, un margen negativo— lo
+          volvía deslizable hacia los lados. Tampoco rebota. Se fija aquí, en el
+          chrome, para que valga en el panel y en el admin sin que cada página
+          se acuerde (las tablas anchas llevan su propio `overflow-x-auto`)
+        */}
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden [&_main]:overflow-x-hidden [&_main]:overscroll-none">
           <Navbar alAbrirMenuMovil={() => setAbiertaEnMovil(true)} />
           {esDemo && <AvisoDemo />}
           {children}

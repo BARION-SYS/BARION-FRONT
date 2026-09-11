@@ -8,7 +8,7 @@ import {
   type DatosNuevaContrasena,
   type DatosSolicitudRecuperacion,
 } from "@features/auth/schemas/auth.schema"
-import type { ResultadoLogin, Sesion } from "@features/auth/types/auth.types"
+import type { EstadoDemo, ResultadoLogin, Sesion } from "@features/auth/types/auth.types"
 import { api } from "@lib/http/instances"
 import type { ApiResult } from "@shared/types/api.types"
 
@@ -50,6 +50,24 @@ export const authService = {
 
   async logout(): Promise<ApiResult<null>> {
     return api.post<null>("/auth/logout")
+  },
+
+  /**
+   * Si este entorno ofrece el acceso demo. Lo decide la API —es quien tiene la
+   * cuenta configurada—, así que el botón no depende de una variable del front
+   * que podría decir otra cosa.
+   */
+  async estadoDemo(): Promise<ApiResult<EstadoDemo>> {
+    return api.get<EstadoDemo>("/auth/demo")
+  },
+
+  /**
+   * Entrar a la demo: deja la cookie como un login, pero de solo lectura. La
+   * respuesta se ignora igual que la del login — quién entró lo dice
+   * `sesionActual()`.
+   */
+  async entrarDemo(): Promise<ApiResult<ResultadoLogin>> {
+    return api.post<ResultadoLogin>("/auth/demo")
   },
 
   /**

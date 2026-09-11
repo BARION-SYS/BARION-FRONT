@@ -24,6 +24,10 @@ export function useAuth() {
   const [barberiasParaElegir, setBarberiasParaElegir] = useState<BarberiaParaElegir[]>([])
   const [loadingSesion, setLoadingSesion] = useState(false)
   const [loadingContrasena, setLoadingContrasena] = useState(false)
+  // Si este entorno ofrece la demo. Arranca en `false`: sin respuesta de la API
+  // no se enseña un botón que quizá no lleve a ninguna parte.
+  const [demoDisponible, setDemoDisponible] = useState(false)
+  const [loadingDemo, setLoadingDemo] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   /**
@@ -64,6 +68,39 @@ export function useAuth() {
     },
     []
   )
+
+  /**
+   * Pregunta si hay demo en este entorno. Un fallo se trata como «no hay»: es
+   * un atajo de la pantalla de entrada, y su ausencia no le quita nada a quien
+   * viene a entrar con su cuenta.
+   */
+  const fetchEstadoDemo = useCallback(async () => {
+    try {
+      const res = await authService.estadoDemo()
+      setDemoDisponible(res.data.disponible)
+    } catch {
+      setDemoDisponible(false)
+    }
+  }, [])
+
+  /**
+   * Entra a la demo. Como el login, solo deja la cookie: quién entró —y que es
+   * una sesión demo— lo resuelve después `fetchSesion`. El fallo va al mismo
+   * `error` que el del formulario, que es donde se mira tras pulsar.
+   */
+  const handleEntrarDemoAuth = useCallback(async (): Promise<string> => {
+    setLoadingDemo(true)
+    setError(null)
+    try {
+      const res = await authService.entrarDemo()
+      return res.message
+    } catch (err) {
+      setError(getErrorMessage(err))
+      throw err
+    } finally {
+      setLoadingDemo(false)
+    }
+  }, [])
 
   /**
    * Resuelve la sesión desde la cookie. Es el ÚNICO camino por el que la sesión
@@ -185,7 +222,11 @@ export function useAuth() {
     loadingLogin,
     loadingSesion,
     loadingContrasena,
+    demoDisponible,
+    loadingDemo,
     error,
+    fetchEstadoDemo,
+    handleEntrarDemoAuth,
     handleLoginAuth,
     handleLogoutAuth,
     handleCambiarContrasenaAuth,

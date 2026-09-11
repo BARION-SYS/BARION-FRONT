@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useCallback, useState } from "react"
+import { Suspense, useCallback, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import { Login } from "@features/auth/components/Login"
@@ -36,7 +36,22 @@ export default function LoginPage() {
 function ContenedorLogin() {
   const router = useRouter()
   const parametros = useSearchParams()
-  const { barberiasParaElegir, loadingLogin, error, handleLoginAuth, fetchSesion } = useAuth()
+  const {
+    barberiasParaElegir,
+    loadingLogin,
+    demoDisponible,
+    loadingDemo,
+    error,
+    handleLoginAuth,
+    handleEntrarDemoAuth,
+    fetchEstadoDemo,
+    fetchSesion,
+  } = useAuth()
+
+  // El botón de la demo solo se enseña si la API la ofrece en este entorno.
+  useEffect(() => {
+    void fetchEstadoDemo()
+  }, [fetchEstadoDemo])
 
   // El acceso con Google vuelve al panel por una navegación, no por una petición
   // del código, así que su fallo no puede llegar por el estado del hook: viaja
@@ -50,24 +65,42 @@ function ContenedorLogin() {
   // en el hook porque es estado de esta pantalla, no de la API.
   const [credenciales, setCredenciales] = useState<DatosLogin | null>(null)
 
+  /**
+   * Con la cookie ya puesta: resuelve quién entró y anima la salida al panel.
+   *
+   * A dónde entra lo decide el TIPO de actor, no la ruta desde la que llamó: el
+   * staff de Barion no tiene barbería y el panel se le pintaría vacío. Se
+   * resuelve aquí, con la sesión ya en la mano, en vez de navegar y que el área
+   * de destino rebote. Lo comparten el login y la demo: entrar por una puerta u
+   * otra no debe cambiar lo que pasa después.
+   */
+  const abrirPanel = useCallback(async () => {
+    const sesion = await fetchSesion()
+    setDestino(appDeSesion(sesion) === "admin" ? "/admin" : "/dashboard")
+    setSaliendo(true)
+  }, [fetchSesion])
+
   const entrar = useCallback(
     async (datos: DatosLogin, slug?: string) => {
       try {
         const haySesion = await handleLoginAuth(datos, slug)
         if (!haySesion) return
-        // A dónde entra lo decide el TIPO de actor, no la ruta desde la que
-        // llamó: el staff de Barion no tiene barbería y el panel se le pintaría
-        // vacío. Se resuelve aquí, con la sesión ya en la mano, en vez de
-        // navegar y que el área de destino rebote.
-        const sesion = await fetchSesion()
-        setDestino(appDeSesion(sesion) === "admin" ? "/admin" : "/dashboard")
-        setSaliendo(true)
+        await abrirPanel()
       } catch {
         // El error ya queda en `error` del hook y se muestra en el form.
       }
     },
-    [handleLoginAuth, fetchSesion]
+    [handleLoginAuth, abrirPanel]
   )
+
+  const entrarDemo = useCallback(async () => {
+    try {
+      await handleEntrarDemoAuth()
+      await abrirPanel()
+    } catch {
+      // Igual que el login: el error queda en `error` y lo pinta la tarjeta.
+    }
+  }, [handleEntrarDemoAuth, abrirPanel])
 
   const onSubmitLogin = useCallback(
     async (datos: DatosLogin) => {
@@ -139,8 +172,11 @@ function ContenedorLogin() {
                   <Login
                     key="login"
                     onSubmit={onSubmitLogin}
-                    cargando={loadingLogin}
+                    cargando={loadingLogin || loadingDemo}
                     error={error ?? errorOauth}
+                    demo={
+                      demoDisponible ? { onEntrar: entrarDemo, cargando: loadingDemo } : undefined
+                    }
                   />
                 ))}
             </AnimatePresence>

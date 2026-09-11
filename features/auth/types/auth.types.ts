@@ -93,6 +93,17 @@ export interface Sesion {
    * por qué.
    */
   debeCambiarContrasena: boolean
+  /**
+   * Se entró por «Entrar sin credenciales». El panel se ve entero, pero la API
+   * responde 403 a cualquier escritura: por eso el panel avisa ANTES, en vez de
+   * dejar que alguien rellene un formulario para descubrirlo al guardar.
+   */
+  esDemo: boolean
+}
+
+/** Lo que responde `GET /auth/demo`: si este entorno ofrece el acceso demo. */
+export interface EstadoDemo {
+  disponible: boolean
 }
 
 /** Una de las barberías entre las que hay que elegir al entrar. */

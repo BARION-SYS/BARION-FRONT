@@ -180,7 +180,12 @@
       "sinCuenta": "¿No tienes cuenta?",
       "registrarse": "Registra tu barbería gratis",
       "demo": "Acceso demo",
-      "demoEntrar": "Entrar sin credenciales"
+      "demoEntrar": "Entrar sin credenciales",
+      "demoAviso": "Es solo para mirar: los cambios no se guardan."
+    },
+    "demo": {
+      "aviso": "Estás en la demo: mira todo lo que quieras, los cambios no se guardan.",
+      "crear": "Crear mi barbería"
     },
     "selectorBarberia": {
       "titulo": "¿A cuál barbería entras?",

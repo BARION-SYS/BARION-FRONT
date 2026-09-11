@@ -29,6 +29,12 @@ interface LoginProps {
    * sepa a dónde entrar. Ausente en la puerta global.
    */
   slug?: string
+  /**
+   * El acceso demo, cuando el entorno lo ofrece. Ausente = no se pinta: ni en
+   * la puerta de una barbería —ahí se viene a entrar a ESA, no a mirar otra—
+   * ni donde la API no tiene cuenta demo configurada.
+   */
+  demo?: { onEntrar: () => void; cargando: boolean }
 }
 
 /*
@@ -94,7 +100,7 @@ const perforacion: Variants = {
 }
 
 // Presentacional: el contenedor de la ruta entrega el submit y el estado por props.
-export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
+export function Login({ onSubmit, cargando, error, slug, demo }: LoginProps) {
   const t = useTextos()
   const [verContrasena, setVerContrasena] = useState(false)
   // El schema se rehace si cambia el idioma: sus mensajes también se leen.
@@ -357,40 +363,59 @@ export function Login({ onSubmit, cargando, error, slug }: LoginProps) {
         </motion.p>
       </div>
 
-      {/* Borde perforado tipo ticket de turno */}
-      <motion.div className="relative" variants={bloque}>
-        <motion.div
-          className="absolute -top-2 -left-2 size-4 rounded-full border border-border bg-background"
-          variants={perforacion}
-          aria-hidden
-        />
-        <motion.div
-          className="absolute -top-2 -right-2 size-4 rounded-full border border-border bg-background"
-          variants={perforacion}
-          aria-hidden
-        />
-        {/* La línea punteada se rasga de izquierda a derecha, como se arranca un
-            resguardo de verdad */}
-        <motion.div
-          className="origin-left border-t border-dashed border-border"
-          variants={linea}
-          aria-hidden
-        />
-        {/* El acceso de demostración cabe en una línea: es un atajo de prueba,
-            no una tercera forma de entrar, y ocupando tres renglones pesaba en
-            la tarjeta más que el propio formulario */}
-        <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 px-(--acceso-borde) py-3.5 text-center">
-          <span className="text-xs tracking-[0.14em] text-muted-foreground uppercase">
-            {t("auth.login.demo")}
-          </span>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-primary transition-colors hover:text-primary/80 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-          >
-            {t("auth.login.demoEntrar")} <ArrowRight className="size-3.5" aria-hidden />
-          </Link>
-        </div>
-      </motion.div>
+      {/* Borde perforado tipo ticket de turno. El talón es el acceso demo, así
+          que sin demo no hay talón: una línea punteada que corta hacia nada se
+          lee como una tarjeta a la que le falta un trozo. */}
+      {demo && (
+        <motion.div className="relative" variants={bloque}>
+          <motion.div
+            className="absolute -top-2 -left-2 size-4 rounded-full border border-border bg-background"
+            variants={perforacion}
+            aria-hidden
+          />
+          <motion.div
+            className="absolute -top-2 -right-2 size-4 rounded-full border border-border bg-background"
+            variants={perforacion}
+            aria-hidden
+          />
+          {/* La línea punteada se rasga de izquierda a derecha, como se arranca
+              un resguardo de verdad */}
+          <motion.div
+            className="origin-left border-t border-dashed border-border"
+            variants={linea}
+            aria-hidden
+          />
+          {/* El acceso de demostración cabe en una línea: es un atajo de prueba,
+              no una tercera forma de entrar, y ocupando tres renglones pesaba en
+              la tarjeta más que el propio formulario.
+
+              Es un botón y no un enlace: antes navegaba a /dashboard sin sesión
+              y el panel devolvía aquí mismo. Ahora pide a la API una sesión de
+              solo lectura y entra por el mismo camino que el login. */}
+          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 px-(--acceso-borde) py-3.5 text-center">
+            <span className="text-xs tracking-[0.14em] text-muted-foreground uppercase">
+              {t("auth.login.demo")}
+            </span>
+            <Button
+              type="button"
+              variant="link"
+              onClick={demo.onEntrar}
+              disabled={deshabilitado || demo.cargando}
+              className="h-auto min-h-11 gap-1.5 px-1 py-1 text-sm font-medium hover:no-underline md:min-h-9"
+            >
+              {t("auth.login.demoEntrar")}
+              {demo.cargando ? (
+                <Loader2 className="size-3.5 animate-spin" aria-hidden />
+              ) : (
+                <ArrowRight className="size-3.5" aria-hidden />
+              )}
+            </Button>
+          </div>
+          <p className="-mt-2 px-(--acceso-borde) pb-3.5 text-center text-xs text-muted-foreground">
+            {t("auth.login.demoAviso")}
+          </p>
+        </motion.div>
+      )}
     </motion.div>
   )
 }

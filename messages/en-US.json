@@ -180,7 +180,12 @@
       "sinCuenta": "No account yet?",
       "registrarse": "Sign your shop up, free",
       "demo": "Demo access",
-      "demoEntrar": "Go in without credentials"
+      "demoEntrar": "Go in without credentials",
+      "demoAviso": "It's just for looking around: changes aren't saved."
+    },
+    "demo": {
+      "aviso": "You're in the demo: look around all you like, changes aren't saved.",
+      "crear": "Create my barbershop"
     },
     "selectorBarberia": {
       "titulo": "Which shop are you going into?",

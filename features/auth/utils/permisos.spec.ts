@@ -25,6 +25,7 @@ const sesionBase: Sesion = {
   tipo: "staff",
   esStaffPlataforma: false,
   debeCambiarContrasena: false,
+  esDemo: false,
 }
 
 const con = (parcial: Partial<Sesion>): Sesion => ({ ...sesionBase, ...parcial })

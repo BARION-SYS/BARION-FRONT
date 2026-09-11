@@ -1056,6 +1056,11 @@
     }
   },
   "portal": {
+    "demo": {
+      "titulo": "Estás viendo una demostración",
+      "detalle": "Esta barbería es de mentira: sirve para que veas cómo reserva tu cliente. Aquí no se toman citas ni se manda ningún correo.",
+      "cta": "Crear mi barbería"
+    },
     "cabecera": {
       "volver": "Volver al portal",
       "abierto": "Abierto · {horario}",

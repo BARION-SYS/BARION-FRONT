@@ -9,6 +9,7 @@ import { PortalBarberosList } from "@features/portal/components/PortalBarberosLi
 import { PortalCabeceraNav } from "@features/portal/components/PortalCabeceraNav"
 import { PortalConfirmacion } from "@features/portal/components/PortalConfirmacion"
 import { PortalNegocioCard } from "@features/portal/components/PortalNegocioCard"
+import { PortalDemoAviso } from "@features/portal/components/PortalDemoAviso"
 import { PortalOtpForm } from "@features/portal/components/PortalOtpForm"
 import { PortalPasosNav } from "@features/portal/components/PortalPasosNav"
 import { PortalPortada } from "@features/portal/components/PortalPortada"
@@ -545,6 +546,10 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
 
   return (
     <MotionConfig reducedMotion="user">
+      {/* Lo primero que se lee, antes de elegir barbero: quien llega aquí desde
+          «Entrar sin credenciales» está evaluando Barion, no reservando. */}
+      {barberia.esDemo && <PortalDemoAviso compacto />}
+
       <PortalCabeceraNav
         nombre={barberia.nombreComercial}
         abiertoAhora={sede?.abiertoAhora ?? false}
@@ -650,7 +655,17 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                         />
                       )}
 
-                      {paso === "datos" && (
+                      {/* La demo enseña los tres pasos de mirar —barbero, servicio y
+                          hora— y se para aquí, que es donde empezaría a crear cosas
+                          de verdad. La api rechaza el código igual; decirlo antes es
+                          la diferencia entre entender una demo y chocar con un error. */}
+                      {paso === "datos" && barberia.esDemo && (
+                        <div className="max-w-lg">
+                          <PortalDemoAviso />
+                        </div>
+                      )}
+
+                      {paso === "datos" && !barberia.esDemo && (
                         <div className="max-w-lg">
                           {/* Todavía no se sabe quién está delante: se espera en
                               vez de pedirle el nombre a quien ya lo dio. */}

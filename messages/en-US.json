@@ -1056,6 +1056,11 @@
     }
   },
   "portal": {
+    "demo": {
+      "titulo": "You are viewing a demo",
+      "detalle": "This barbershop is not real: it is here so you can see how your client books. No appointments are taken and no email is sent.",
+      "cta": "Create my barbershop"
+    },
     "cabecera": {
       "volver": "Back to the storefront",
       "abierto": "Open · {horario}",

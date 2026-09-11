@@ -61,6 +61,13 @@ export interface BarberiaPortal {
   ficha: FichaBarberia
   marca: MarcaBarberia
   sedes: SedePortal[]
+  /**
+   * La barbería de demostración de Barion: se ve entera y no toma reservas. Se
+   * dice al ENTRAR, no al final: la api rechaza el código con `barberia_demo`,
+   * y dejar que alguien elija barbero, servicio y hora para chocar ahí es
+   * hacerle perder el tiempo con forma de formulario.
+   */
+  esDemo: boolean
 }
 
 /**

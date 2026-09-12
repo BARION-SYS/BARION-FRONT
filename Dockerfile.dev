@@ -11,14 +11,16 @@
 # instantáneo en vez de reinstalar el árbol entero dentro.
 FROM node:22-slim
 
-# Quién es el contenedor. `1002` es el dev del host y `1005` el grupo que
-# comparten los programadores: lo que el contenedor genere —la caché de
-# compilación, un build— queda escribible para todos ellos y no solo para quien
-# levantó el entorno.
+# Quién es el contenedor: el uid de quien programa en esta máquina (`id -u`) y
+# `1005`, el grupo que comparten los programadores.
+#
+# Importa porque el repo entero va montado por volumen: lo que el contenedor
+# genere ahí dentro —la caché de compilación, un build— queda escribible para
+# todos ellos y no solo para quien levantó el entorno.
 #
 # Se cambian sin tocar este archivo:
 #   docker compose -f docker-compose.dev.yml build --build-arg UID=1001 web
-ARG UID=1002
+ARG UID=1000
 ARG GID=1005
 
 # Versión EXACTA la que fija `packageManager` en package.json. pnpm 10 se
@@ -34,12 +36,29 @@ RUN npm install -g pnpm@10.33.3
 # apuntar `HOME` a /tmp para que las herramientas no escribieran en `/`. Con el
 # usuario declarado aquí, `~` existe y vale para todas.
 #
-# El grupo se crea solo si el gid está libre: la imagen base ya trae `node`
-# (1000) y no hay por qué chocar con él.
-RUN if ! getent group ${GID} >/dev/null; then groupadd -g ${GID} programadores; fi \
- && useradd -u ${UID} -g ${GID} -m -d /home/app -s /bin/bash app \
- && mkdir -p /app \
- && chown -R ${UID}:${GID} /app /home/app
+# El grupo se crea solo si el gid está libre.
+#
+# Y el usuario se REUTILIZA cuando el uid ya existe, que es el caso corriente y
+# no el raro: `node:22-slim` trae un usuario `node` en el 1000, y 1000 es
+# justamente el uid del primer humano de casi cualquier Linux. Ahí dentro,
+# `useradd -u 1000` responde «UID 1000 is not unique» y tumba el build — o sea
+# que el único valor que la imagen no aceptaba era precisamente el correcto para
+# la máquina de quien programa.
+#
+# Cuando el uid está ocupado se le cambia el nombre a `app`, se le mueve el home
+# a /home/app y se le pone el grupo pedido, en vez de crear una segunda cuenta:
+# dos cuentas con el mismo uid son la misma cuenta para el kernel, y lo único
+# que cambiaría es cuál de los dos nombres enseña `ls`.
+RUN set -eu; \
+    if ! getent group "${GID}" >/dev/null; then groupadd -g "${GID}" programadores; fi; \
+    if getent passwd "${UID}" >/dev/null; then \
+      anterior="$(getent passwd "${UID}" | cut -d: -f1)"; \
+      usermod -l app -g "${GID}" -d /home/app -m -s /bin/bash "$anterior"; \
+    else \
+      useradd -u "${UID}" -g "${GID}" -m -d /home/app -s /bin/bash app; \
+    fi; \
+    mkdir -p /app; \
+    chown -R "${UID}:${GID}" /app /home/app
 
 # `.next` NO se comparte con el host: el compose le monta encima un volumen de
 # Docker. Este directorio existe en la imagen solo para fijarle el dueño — al

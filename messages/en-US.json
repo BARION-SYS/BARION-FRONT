@@ -206,7 +206,7 @@
       "consejoSpam": "It went to spam or promotions. The first email from a new sender usually does — search for “Barion”.",
       "consejoOtro": "That's not the address. It has to be the exact one you sign in with; if you have two, try the other.",
       "consejoEquipo": "You work at a barbershop. Whoever runs it can give you a new password from Team right away, with no email involved.",
-      "consejoStaff": "You're on the Barion team. This link never reaches you — your account doesn't belong to a barbershop. Ask a teammate to reset it for you.",
+      "consejoStaff": "You work at a barbershop and your access was removed. While your account is deactivated the link isn't sent: ask whoever runs the barbershop to reactivate it.",
       "otroCorreo": "Try another email"
     },
     "nuevaContrasena": {

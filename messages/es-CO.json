@@ -206,7 +206,7 @@
       "consejoSpam": "Está en spam o en promociones. El primer correo de un remitente nuevo cae ahí muy a menudo: búscalo por «Barion».",
       "consejoOtro": "La dirección no es esa. Tiene que ser exactamente la que usas para entrar; si tienes dos correos, prueba con el otro.",
       "consejoEquipo": "Trabajas en una barbería. Quien la administra te pone una contraseña nueva desde Equipo en el momento, sin esperar ningún correo.",
-      "consejoStaff": "Eres del equipo de Barion. A ti este enlace no te llega nunca —tu cuenta no cuelga de ninguna barbería—: pídele el restablecimiento a otra persona del equipo.",
+      "consejoStaff": "Trabajas en una barbería y te quitaron el acceso. Mientras tu cuenta esté desactivada el enlace no se envía: pídele a quien administra la barbería que te la reactive.",
       "otroCorreo": "Probar con otro correo"
     },
     "nuevaContrasena": {

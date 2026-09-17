@@ -33,6 +33,11 @@ import { erroresDe } from "@features/auth/schemas/errores"
  * que descartarlas: primero lo que pasa casi siempre —el filtro de spam—, y al
  * final lo que le pasa a poca gente pero no tiene arreglo esperando.
  *
+ * El último dejó de ser «eres del equipo de Barion»: a esa cuenta el enlace ya le
+ * llega, desde que el token puede emitirse sin barbería. Lo que queda sin correo
+ * es la cuenta a la que le quitaron el acceso, y eso no se arregla recuperando la
+ * contraseña.
+ *
  * Igual que en el panel de marca, el icono va aquí y el texto en el diccionario:
  * lo que no cambia con el idioma es cuál acompaña a cuál.
  */

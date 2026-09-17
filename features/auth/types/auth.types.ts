@@ -94,6 +94,13 @@ export interface Sesion {
    */
   debeCambiarContrasena: boolean
   /**
+   * Si la API le va a pedir la contraseña actual para cambiarla. Lo decide ella
+   * porque es la misma regla que aplica el endpoint: `false` cuando esta cuenta
+   * no pudo conocerla —no tiene contraseña, o arrastra la que le puso otro y
+   * entra con un proveedor externo—, y entonces el campo ni se pinta.
+   */
+  exigeContrasenaActual: boolean
+  /**
    * Se entró por «Entrar sin credenciales». El panel se ve entero, pero la API
    * responde 403 a cualquier escritura: por eso el panel avisa ANTES, en vez de
    * dejar que alguien rellene un formulario para descubrirlo al guardar.

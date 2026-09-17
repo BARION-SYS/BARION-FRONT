@@ -7,6 +7,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { AnimatePresence, motion } from "motion/react"
 import { AlertCircle, ArrowRight, KeyRound, LifeBuoy, Loader2, LogOut } from "lucide-react"
 import { Button } from "@shared/components/ui/button"
+import { cn } from "@shared/utils/cn"
 import { rutasPublicas } from "@routes/rutasPublicas"
 import { useTextos } from "@shared/textos/useTextos"
 import { CampoContrasena } from "@features/auth/components/CampoContrasena"
@@ -27,6 +28,12 @@ interface CambioObligatorioProps {
   nombre?: string | null
   /** Con qué cuenta entró: quien tiene dos tiene que saber cuál está cambiando. */
   email?: string | null
+  /**
+   * Si hay que pedirle la que le dieron. Lo dice la sesión, no esta pantalla:
+   * quien entró con un proveedor externo nunca tuvo esa clave, y pedírsela lo
+   * deja encerrado fuera de su cuenta — no hay nada que pueda escribir ahí.
+   */
+  exigeActual?: boolean
   cargando?: boolean
   /**
    * El rechazo de la API —por ejemplo, la contraseña actual no es la buena—.
@@ -53,6 +60,7 @@ interface CambioObligatorioProps {
 export function CambioObligatorio({
   nombre,
   email,
+  exigeActual = true,
   cargando,
   error,
   onSubmit,
@@ -61,7 +69,10 @@ export function CambioObligatorio({
   const t = useTextos("auth.cambioObligatorio")
   const tRaiz = useTextos()
   const [visible, setVisible] = useState(false)
-  const esquema = useMemo(() => esquemaCambioContrasena(erroresDe(tRaiz)), [tRaiz])
+  const esquema = useMemo(
+    () => esquemaCambioContrasena(erroresDe(tRaiz), { exigeActual }),
+    [tRaiz, exigeActual]
+  )
   const {
     register,
     handleSubmit,
@@ -85,7 +96,7 @@ export function CambioObligatorio({
         icono={KeyRound}
         tono="advertencia"
         titulo={nombre ? t("saludo", { nombre }) : t("tituloSinNombre")}
-        descripcion={t("descripcion")}
+        descripcion={exigeActual ? t("descripcion") : t("descripcionSinActual")}
         pie={
           <Button
             type="button"
@@ -114,19 +125,29 @@ export function CambioObligatorio({
           suppressHydrationWarning
           className="mt-(--acceso-salto) flex flex-col gap-(--acceso-aire)"
         >
-          <CampoContrasena
-            id="contrasenaActual"
-            etiqueta={t("actual")}
-            placeholder={t("actualPlaceholder")}
-            registro={register("contrasenaActual")}
-            error={errors.contrasenaActual?.message}
-            autoComplete="current-password"
-          />
+          {/* Quien no tuvo esa clave no tiene nada que escribir aquí: el campo no
+              se pinta, y con él se va la separación y el requisito de que la
+              nueva sea distinta, que compara contra algo que no existe. */}
+          {exigeActual && (
+            <CampoContrasena
+              id="contrasenaActual"
+              etiqueta={t("actual")}
+              placeholder={t("actualPlaceholder")}
+              registro={register("contrasenaActual")}
+              error={errors.contrasenaActual?.message}
+              autoComplete="current-password"
+            />
+          )}
 
           {/* La actual y la nueva, separadas: son dos preguntas distintas —la
               que te dieron y la que eliges— y juntas se leían como un solo
               formulario de tres casillas iguales. */}
-          <div className="flex flex-col gap-(--acceso-aire) border-t border-dashed border-border pt-(--acceso-aire)">
+          <div
+            className={cn(
+              "flex flex-col gap-(--acceso-aire)",
+              exigeActual && "border-t border-dashed border-border pt-(--acceso-aire)"
+            )}
+          >
             <CampoContrasena
               id="contrasenaNueva"
               etiqueta={t("contrasenaNueva")}
@@ -161,11 +182,15 @@ export function CambioObligatorio({
                   texto: tRaiz("auth.requisitos.coinciden"),
                   cumple: nueva.length > 0 && nueva === confirmacion,
                 },
-                {
-                  clave: "distinta",
-                  texto: tRaiz("auth.requisitos.distinta"),
-                  cumple: nueva.length > 0 && nueva !== actual,
-                },
+                ...(exigeActual
+                  ? [
+                      {
+                        clave: "distinta",
+                        texto: tRaiz("auth.requisitos.distinta"),
+                        cumple: nueva.length > 0 && nueva !== actual,
+                      },
+                    ]
+                  : []),
               ]}
             />
           </div>
@@ -221,22 +246,27 @@ export function CambioObligatorio({
             </Button>
           </motion.div>
 
-          <div className="rounded-xl border border-border bg-secondary/40 px-3.5 py-3">
-            <p className="flex items-start gap-2.5 text-sm font-medium text-foreground">
-              <LifeBuoy className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-              {t("salidaTitulo")}
-            </p>
-            <p className="mt-1.5 pl-6.5 text-sm text-pretty text-muted-foreground">
-              {t("salidaEquipo")}
-            </p>
-            <Link
-              href={rutasPublicas.recuperar}
-              className="mt-2 ml-6.5 inline-flex min-h-11 items-center gap-1 rounded-sm text-sm font-medium text-primary underline-offset-4 transition-colors hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none md:min-h-9"
-            >
-              {t("salidaEnlace")}
-              <ArrowRight className="size-3.5" aria-hidden />
-            </Link>
-          </div>
+          {/* El rescate es para quien no tiene la clave que le dieron. A quien no
+              se le pide ninguna no le sobra: le ofrece salidas a un problema que
+              no tiene y le sugiere que le falta algo. */}
+          {exigeActual && (
+            <div className="rounded-xl border border-border bg-secondary/40 px-3.5 py-3">
+              <p className="flex items-start gap-2.5 text-sm font-medium text-foreground">
+                <LifeBuoy className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                {t("salidaTitulo")}
+              </p>
+              <p className="mt-1.5 pl-6.5 text-sm text-pretty text-muted-foreground">
+                {t("salidaEquipo")}
+              </p>
+              <Link
+                href={rutasPublicas.recuperar}
+                className="mt-2 ml-6.5 inline-flex min-h-11 items-center gap-1 rounded-sm text-sm font-medium text-primary underline-offset-4 transition-colors hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none md:min-h-9"
+              >
+                {t("salidaEnlace")}
+                <ArrowRight className="size-3.5" aria-hidden />
+              </Link>
+            </div>
+          )}
         </motion.form>
       </TarjetaAcceso>
     </PuertaAcceso>

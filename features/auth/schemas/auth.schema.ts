@@ -41,10 +41,21 @@ export type DatosLogin = z.infer<ReturnType<typeof esquemaLogin>>
 // cambio voluntario desde configuración. La actual se sigue pidiendo aunque haya
 // sesión — sin eso, un equipo desbloqueado un minuto basta para dejar a su dueño
 // fuera de su propia cuenta.
-export function esquemaCambioContrasena(t: TextosDeError = erroresPorDefecto) {
+//
+// `exigeActual` NO lo decide esta pantalla: lo dice la sesión
+// (`exigeContrasenaActual` de `GET /auth/me`). Quien entró con Google arrastrando
+// una clave que le puso otro nunca la tuvo, así que pedírsela lo dejaba
+// encerrado fuera de su cuenta; la API acepta el cambio sin ella y aquí el campo
+// deja de ser obligatorio para que el formulario no invente un requisito que el
+// servidor no tiene.
+export function esquemaCambioContrasena(
+  t: TextosDeError = erroresPorDefecto,
+  { exigeActual = true }: { exigeActual?: boolean } = {}
+) {
   return z
     .object({
-      contrasenaActual: z.string().min(8, t.escribeLaActual),
+      // Sin mínimo cuando no se exige: ese campo no se pinta y llega vacío.
+      contrasenaActual: exigeActual ? z.string().min(8, t.escribeLaActual) : z.string(),
       contrasenaNueva: z.string().min(12, t.minimo12),
       confirmacion: z.string(),
     })
@@ -52,10 +63,15 @@ export function esquemaCambioContrasena(t: TextosDeError = erroresPorDefecto) {
       message: t.noCoinciden,
       path: ["confirmacion"],
     })
-    .refine((d) => d.contrasenaNueva !== d.contrasenaActual, {
+    .refine((d) => d.contrasenaActual === "" || d.contrasenaNueva !== d.contrasenaActual, {
       message: t.distintaDeLaDada,
       path: ["contrasenaNueva"],
     })
+}
+
+/** Lo que la pantalla sabe de la cuenta antes de armar el formulario. */
+export interface OpcionesCambioContrasena {
+  exigeActual?: boolean
 }
 
 export type DatosCambioContrasena = z.infer<ReturnType<typeof esquemaCambioContrasena>>

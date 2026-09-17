@@ -6,6 +6,7 @@ import type {
   DatosLogin,
   DatosNuevaContrasena,
   DatosSolicitudRecuperacion,
+  OpcionesCambioContrasena,
 } from "@features/auth/schemas/auth.schema"
 import type { BarberiaParaElegir, Sesion } from "@features/auth/types/auth.types"
 import { authService } from "@features/auth/services/auth.service"
@@ -146,10 +147,13 @@ export function useAuth() {
    * la persona se quedaría mirando el mismo formulario que acaba de enviar.
    */
   const handleCambiarContrasenaAuth = useCallback(
-    async (datos: DatosCambioContrasena): Promise<string> => {
+    async (
+      datos: DatosCambioContrasena,
+      opciones: OpcionesCambioContrasena = {}
+    ): Promise<string> => {
       setLoadingContrasena(true)
       try {
-        const res = await authService.cambiarContrasena(datos)
+        const res = await authService.cambiarContrasena(datos, opciones)
         await fetchSesion()
         return res.message
       } catch (err) {

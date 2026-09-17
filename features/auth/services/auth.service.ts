@@ -7,6 +7,7 @@ import {
   type DatosLogin,
   type DatosNuevaContrasena,
   type DatosSolicitudRecuperacion,
+  type OpcionesCambioContrasena,
 } from "@features/auth/schemas/auth.schema"
 import type { EstadoDemo, ResultadoLogin, Sesion } from "@features/auth/types/auth.types"
 import { api } from "@lib/http/instances"
@@ -77,10 +78,24 @@ export const authService = {
    *
    * La confirmación no viaja: existe para que nadie se equivoque al teclear, y
    * comprobarlo es cosa del formulario, no del servidor.
+   *
+   * `opciones.exigeActual` viene de la sesión (`exigeContrasenaActual`): cuando
+   * es `false` la cuenta no pudo conocer la actual —entra solo con un proveedor,
+   * o arrastra una que le puso otro— y la API acepta el cambio sin ella.
    */
-  async cambiarContrasena(datos: DatosCambioContrasena): Promise<ApiResult<null>> {
-    const { contrasenaActual, contrasenaNueva } = esquemaCambioContrasena().parse(datos)
-    return api.post<null>("/auth/cambiar-contrasena", { contrasenaActual, contrasenaNueva })
+  async cambiarContrasena(
+    datos: DatosCambioContrasena,
+    opciones: OpcionesCambioContrasena = {}
+  ): Promise<ApiResult<null>> {
+    const { contrasenaActual, contrasenaNueva } = esquemaCambioContrasena(
+      undefined,
+      opciones
+    ).parse(datos)
+    // Vacía no se manda: la API la leería como un intento fallido y responde 401.
+    return api.post<null>("/auth/cambiar-contrasena", {
+      contrasenaNueva,
+      ...(contrasenaActual ? { contrasenaActual } : {}),
+    })
   },
 
   /**

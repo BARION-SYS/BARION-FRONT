@@ -25,6 +25,7 @@ const sesionBase: Sesion = {
   tipo: "staff",
   esStaffPlataforma: false,
   debeCambiarContrasena: false,
+  exigeContrasenaActual: true,
   esDemo: false,
 }
 

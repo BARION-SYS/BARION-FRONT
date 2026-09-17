@@ -226,6 +226,7 @@
       "saludo": "Hi, {nombre}",
       "tituloSinNombre": "Pick your password",
       "descripcion": "You signed in with a password someone else set. Pick your own to carry on: the panel stays closed until you do.",
+      "descripcionSinActual": "You signed in with your connected provider, so we won't ask for any earlier password: your account still carries one someone else set. Pick your own to carry on — the panel stays closed until you do.",
       "actual": "Current password",
       "actualPlaceholder": "The one you were given",
       "contrasenaNueva": "New password",

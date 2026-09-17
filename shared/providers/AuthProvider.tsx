@@ -108,6 +108,7 @@ export function AuthProvider({
       <CambioObligatorio
         nombre={sesion.usuario.nombre}
         email={sesion.usuario.email}
+        exigeActual={sesion.exigeContrasenaActual}
         cargando={loadingContrasena}
         error={errorCambio}
         onSubmit={async (datos) => {
@@ -117,7 +118,9 @@ export function AuthProvider({
           // estar listo como si no hubiera pasado nada.
           setErrorCambio(null)
           try {
-            const mensaje = await handleCambiarContrasenaAuth(datos)
+            const mensaje = await handleCambiarContrasenaAuth(datos, {
+              exigeActual: sesion.exigeContrasenaActual,
+            })
             notify.success(mensaje)
           } catch (err) {
             setErrorCambio(getErrorMessage(err))

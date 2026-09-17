@@ -226,6 +226,7 @@
       "saludo": "Hola, {nombre}",
       "tituloSinNombre": "Elige tu contraseña",
       "descripcion": "Entraste con una clave que puso otra persona. Elige la tuya para continuar: hasta entonces el panel no se abre.",
+      "descripcionSinActual": "Entraste con el proveedor que tienes conectado, así que no te pedimos ninguna clave anterior: tu cuenta arrastra una que puso otra persona. Elige la tuya para continuar, hasta entonces el panel no se abre.",
       "actual": "Contraseña actual",
       "actualPlaceholder": "La que te dieron",
       "contrasenaNueva": "Contraseña nueva",

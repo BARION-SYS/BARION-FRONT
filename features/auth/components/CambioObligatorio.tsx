@@ -19,6 +19,7 @@ import {
   type DatosCambioContrasena,
 } from "@features/auth/schemas/auth.schema"
 import { erroresDe } from "@features/auth/schemas/errores"
+import { CURVA_SALIDA } from "@shared/utils/movimiento"
 
 /** El mismo mínimo que el schema: si cambia allí, tiene que cambiar aquí. */
 const LARGO_MINIMO = 12
@@ -203,7 +204,7 @@ export function CambioObligatorio({
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+                transition={{ duration: 0.18, ease: CURVA_SALIDA }}
               >
                 <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
                 <span>{error}</span>

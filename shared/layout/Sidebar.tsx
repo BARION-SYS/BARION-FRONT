@@ -14,6 +14,7 @@ import { esRutaActiva, rutasDe, rutasVisibles, seccionesDe } from "@routes/rutas
 import { useAuthStore } from "@store/auth.store"
 import { useTextos } from "@shared/textos/useTextos"
 import { cn } from "@shared/utils/cn"
+import { RESORTE, RESORTE_RAPIDO } from "@shared/utils/movimiento"
 
 // Entrada del chrome: cascada pausada desde la izquierda, con resorte suave.
 // Solo anima contenido interno — el transform del <aside> pertenece al drawer móvil.
@@ -24,7 +25,7 @@ const contenedorNav: Variants = {
 
 const itemNav: Variants = {
   oculto: { opacity: 0, x: -28 },
-  visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 140, damping: 22 } },
+  visible: { opacity: 1, x: 0, transition: { type: "spring", ...RESORTE } },
 }
 
 // Etiquetas que se pliegan con el colapso (ancho + opacidad, no display)
@@ -92,8 +93,8 @@ export function Sidebar({
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border bg-card",
-          "transition-transform duration-400 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
-          "w-64 lg:static lg:translate-x-0 lg:transition-[width] lg:duration-500 lg:ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "transition-transform duration-400 ease-ios motion-reduce:transition-none",
+          "w-64 lg:static lg:translate-x-0 lg:transition-[width] lg:duration-500 lg:ease-salida",
           abiertaEnMovil ? "translate-x-0" : "-translate-x-full",
           colapsada ? "lg:w-16" : "lg:w-60"
         )}
@@ -103,7 +104,7 @@ export function Sidebar({
         <motion.div
           initial={{ opacity: 0, x: -28 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.1 }}
+          transition={{ type: "spring", ...RESORTE, delay: 0.1 }}
           className={cn(
             "relative flex items-center gap-3 overflow-hidden px-4 py-4",
             colapsada && "lg:px-0"
@@ -113,7 +114,7 @@ export function Sidebar({
           <LogoBarion
             priority
             className={cn(
-              "h-12 shrink-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              "h-12 shrink-0 transition-[opacity,transform] duration-500 ease-salida",
               colapsada && "lg:scale-90 lg:opacity-0"
             )}
           />
@@ -121,7 +122,7 @@ export function Sidebar({
             variante="icono"
             priority
             className={cn(
-              "absolute left-1/2 hidden h-11 -translate-x-1/2 transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:block",
+              "absolute left-1/2 hidden h-11 -translate-x-1/2 transition-opacity duration-500 ease-salida lg:block",
               colapsada ? "lg:opacity-100 lg:delay-150" : "lg:opacity-0"
             )}
           />
@@ -151,9 +152,9 @@ export function Sidebar({
           <motion.div
             initial={{ opacity: 0, x: -28 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.22 }}
+            transition={{ type: "spring", ...RESORTE, delay: 0.22 }}
             className={cn(
-              "overflow-hidden px-3 transition-[max-height,opacity,padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              "overflow-hidden px-3 transition-[max-height,opacity,padding] duration-500 ease-salida",
               colapsada ? "lg:max-h-0 lg:py-0 lg:opacity-0" : "max-h-24 py-3 opacity-100"
             )}
           >
@@ -192,7 +193,7 @@ export function Sidebar({
                 <p
                   className={cn(
                     "overflow-hidden px-3 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground/80 uppercase",
-                    "transition-[max-height,opacity,padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                    "transition-[max-height,opacity,padding] duration-500 ease-salida",
                     colapsada
                       ? "lg:max-h-0 lg:py-0 lg:opacity-0"
                       : "max-h-8 pt-4 pb-1.5 opacity-100"
@@ -235,7 +236,7 @@ export function Sidebar({
                           {activa && (
                             <motion.span
                               layoutId="indicador-nav-activo"
-                              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                              transition={{ type: "spring", ...RESORTE_RAPIDO }}
                               className={cn(
                                 "absolute top-[calc(50%-10px)] left-0 h-5 w-0.5 rounded-full bg-primary",
                                 colapsada && "lg:hidden"
@@ -270,7 +271,7 @@ export function Sidebar({
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.75 }}
+          transition={{ type: "spring", ...RESORTE, delay: 0.75 }}
           className="border-t border-border p-3"
         >
           <InfoTooltip
@@ -303,7 +304,7 @@ export function Sidebar({
         >
           <ChevronLeft
             className={cn(
-              "transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              "transition-transform duration-500 ease-salida",
               colapsada && "rotate-180"
             )}
             aria-hidden

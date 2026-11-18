@@ -22,6 +22,7 @@ import { StatusBadge } from "@shared/components/status/StatusBadge"
 import { Button } from "@shared/components/ui/button"
 import { formatDuration } from "@shared/utils/datetime"
 import { useTextos } from "@shared/textos/useTextos"
+import { RESORTE } from "@shared/utils/movimiento"
 
 interface PortalSeguimientoDetailProps {
   cita: SeguimientoPortal
@@ -66,7 +67,7 @@ export function PortalSeguimientoDetail({
       className="overflow-hidden rounded-2xl border border-border bg-card"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 140, damping: 22 }}
+      transition={{ type: "spring", ...RESORTE }}
       aria-labelledby="titulo-seguimiento"
     >
       <div className="cinta-barberia h-1.5 w-full" aria-hidden />

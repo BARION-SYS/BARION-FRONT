@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { Globe, Link2 } from "lucide-react"
 import { DataSkeleton } from "@shared/components/feedback/DataSkeleton"
 import { useTextos } from "@shared/textos/useTextos"
+import { RESORTE } from "@shared/utils/movimiento"
 
 interface DireccionPublicaProps {
   /** Dominio por el que se sirve la aplicación. Vacío en el primer render. */
@@ -85,7 +86,7 @@ export function DireccionPublica({ origen, slug, ajustado, resolviendo }: Direcc
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, transition: { duration: 0.12 } }}
-              transition={{ type: "spring", stiffness: 260, damping: 24 }}
+              transition={{ type: "spring", ...RESORTE }}
               className="space-y-1.5"
             >
               {/* El dominio en apoyo y el identificador en primer plano: es lo

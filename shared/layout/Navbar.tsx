@@ -38,6 +38,7 @@ import { useAuthStore } from "@store/auth.store"
 import { useSedeActual, useSedeStore } from "@store/sede.store"
 import { obtenerRutaActiva } from "@routes/rutasDashboard"
 import { cn } from "@shared/utils/cn"
+import { RESORTE } from "@shared/utils/movimiento"
 
 interface NavbarProps {
   alAbrirMenuMovil: () => void
@@ -135,13 +136,13 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
     <motion.header
       initial={{ opacity: 0, y: -24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.05 }}
+      transition={{ type: "spring", ...RESORTE, delay: 0.05 }}
       className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border bg-card/50 px-4 backdrop-blur-sm md:px-6"
     >
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.25 }}
+        transition={{ type: "spring", ...RESORTE, delay: 0.25 }}
         className="flex min-w-0 items-center gap-3"
       >
         <Button
@@ -168,7 +169,7 @@ export function Navbar({ alAbrirMenuMovil }: NavbarProps) {
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ type: "spring", stiffness: 140, damping: 22, delay: 0.35 }}
+        transition={{ type: "spring", ...RESORTE, delay: 0.35 }}
         className="flex shrink-0 items-center gap-2"
       >
         <div className="relative hidden items-center md:flex">

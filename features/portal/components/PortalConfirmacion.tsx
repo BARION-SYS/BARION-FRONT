@@ -16,6 +16,7 @@ import {
 } from "@features/portal/utils/formato"
 import type { Cita, SedePortal } from "@features/portal/types/portal.types"
 import { useTextos } from "@shared/textos/useTextos"
+import { RESORTE } from "@shared/utils/movimiento"
 
 interface PortalConfirmacionProps {
   /** La cita tal como la devolvió la api: el comprobante no se reconstruye. */
@@ -50,7 +51,7 @@ export function PortalConfirmacion({
       className="overflow-hidden rounded-2xl border border-border bg-card"
       initial={{ opacity: 0, y: 24, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 140, damping: 22 }}
+      transition={{ type: "spring", ...RESORTE }}
       aria-labelledby="titulo-confirmacion"
     >
       <div className="cinta-barberia h-1.5 w-full" aria-hidden />

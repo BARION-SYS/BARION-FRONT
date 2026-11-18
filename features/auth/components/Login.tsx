@@ -18,6 +18,7 @@ import { LogoGoogle } from "@shared/components/brand/LogoGoogle"
 import { esquemaLogin, type DatosLogin } from "@features/auth/schemas/auth.schema"
 import { erroresDe } from "@features/auth/schemas/errores"
 import { useTextos } from "@shared/textos/useTextos"
+import { CURVA_SALIDA, RESORTE, RESORTE_VIVO } from "@shared/utils/movimiento"
 
 interface LoginProps {
   onSubmit: (datos: DatosLogin) => Promise<void>
@@ -54,8 +55,7 @@ const tarjeta: Variants = {
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 170,
-      damping: 21,
+      ...RESORTE,
       staggerChildren: 0.07,
       delayChildren: 0.09,
     },
@@ -64,13 +64,13 @@ const tarjeta: Variants = {
     opacity: 0,
     y: -28,
     scale: 0.98,
-    transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] },
+    transition: { duration: 0.2, ease: CURVA_SALIDA },
   },
 }
 
 const bloque: Variants = {
   oculto: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 240, damping: 24 } },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", ...RESORTE } },
 }
 
 /*
@@ -82,7 +82,7 @@ const bloque: Variants = {
 */
 const linea: Variants = {
   oculto: { scaleX: 0 },
-  visible: { scaleX: 1, transition: { duration: 0.5, ease: [0.23, 1, 0.32, 1] } },
+  visible: { scaleX: 1, transition: { duration: 0.5, ease: CURVA_SALIDA } },
 }
 
 /*
@@ -95,7 +95,7 @@ const perforacion: Variants = {
   visible: {
     scale: 1,
     opacity: 1,
-    transition: { type: "spring", stiffness: 420, damping: 20 },
+    transition: { type: "spring", ...RESORTE_VIVO },
   },
 }
 
@@ -137,7 +137,7 @@ export function Login({ onSubmit, cargando, error, slug, demo }: LoginProps) {
         initial={{ scaleX: 0 }}
         animate={{
           scaleX: 1,
-          transition: { duration: 0.65, ease: [0.23, 1, 0.32, 1], delay: 0.2 },
+          transition: { duration: 0.65, ease: CURVA_SALIDA, delay: 0.2 },
         }}
         aria-hidden
       />
@@ -293,7 +293,7 @@ export function Login({ onSubmit, cargando, error, slug, demo }: LoginProps) {
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+                transition={{ duration: 0.18, ease: CURVA_SALIDA }}
               >
                 <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
                 <span>{error}</span>

@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from "@shared/components/ui/sheet"
 import { cn } from "@shared/utils/cn"
+import { CURVA_IOS, RESORTE } from "@shared/utils/movimiento"
 
 /**
  * Ancho en pantallas cómodas. En móvil NO aplica ninguno: el panel ocupa el
@@ -24,8 +25,8 @@ const anchoPorSize = {
 }
 
 // Lenguaje de movimiento del repo: entrada con resorte suave, salida más corta.
-const entrada = { type: "spring", stiffness: 140, damping: 22 } as const
-const salida = { duration: 0.22, ease: [0.32, 0.72, 0, 1] } as const
+const entrada = { type: "spring", ...RESORTE } as const
+const salida = { duration: 0.22, ease: CURVA_IOS } as const
 
 interface SidePanelProps {
   open: boolean

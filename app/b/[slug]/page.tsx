@@ -37,6 +37,7 @@ import { usePortalStore } from "@store/portal.store"
 import type { Cliente } from "@features/clientes/types/clientes.types"
 import type { DatosContacto, DatosReservaConSesion } from "@features/portal/schemas/portal.schema"
 import type { PasoReserva, ServicioOfrecido } from "@features/portal/types/portal.types"
+import { RESORTE } from "@shared/utils/movimiento"
 
 /** Horas antes de la cita hasta las que el cliente cancela solo (default de la api). */
 const HORAS_CANCELACION = 4
@@ -616,7 +617,7 @@ export default function PortalPage({ params }: { params: Promise<{ slug: string 
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      transition={{ type: "spring", stiffness: 160, damping: 24 }}
+                      transition={{ type: "spring", ...RESORTE }}
                     >
                       {paso === "barbero" && (
                         <PortalBarberosList

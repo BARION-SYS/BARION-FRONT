@@ -7,6 +7,7 @@ import { LogoGoogle } from "@shared/components/brand/LogoGoogle"
 import { buttonVariants } from "@shared/components/ui/button"
 import { cn } from "@shared/utils/cn"
 import { useTextos } from "@shared/textos/useTextos"
+import { RESORTE } from "@shared/utils/movimiento"
 
 /**
  * Lo que se enseña cuando el pase de Google muere con el formulario ya montado.
@@ -31,7 +32,7 @@ export function RegistroPaseCaducado() {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 200, damping: 24 }}
+      transition={{ type: "spring", ...RESORTE }}
       className="space-y-6 text-center"
       role="alert"
     >

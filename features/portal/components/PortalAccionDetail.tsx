@@ -15,6 +15,7 @@ import { Button } from "@shared/components/ui/button"
 import { copiaPorResultado } from "@features/portal/constants/acciones"
 import type { ResultadoAccion } from "@features/portal/types/portal.types"
 import { useTextos } from "@shared/textos/useTextos"
+import { RESORTE } from "@shared/utils/movimiento"
 
 const iconoPorResultado = {
   confirmada: CheckCircle2,
@@ -61,7 +62,7 @@ export function PortalAccionDetail({
       className="overflow-hidden rounded-2xl border border-border bg-card"
       initial={{ opacity: 0, y: 24, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 140, damping: 22 }}
+      transition={{ type: "spring", ...RESORTE }}
       aria-labelledby="titulo-accion"
     >
       <div className="cinta-barberia h-1.5 w-full" aria-hidden />

@@ -5,6 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --ease-salida: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+  --color-marca-acento: var(--marca-acento);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

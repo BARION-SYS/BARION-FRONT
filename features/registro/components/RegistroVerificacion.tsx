@@ -7,6 +7,7 @@ import { rutasPublicas } from "@routes/rutasPublicas"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { Button } from "@shared/components/ui/button"
 import { useTextos } from "@shared/textos/useTextos"
+import { RESORTE } from "@shared/utils/movimiento"
 
 export type EstadoVerificacion = "verificando" | "listo" | "invalido"
 
@@ -50,7 +51,7 @@ export function RegistroVerificacion({ estado, mensaje }: RegistroVerificacionPr
         // Entrada corta y con muelle: acompaña la llegada sin hacerla esperar.
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 140, damping: 22 }}
+        transition={{ type: "spring", ...RESORTE }}
         aria-live="polite"
         className="flex w-full max-w-md flex-col items-center gap-5 rounded-2xl border border-border bg-card p-6 text-center shadow-lg sm:p-8"
       >

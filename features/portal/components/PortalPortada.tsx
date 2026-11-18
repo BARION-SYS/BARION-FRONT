@@ -4,6 +4,7 @@ import { motion } from "motion/react"
 import { Check, MapPin } from "lucide-react"
 import { direccionLegible } from "@features/portal/utils/horarios"
 import type { BarberiaPortal, SedePortal } from "@features/portal/types/portal.types"
+import { RESORTE } from "@shared/utils/movimiento"
 
 interface PortalPortadaProps {
   barberia: BarberiaPortal
@@ -13,7 +14,7 @@ interface PortalPortadaProps {
 
 const bloque = {
   oculto: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 140, damping: 22 } },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", ...RESORTE } },
 } as const
 
 /**

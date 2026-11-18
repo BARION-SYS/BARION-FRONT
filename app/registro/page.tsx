@@ -24,6 +24,7 @@ import { useOrigen } from "@shared/hooks/useOrigen"
 import { ThemeToggle } from "@shared/layout/ThemeToggle"
 import { notify } from "@shared/services/notify"
 import { getErrorMessage, motivoDeError } from "@shared/utils/error"
+import { RESORTE } from "@shared/utils/movimiento"
 
 const incluye = [
   { icono: Store, texto: "Tu escaparate público desde el primer día" },
@@ -33,7 +34,7 @@ const incluye = [
 
 const bloque: Variants = {
   oculto: { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 140, damping: 22 } },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", ...RESORTE } },
 }
 
 const cascada: Variants = {

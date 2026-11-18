@@ -5,6 +5,7 @@ import { ArrowUpRight, BarChart3, CalendarDays, QrCode, Users } from "lucide-rea
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { rutasWeb } from "@routes/rutasPublicas"
 import { useTextos } from "@shared/textos/useTextos"
+import { CURVA_SALIDA, RESORTE } from "@shared/utils/movimiento"
 
 /**
  * Lo que NO cambia con el idioma: qué icono acompaña a cada beneficio. El texto
@@ -25,7 +26,7 @@ const contenedor: Variants = {
 // Los bloques del panel entran deslizando desde la izquierda, con resorte.
 const bloque: Variants = {
   oculto: { opacity: 0, x: -28 },
-  visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 200, damping: 22 } },
+  visible: { opacity: 1, x: 0, transition: { type: "spring", ...RESORTE } },
 }
 
 /**
@@ -64,7 +65,7 @@ export function PanelMarca() {
         initial={{ scaleY: 0 }}
         animate={{
           scaleY: 1,
-          transition: { duration: 0.7, ease: [0.23, 1, 0.32, 1], delay: 0.15 },
+          transition: { duration: 0.7, ease: CURVA_SALIDA, delay: 0.15 },
         }}
         aria-hidden
       />
@@ -106,7 +107,7 @@ export function PanelMarca() {
               <motion.li
                 key={beneficio.clave}
                 variants={bloque}
-                whileHover={{ y: -4, transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] } }}
+                whileHover={{ y: -4, transition: { duration: 0.2, ease: CURVA_SALIDA } }}
                 className="flex items-start gap-2.5 rounded-xl border border-border bg-secondary/50 p-3.5"
               >
                 <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/15">

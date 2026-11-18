@@ -3,6 +3,7 @@
 import { motion } from "motion/react"
 import { Check } from "lucide-react"
 import { cn } from "@shared/utils/cn"
+import { RESORTE_RAPIDO } from "@shared/utils/movimiento"
 
 interface RequisitosContrasenaProps {
   requisitos: { clave: string; texto: string; cumple: boolean }[]
@@ -39,7 +40,7 @@ export function RequisitosContrasena({ requisitos }: RequisitosContrasenaProps) 
             <motion.span
               initial={false}
               animate={{ scale: cumple ? 1 : 0, opacity: cumple ? 1 : 0 }}
-              transition={{ type: "spring", stiffness: 500, damping: 28 }}
+              transition={{ type: "spring", ...RESORTE_RAPIDO }}
               className="flex"
             >
               <Check className="size-3" strokeWidth={3} />

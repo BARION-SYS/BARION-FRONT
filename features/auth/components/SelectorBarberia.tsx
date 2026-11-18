@@ -8,6 +8,7 @@ import { Button } from "@shared/components/ui/button"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { useTextos } from "@shared/textos/useTextos"
 import type { BarberiaParaElegir } from "@features/auth/types/auth.types"
+import { RESORTE } from "@shared/utils/movimiento"
 
 interface SelectorBarberiaProps {
   barberias: BarberiaParaElegir[]
@@ -17,7 +18,7 @@ interface SelectorBarberiaProps {
 
 const bloque: Variants = {
   oculto: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 140, damping: 22 } },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", ...RESORTE } },
 }
 
 /**

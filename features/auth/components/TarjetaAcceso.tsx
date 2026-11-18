@@ -4,6 +4,7 @@ import { motion, type Variants } from "motion/react"
 import type { LucideIcon } from "lucide-react"
 import { LogoBarion } from "@shared/components/brand/LogoBarion"
 import { cn } from "@shared/utils/cn"
+import { CURVA_SALIDA, RESORTE, RESORTE_VIVO } from "@shared/utils/movimiento"
 
 /*
   El mismo lenguaje de movimiento que la tarjeta del login: entra desde abajo con
@@ -18,8 +19,7 @@ const tarjeta: Variants = {
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 170,
-      damping: 21,
+      ...RESORTE,
       staggerChildren: 0.07,
       delayChildren: 0.09,
     },
@@ -28,26 +28,26 @@ const tarjeta: Variants = {
     opacity: 0,
     y: -28,
     scale: 0.98,
-    transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] },
+    transition: { duration: 0.2, ease: CURVA_SALIDA },
   },
 }
 
 /** Cada bloque de dentro entra con resorte. Los hijos lo usan con `variants`. */
 export const bloqueAcceso: Variants = {
   oculto: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 240, damping: 24 } },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", ...RESORTE } },
 }
 
 // Las líneas se dibujan desde un punto: se leen como el corte del papel.
 const linea: Variants = {
   oculto: { scaleX: 0 },
-  visible: { scaleX: 1, transition: { duration: 0.5, ease: [0.23, 1, 0.32, 1] } },
+  visible: { scaleX: 1, transition: { duration: 0.5, ease: CURVA_SALIDA } },
 }
 
 // Desde 0.4 y no desde cero: una escala que nace en 0 se lee como un parpadeo.
 const perforacion: Variants = {
   oculto: { scale: 0.4, opacity: 0 },
-  visible: { scale: 1, opacity: 1, transition: { type: "spring", stiffness: 420, damping: 20 } },
+  visible: { scale: 1, opacity: 1, transition: { type: "spring", ...RESORTE_VIVO } },
 }
 
 /** El color del icono de la cabecera: dice de un vistazo qué clase de paso es. */
@@ -104,7 +104,7 @@ export function TarjetaAcceso({
         initial={{ scaleX: 0 }}
         animate={{
           scaleX: 1,
-          transition: { duration: 0.65, ease: [0.23, 1, 0.32, 1], delay: 0.2 },
+          transition: { duration: 0.65, ease: CURVA_SALIDA, delay: 0.2 },
         }}
         aria-hidden
       />

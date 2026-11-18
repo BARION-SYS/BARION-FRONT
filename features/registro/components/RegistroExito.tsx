@@ -8,6 +8,7 @@ import type { RegistroVista } from "@features/registro/types/registro.types"
 import { EnlaceCopiable } from "@shared/components/enlaces/EnlaceCopiable"
 import { Button } from "@shared/components/ui/button"
 import { useTextos } from "@shared/textos/useTextos"
+import { RESORTE } from "@shared/utils/movimiento"
 
 interface RegistroExitoProps {
   registro: RegistroVista
@@ -17,7 +18,7 @@ interface RegistroExitoProps {
 
 const bloque: Variants = {
   oculto: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 140, damping: 22 } },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", ...RESORTE } },
 }
 
 const cascada: Variants = {

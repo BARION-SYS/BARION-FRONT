@@ -145,7 +145,7 @@ export function Login({ onSubmit, cargando, error, slug, demo }: LoginProps) {
       <div className="p-(--acceso-borde)">
         <motion.div variants={bloque}>
           <div className="flex items-start justify-between gap-3">
-            <LogoBarion variante="icono" priority className="h-(--acceso-logo)" />
+            <LogoBarion variante="icono" className="h-(--acceso-logo)" />
             {/*
               La puerta dice de QUIÉN es. Entrar por `/b/{slug}/entrar` y por la
               puerta global se veía exactamente igual, así que quien llega desde

@@ -61,7 +61,7 @@ function GrupoColores({
         {/* Sin pieza shadcn para selector de color: input nativo */}
         <input
           type="color"
-          value={seleccionado ?? "#0a0a0b"}
+          value={seleccionado ?? "#0f1112"}
           onChange={(evento) => alElegir(evento.target.value)}
           aria-label={etiquetaCustom}
           className="h-9 w-9 cursor-pointer rounded-full border border-border bg-transparent"

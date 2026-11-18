@@ -29,7 +29,7 @@ function luminancia(hex: string): number {
 
 // Texto que contrasta con el color dado: oscuro sobre colores claros, blanco sobre oscuros.
 export function foregroundPara(hex: string): string {
-  return luminancia(hex) > 0.45 ? "#0a0a0b" : "#ffffff"
+  return luminancia(hex) > 0.45 ? "#111915" : "#ffffff"
 }
 
 interface Hsl {
@@ -155,13 +155,13 @@ export function tokensDeTema(
   const marca = colorMarca
     ? variantesPrimario(colorMarca)[esOscuro ? "oscuro" : "claro"]
     : esOscuro
-      ? "#d4a843"
-      : "#8f6b21"
+      ? "#9cc9ae"
+      : "#284b3a"
   const fondo = colorFondo
     ? variantesFondo(colorFondo)[esOscuro ? "oscuro" : "claro"]
     : esOscuro
-      ? "#0a0a0b"
-      : "#fafaf9"
+      ? "#0f1112"
+      : "#f8f7f4"
   return { ...varsPrimario(marca, esOscuro), ...varsFondo(fondo, esOscuro) }
 }
 

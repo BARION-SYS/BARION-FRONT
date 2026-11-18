@@ -120,7 +120,7 @@ export function TarjetaAcceso({
       >
         <motion.div variants={bloqueAcceso}>
           <div className="flex items-center justify-between gap-3">
-            <LogoBarion variante="icono" priority className="h-(--acceso-logo)" />
+            <LogoBarion variante="icono" className="h-(--acceso-logo)" />
             <span className="rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-xs font-medium tracking-widest text-muted-foreground uppercase">
               {insignia}
             </span>

@@ -12,19 +12,13 @@ export const metadata: Metadata = {
   title: "Barion — Barbershop Management Platform",
   description:
     "The complete digital ecosystem for modern barbershops. Manage appointments, staff, payroll and clients in one place.",
-  icons: {
-    // Favicon según el tema del navegador; apple-touch-icon en PNG (iOS no soporta webp)
-    icon: [
-      { url: "/barion-icon-light.webp", media: "(prefers-color-scheme: light)" },
-      { url: "/barion-icon-dark.webp", media: "(prefers-color-scheme: dark)" },
-    ],
-    shortcut: "/barion-icon-light.webp",
-    apple: "/apple-icon.png",
-  },
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0b",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8f7f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1112" },
+  ],
 }
 
 // El tema lo controla next-themes (clase en <html>); los tokens viven en style/globals.css.

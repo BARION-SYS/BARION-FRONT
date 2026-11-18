@@ -83,7 +83,7 @@ export function PanelMarca() {
         animate="visible"
       >
         <motion.div className="flex items-center gap-4" variants={bloque}>
-          <LogoBarion priority className="h-12 xl:h-14" />
+          <LogoBarion className="h-12 xl:h-14" />
           <span className="rounded-full border border-border px-3 py-1 text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">
             {t("auth.panelMarca.insignia")}
           </span>

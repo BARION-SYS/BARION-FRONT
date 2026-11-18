@@ -25,13 +25,13 @@ function crearQr(url: string, colorMarca: string): QRCodeStyling {
     height: 232,
     type: "svg",
     data: url,
-    image: "/barion-icon-light.webp",
+    image: "/barion-isotipo-claro.svg",
     margin: 0,
     qrOptions: { errorCorrectionLevel: "H" },
     imageOptions: { margin: 4, imageSize: 0.32 },
-    dotsOptions: { type: "rounded", color: "#18181b" },
+    dotsOptions: { type: "rounded", color: "#111915" },
     cornersSquareOptions: { type: "extra-rounded", color: colorMarca },
-    cornersDotOptions: { type: "dot", color: "#18181b" },
+    cornersDotOptions: { type: "dot", color: "#111915" },
     backgroundOptions: { color: "#ffffff" },
   })
 }
@@ -39,10 +39,10 @@ function crearQr(url: string, colorMarca: string): QRCodeStyling {
 // Marca legible sobre blanco: si el primario del tenant es muy claro, cae a oscuro.
 function colorMarcaEscaneable(): string {
   const primario = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim()
-  if (!/^#[0-9a-f]{6}$/i.test(primario)) return "#8f6b21"
+  if (!/^#[0-9a-f]{6}$/i.test(primario)) return "#284b3a"
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(primario.slice(i, i + 2), 16) / 255)
   const luminancia = 0.2126 * r + 0.7152 * g + 0.0722 * b
-  return luminancia > 0.6 ? "#18181b" : primario
+  return luminancia > 0.6 ? "#111915" : primario
 }
 
 export function QrCodigoCard({ nombreBarberia, url, copiado, onCopiar }: QrCodigoCardProps) {

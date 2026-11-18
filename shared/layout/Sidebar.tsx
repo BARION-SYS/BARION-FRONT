@@ -112,7 +112,6 @@ export function Sidebar({
         >
           {/* Logo completo ↔ ícono: crossfade durante el cambio de ancho, sin saltos */}
           <LogoBarion
-            priority
             className={cn(
               "h-12 shrink-0 transition-[opacity,transform] duration-500 ease-salida",
               colapsada && "lg:scale-90 lg:opacity-0"
@@ -120,7 +119,6 @@ export function Sidebar({
           />
           <LogoBarion
             variante="icono"
-            priority
             className={cn(
               "absolute left-1/2 hidden h-11 -translate-x-1/2 transition-opacity duration-500 ease-salida lg:block",
               colapsada ? "lg:opacity-100 lg:delay-150" : "lg:opacity-0"

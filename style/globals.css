@@ -58,42 +58,45 @@
 */
 :root {
   color-scheme: light;
-  --background: #fafaf9;
-  --foreground: #18181b;
+  --background: #f8f7f4;
+  --foreground: #111915;
   --card: #ffffff;
-  --card-foreground: #18181b;
+  --card-foreground: #111915;
   --popover: #ffffff;
-  --popover-foreground: #18181b;
-  --primary: #8f6b21;
-  --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f5efe0;
-  --accent-foreground: #6b4f16;
-  --destructive: #dc2626;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #8f6b21;
-  --chart-1: #b8912f;
-  --chart-2: #16a34a;
-  --chart-3: #2563eb;
-  --chart-4: #d97706;
-  --chart-5: #dc2626;
-  --exito: #15803d;
-  --info: #1d4ed8;
-  --advertencia: #a16207;
+  --popover-foreground: #111915;
+  --primary: #284b3a;
+  --primary-foreground: #f8f7f4;
+  --secondary: #eeedea;
+  --secondary-foreground: #111915;
+  --muted: #eeedea;
+  --muted-foreground: #5a5956;
+  --accent: #fee7de;
+  --accent-foreground: #613524;
+  --destructive: #b14a4f;
+  --border: #dcdbd8;
+  --input: #dcdbd8;
+  --ring: #a4593b;
+  --chart-1: #437e62;
+  --chart-2: #c27050;
+  --chart-3: #478fc9;
+  --chart-4: #b77b03;
+  --chart-5: #d16165;
+  --exito: #2a683b;
+  --info: #275e88;
+  --advertencia: #795000;
   /* Radio contenido: formularios e inputs rectos suaves, no circulares */
+  /* Acento de la marca: el tornillo de la tijera del logo. Terracota a su
+     contraste en cada tema. Solo lo usa LogoBarion. */
+  --marca-acento: #a4593b;
   --radius: 0.45rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #18181b;
-  --sidebar-primary: #8f6b21;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f4f4f5;
-  --sidebar-accent-foreground: #18181b;
-  --sidebar-border: #e4e4e7;
-  --sidebar-ring: #8f6b21;
+  --sidebar-foreground: #111915;
+  --sidebar-primary: #284b3a;
+  --sidebar-primary-foreground: #f8f7f4;
+  --sidebar-accent: #eeedea;
+  --sidebar-accent-foreground: #111915;
+  --sidebar-border: #dcdbd8;
+  --sidebar-ring: #a4593b;
   /*
     Scrollbar: derivado del texto atenuado y no un gris propio, para que siga
     al fondo que elija cada persona en el BrandStudio —la escala de superficies
@@ -105,41 +108,42 @@
 
 .dark {
   color-scheme: dark;
-  --background: #0a0a0b;
-  --foreground: #fafafa;
-  --card: #111113;
-  --card-foreground: #fafafa;
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
-  --primary: #d4a843;
-  --primary-foreground: #0a0a0b;
+  --marca-acento: #9cc9ae;
+  --background: #0f1112;
+  --foreground: #f1f2f0;
+  --card: #181a1b;
+  --card-foreground: #f1f2f0;
+  --popover: #1e1f21;
+  --popover-foreground: #f1f2f0;
+  --primary: #9cc9ae;
+  --primary-foreground: #0f1112;
   /* Superficies con más separación y textos secundarios legibles (contraste AA) */
-  --secondary: #1d1d23;
-  --secondary-foreground: #fafafa;
-  --muted: #1d1d23;
-  --muted-foreground: #a1a1aa;
-  --accent: #d4a843;
-  --accent-foreground: #0a0a0b;
-  --destructive: #ef4444;
-  --border: #2e2e36;
-  --input: #1e1e24;
-  --ring: #d4a843;
-  --chart-1: #d4a843;
-  --chart-2: #22c55e;
-  --chart-3: #3b82f6;
-  --chart-4: #f59e0b;
-  --chart-5: #ef4444;
-  --exito: #34d399;
-  --info: #60a5fa;
-  --advertencia: #facc15;
-  --sidebar: #111113;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #d4a843;
-  --sidebar-primary-foreground: #0a0a0b;
-  --sidebar-accent: #1d1d23;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #2e2e36;
-  --sidebar-ring: #d4a843;
+  --secondary: #202224;
+  --secondary-foreground: #f1f2f0;
+  --muted: #202224;
+  --muted-foreground: #a8aca9;
+  --accent: #1e3026;
+  --accent-foreground: #b3d6c1;
+  --destructive: #ec8f8f;
+  --border: #2e3133;
+  --input: #252729;
+  --ring: #9cc9ae;
+  --chart-1: #9cc9ae;
+  --chart-2: #e3cba8;
+  --chart-3: #7fb2de;
+  --chart-4: #b9a8e6;
+  --chart-5: #ec8f8f;
+  --exito: #86c79a;
+  --info: #7fb2de;
+  --advertencia: #e2bd84;
+  --sidebar: #181a1b;
+  --sidebar-foreground: #f1f2f0;
+  --sidebar-primary: #9cc9ae;
+  --sidebar-primary-foreground: #0f1112;
+  --sidebar-accent: #202224;
+  --sidebar-accent-foreground: #f1f2f0;
+  --sidebar-border: #2e3133;
+  --sidebar-ring: #9cc9ae;
   /* En oscuro un poco menos opaco: sobre negro, el mismo gris salta a la vista */
   --scrollbar-thumb: color-mix(in srgb, var(--muted-foreground) 28%, transparent);
   --scrollbar-thumb-hover: color-mix(in srgb, var(--muted-foreground) 50%, transparent);
@@ -242,7 +246,7 @@
       135deg,
       var(--primary) 0 10px,
       transparent 10px 20px,
-      color-mix(in srgb, var(--destructive) 55%, var(--card)) 20px 30px,
+      color-mix(in srgb, var(--marca-acento) 75%, var(--card)) 20px 30px,
       transparent 30px 40px
     );
     animation: cinta-desplazamiento 2.4s linear infinite;

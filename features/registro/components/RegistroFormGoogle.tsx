@@ -324,7 +324,7 @@ export function RegistroFormGoogle({
         </Button>
 
         <p className="text-center text-xs leading-relaxed text-muted-foreground">
-          Al crear tu barbería empieza la prueba de 7 días. No pedimos tarjeta y el plan se elige al
+          Al crear tu barbería empieza la prueba de 5 días. No pedimos tarjeta y el plan se elige al
           terminarla.
         </p>
       </div>

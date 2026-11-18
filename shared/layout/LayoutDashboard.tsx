@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { MotionConfig } from "motion/react"
 import { AvisoDemo } from "@features/auth/components/AvisoDemo"
 import { Sidebar } from "@shared/layout/Sidebar"
 import { Navbar } from "@shared/layout/Navbar"
 import { useAuthStore } from "@store/auth.store"
+import { setModoDemo } from "@lib/http/modo-demo"
+import { useTextos } from "@shared/textos/useTextos"
 
 // Única instancia del estado del chrome (colapso + drawer móvil); hijos reciben props.
 export function LayoutDashboard({ children }: { children: React.ReactNode }) {
@@ -14,6 +16,15 @@ export function LayoutDashboard({ children }: { children: React.ReactNode }) {
   // La sesión demo es de solo lectura: el aviso vive en el chrome para que
   // acompañe a todas las pantallas sin que ninguna tenga que acordarse.
   const esDemo = useAuthStore((s) => s.sesion?.esDemo ?? false)
+  const t = useTextos("auth.demo")
+
+  // Y el cliente HTTP corta sus escrituras antes de enviarlas, con un aviso en
+  // vez de un error. Se apaga al desmontar: salir del panel es salir de la demo.
+  const avisoGuardar = t("noSeGuarda")
+  useEffect(() => {
+    setModoDemo({ activo: esDemo, mensaje: avisoGuardar })
+    return () => setModoDemo({ activo: false })
+  }, [esDemo, avisoGuardar])
 
   return (
     <MotionConfig reducedMotion="user">

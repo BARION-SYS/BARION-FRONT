@@ -7,13 +7,21 @@ import axios, {
 import { esMotivoConocido } from "@shared/utils/error"
 import type { ApiEnvelope, ApiErrorEnvelope, ApiResult, HttpError } from "@shared/types/api.types"
 
+/**
+ * Opcional: decide antes de enviarla si una escritura (POST/PUT/PATCH/DELETE)
+ * sale o se rechaza aquí mismo con el error devuelto. Lo usa la demo.
+ */
+type FiltroEscritura = (url: string) => HttpError | null
+
 // Solo la clase — las instancias nombradas viven en lib/http/instances.ts.
 // Sin Content-Type fijo: axios pone application/json para objetos y
 // multipart/form-data con boundary cuando el cuerpo es FormData.
 export class ApiClient {
   private readonly instance: AxiosInstance
+  private readonly filtroEscritura?: FiltroEscritura
 
-  constructor(baseURL: string, options?: AxiosRequestConfig) {
+  constructor(baseURL: string, options?: AxiosRequestConfig, filtroEscritura?: FiltroEscritura) {
+    this.filtroEscritura = filtroEscritura
     // withCredentials: la sesión viaja en una cookie httpOnly que pone la API.
     // El navegador NO la manda en peticiones cross-origin sin esto, y el front
     // (puerto 2203) y la API (4000) son orígenes distintos incluso en local.
@@ -70,19 +78,30 @@ export class ApiClient {
     return this.toResult(await this.instance.get<ApiEnvelope<T>>(url, config))
   }
 
+  // Lanza el `HttpError` del filtro sin tocar la red: el llamador lo recibe
+  // igual que si hubiera respondido la api.
+  private revisarEscritura(url: string): void {
+    const rechazo = this.filtroEscritura?.(url)
+    if (rechazo) throw rechazo
+  }
+
   async post<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<ApiResult<T>> {
+    this.revisarEscritura(url)
     return this.toResult(await this.instance.post<ApiEnvelope<T>>(url, body, config))
   }
 
   async put<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<ApiResult<T>> {
+    this.revisarEscritura(url)
     return this.toResult(await this.instance.put<ApiEnvelope<T>>(url, body, config))
   }
 
   async patch<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<ApiResult<T>> {
+    this.revisarEscritura(url)
     return this.toResult(await this.instance.patch<ApiEnvelope<T>>(url, body, config))
   }
 
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResult<T>> {
+    this.revisarEscritura(url)
     return this.toResult(await this.instance.delete<ApiEnvelope<T>>(url, config))
   }
 }

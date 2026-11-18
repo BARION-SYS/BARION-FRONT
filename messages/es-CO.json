@@ -185,7 +185,12 @@
     },
     "demo": {
       "aviso": "Estás en la demo: mira todo lo que quieras, los cambios no se guardan.",
-      "crear": "Crear mi barbería"
+      "crear": "Crear mi barbería",
+      "abriendo": "Abriendo la barbería de demostración…",
+      "noDisponible": "La demo no está disponible ahora",
+      "noDisponibleDetalle": "Puedes crear tu barbería y probarla 5 días gratis, o entrar con tu cuenta.",
+      "irEntrar": "Entrar con mi cuenta",
+      "noSeGuarda": "Es la demo: puedes tocar todo, pero no se guarda. Crea tu barbería para usarlo de verdad."
     },
     "selectorBarberia": {
       "titulo": "¿A cuál barbería entras?",

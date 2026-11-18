@@ -1,8 +1,10 @@
 import { ApiClient } from "@lib/http/client"
+import { rechazoDemo } from "@lib/http/modo-demo"
 import { env } from "@config/env"
 
 // Todas las instancias nombradas — los services SIEMPRE importan de aquí.
-export const api = new ApiClient(env.apiUrl)
+// La de Barion corta las escrituras de la demo antes de enviarlas (modo-demo.ts).
+export const api = new ApiClient(env.apiUrl, undefined, rechazoDemo)
 
 /**
  * Wompi, la pasarela contra la que el navegador tokeniza una tarjeta.

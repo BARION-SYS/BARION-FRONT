@@ -185,7 +185,12 @@
     },
     "demo": {
       "aviso": "You're in the demo: look around all you like, changes aren't saved.",
-      "crear": "Create my barbershop"
+      "crear": "Create my barbershop",
+      "abriendo": "Opening the demo barbershop…",
+      "noDisponible": "The demo isn't available right now",
+      "noDisponibleDetalle": "You can create your barbershop and try it free for 5 days, or sign in with your account.",
+      "irEntrar": "Sign in with my account",
+      "noSeGuarda": "This is the demo: try anything, but nothing is saved. Create your barbershop to use it for real."
     },
     "selectorBarberia": {
       "titulo": "Which shop are you going into?",

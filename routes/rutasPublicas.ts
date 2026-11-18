@@ -10,6 +10,8 @@ export const rutasPublicas = {
   registro: "/registro",
   /** Pedir el enlace para volver a entrar. La salida de quien no tiene la clave. */
   recuperar: "/recuperar",
+  /** Entra directo a la demo de solo lectura. Destino del «Ver demo» del sitio. */
+  demo: "/demo",
 } as const
 
 /**
